@@ -1,47 +1,34 @@
-import json
+from functools import lru_cache
 
-import boto3
-from botocore.config import Config
 from langsmith import trace
+from sentence_transformers import SentenceTransformer
 
 from api.core.config import config
 
 
-def get_bedrock_client() -> boto3.client:
-    return boto3.client(
-        service_name="bedrock-runtime",
-        aws_access_key_id=config.AWS_ACCESS_KEY_ID,
-        aws_secret_access_key=config.AWS_SECRET_ACCESS_KEY,
-        region_name=config.AWS_DEFAULT_REGION,
-        config=Config(retries={"mode": "adaptive"}),
+@lru_cache(maxsize=1)
+def get_embedding_model() -> SentenceTransformer:
+    """Load the HuggingFace sentence-transformers model once, on CPU."""
+    return SentenceTransformer(
+        config.EMBEDDING_MODEL,
+        device="cpu",
+        token=config.HF_TOKEN,
     )
+
+
+def _apply_query_prefix(text: str) -> str:
+    # e5-family models are asymmetric and expect a "query:" prefix on queries
+    # (passages are embedded with a "passage:" prefix at ingestion time).
+    if "e5" in config.EMBEDDING_MODEL.lower():
+        return f"query: {text}"
+    return text
 
 
 def embed_text_query(text: str, *, max_input_chars: int = 2048) -> list[float]:
-    query_text = text[:max_input_chars]
-    body = {
-        "input_type": "search_query",
-        "embedding_types": ["float"],
-        "texts": [query_text],
-    }
-    response = get_bedrock_client().invoke_model(
-        modelId=config.EMBEDDING_MODEL,
-        body=json.dumps(body),
-        accept="application/json",
-        contentType="application/json",
-    )
-    result = json.loads(response["body"].read())
-
-    embeddings = result.get("embeddings")
-    if isinstance(embeddings, dict) and "float" in embeddings:
-        return embeddings["float"][0]
-    if isinstance(embeddings, list):
-        if embeddings and isinstance(embeddings[0], list):
-            return embeddings[0]
-        return embeddings
-    if "embedding" in result:
-        return result["embedding"]
-    raise ValueError(f"Embedding missing in Bedrock response: {result}")
+    query_text = _apply_query_prefix(text[:max_input_chars])
+    model = get_embedding_model()
+    vector = model.encode(query_text, normalize_embeddings=True)
+    return vector.tolist()
 
 
 def embed_text_query_with_trace(
@@ -62,7 +49,7 @@ def embed_text_query_with_trace(
             "max_input_chars": max_input_chars,
         },
         metadata={
-            "provider": "bedrock",
+            "provider": "sentence-transformers",
             "ls_model_name": config.EMBEDDING_MODEL,
         },
     ) as embedding_span:

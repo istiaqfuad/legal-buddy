@@ -101,7 +101,7 @@ def _run_llm_text(messages: list[dict], max_tokens: int | None = None) -> str:
 
     if not tracing:
         response = client.models.generate_content(
-            model=config.DEFAULT_MODEL_NAME,
+            model=config.CHAT_MODEL,
             contents=[message["content"] for message in messages],
             config=generation_config,
         )
@@ -120,12 +120,12 @@ def _run_llm_text(messages: list[dict], max_tokens: int | None = None) -> str:
         inputs={"messages": messages},
         metadata={
             "ls_provider": "google_genai",
-            "ls_model_name": config.DEFAULT_MODEL_NAME,
+            "ls_model_name": config.CHAT_MODEL,
             **model_parameters,
         },
     ) as generation:
         response = client.models.generate_content(
-            model=config.DEFAULT_MODEL_NAME,
+            model=config.CHAT_MODEL,
             contents=[message["content"] for message in messages],
             config=generation_config,
         )
@@ -148,7 +148,7 @@ def run_llm(
     client = genai.Client(api_key=config.GEMINI_API_KEY)
     structured_client = instructor.from_genai(
         client,
-        model=config.DEFAULT_MODEL_NAME,
+        model=config.CHAT_MODEL,
         mode=instructor.Mode.GENAI_STRUCTURED_OUTPUTS,
     )
 
@@ -187,7 +187,7 @@ def run_llm(
         inputs={"messages": structured_messages},
         metadata={
             "ls_provider": "google_genai",
-            "ls_model_name": config.DEFAULT_MODEL_NAME,
+            "ls_model_name": config.CHAT_MODEL,
             **model_parameters,
         },
     ) as generation:

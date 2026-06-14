@@ -12,7 +12,7 @@ This workspace contains:
 
 For each user question:
 
-1. The API creates an embedding with AWS Bedrock
+1. The API creates an embedding with a local HuggingFace sentence-transformers model (CPU)
 2. It retrieves top matching legal sections from Qdrant
 3. It builds a grounded prompt with citation tags
 4. It generates an answer with Gemini
@@ -42,8 +42,8 @@ llm_engineering/
 - `uv` installed: https://docs.astral.sh/uv/
 - Docker + Docker Compose (recommended for full stack)
 - Access to:
-  - AWS Bedrock embedding model
-  - Gemini API key
+  - A Gemini API key
+  - A HuggingFace embedding model id (downloaded locally on first run)
   - Reachable Qdrant instance
 
 ## Quick Start (Recommended)
@@ -57,18 +57,18 @@ cp .env.example .env
 Then fill values in `.env`:
 
 ```env
-# API generation model
+# Gemini chat model
 GEMINI_API_KEY=your_gemini_key
-DEFAULT_MODEL_NAME=gemini-2.5-flash
+# Optional; defaults to gemini-2.5-flash
+CHAT_MODEL=gemini-2.5-flash
 
-# AWS Bedrock embeddings
-AWS_ACCESS_KEY_ID=your_access_key
-AWS_SECRET_ACCESS_KEY=your_secret_key
-AWS_DEFAULT_REGION=us-east-1
-EMBEDDING_MODEL=cohere.embed-v4
+# HuggingFace embedding model (run locally via sentence-transformers, CPU)
+EMBEDDING_MODEL=org/your-embedding-model
+HF_TOKEN=
 
 # Qdrant
-QDRANT_URL=http://your-qdrant-host:6333
+QDRANT_VECTORESTORE=http://your-qdrant-host:6333
+QDRANT_API_KEY=
 QDRANT_COLLECTION=legal_acts_event_rag_full
 
 # Retrieval + generation defaults
@@ -153,7 +153,15 @@ LangSmith instrumentation is integrated in the API for retrieval/generation span
 ## Data and Ingestion
 
 - Legal act JSON files live under `data/acts/`
-- The ingestion workflow is documented in `notebooks/qdrant_ingestion.ipynb`
+- Reingest the corpus into Qdrant with the configured HuggingFace embedding model:
+
+```bash
+uv run python notebooks/ingest_qdrant.py
+```
+
+  This recreates `QDRANT_COLLECTION` with the embedding model's vector size and upserts all
+  non-repealed sections. Set `INGEST_MAX_RECORDS=N` to limit records for a quick smoke test.
+- The exploratory workflow is also documented in `notebooks/qdrant_ingestion.ipynb`
 
 ## Useful Commands
 
