@@ -1,10 +1,11 @@
 import instructor
 from google import genai
 from google.genai import types
+from langsmith import trace
 
 from api.api.models import SourceItem
 from api.core.config import config
-from api.core.observability import get_langfuse_client
+from api.core.observability import get_langsmith_client
 
 from api.agents.legal_chat.structured_models import StructuredLegalAnswer
 
@@ -20,11 +21,11 @@ def _extract_gemini_usage(response: types.GenerateContentResponse) -> dict[str, 
 
     usage_details: dict[str, int] = {}
     if input_tokens is not None:
-        usage_details["input"] = int(input_tokens)
+        usage_details["input_tokens"] = int(input_tokens)
     if output_tokens is not None:
-        usage_details["output"] = int(output_tokens)
+        usage_details["output_tokens"] = int(output_tokens)
     if total_tokens is not None:
-        usage_details["total"] = int(total_tokens)
+        usage_details["total_tokens"] = int(total_tokens)
 
     return usage_details
 
@@ -87,7 +88,7 @@ def _run_llm_text(messages: list[dict], max_tokens: int | None = None) -> str:
     if not config.GEMINI_API_KEY:
         raise ValueError("GEMINI_API_KEY is not configured")
 
-    langfuse = get_langfuse_client()
+    tracing = get_langsmith_client() is not None
     client = genai.Client(api_key=config.GEMINI_API_KEY)
 
     generation_config_kwargs: dict[str, int | float] = {
@@ -98,7 +99,7 @@ def _run_llm_text(messages: list[dict], max_tokens: int | None = None) -> str:
         generation_config_kwargs["max_output_tokens"] = max_tokens
     generation_config = types.GenerateContentConfig(**generation_config_kwargs)
 
-    if langfuse is None:
+    if not tracing:
         response = client.models.generate_content(
             model=config.DEFAULT_MODEL_NAME,
             contents=[message["content"] for message in messages],
@@ -113,12 +114,15 @@ def _run_llm_text(messages: list[dict], max_tokens: int | None = None) -> str:
     if max_tokens is not None:
         model_parameters["max_output_tokens"] = max_tokens
 
-    with langfuse.start_as_current_observation(
-        as_type="generation",
+    with trace(
         name="answer-generation",
-        model=config.DEFAULT_MODEL_NAME,
-        input=messages,
-        model_parameters=model_parameters,
+        run_type="llm",
+        inputs={"messages": messages},
+        metadata={
+            "ls_provider": "google_genai",
+            "ls_model_name": config.DEFAULT_MODEL_NAME,
+            **model_parameters,
+        },
     ) as generation:
         response = client.models.generate_content(
             model=config.DEFAULT_MODEL_NAME,
@@ -126,11 +130,11 @@ def _run_llm_text(messages: list[dict], max_tokens: int | None = None) -> str:
             config=generation_config,
         )
         answer = response.text or "No response generated."
+        outputs: dict = {"output": answer}
         usage_details = _extract_gemini_usage(response)
         if usage_details:
-            generation.update(output=answer, usage_details=usage_details)
-        else:
-            generation.update(output=answer)
+            outputs["usage_metadata"] = usage_details
+        generation.end(outputs=outputs)
         return answer
 
 
@@ -140,7 +144,7 @@ def run_llm(
     if not config.GEMINI_API_KEY:
         raise ValueError("GEMINI_API_KEY is not configured")
 
-    langfuse = get_langfuse_client()
+    tracing = get_langsmith_client() is not None
     client = genai.Client(api_key=config.GEMINI_API_KEY)
     structured_client = instructor.from_genai(
         client,
@@ -159,7 +163,7 @@ def run_llm(
     structured_messages = _build_structured_messages(messages)
     max_source_id = len(sources)
 
-    if langfuse is None:
+    if not tracing:
         try:
             structured_answer = structured_client.create(
                 response_model=StructuredLegalAnswer,
@@ -177,12 +181,15 @@ def run_llm(
     if max_tokens is not None:
         model_parameters["max_output_tokens"] = max_tokens
 
-    with langfuse.start_as_current_observation(
-        as_type="generation",
+    with trace(
         name="answer-generation",
-        model=config.DEFAULT_MODEL_NAME,
-        input=structured_messages,
-        model_parameters=model_parameters,
+        run_type="llm",
+        inputs={"messages": structured_messages},
+        metadata={
+            "ls_provider": "google_genai",
+            "ls_model_name": config.DEFAULT_MODEL_NAME,
+            **model_parameters,
+        },
     ) as generation:
         try:
             structured_answer = structured_client.create(
@@ -191,12 +198,10 @@ def run_llm(
                 config=generation_config,
             )
             answer_text = _render_structured_answer(structured_answer, max_source_id)
-            generation.update(output=answer_text)
+            generation.end(outputs={"output": answer_text})
             return answer_text
         except Exception:
             fallback_answer = _run_llm_text(messages=messages, max_tokens=max_tokens)
-            generation.update(
-                output=fallback_answer,
-                metadata={"fallback": "plain-genai-response"},
-            )
+            generation.add_metadata({"fallback": "plain-genai-response"})
+            generation.end(outputs={"output": fallback_answer})
             return fallback_answer

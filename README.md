@@ -79,12 +79,12 @@ ANSWER_MAX_TOKENS=
 # Frontend -> API URL (inside docker network default is fine)
 API_URL=http://api:8000
 
-# Optional Langfuse
-LANGFUSE_PUBLIC_KEY=
-LANGFUSE_SECRET_KEY=
-LANGFUSE_BASE_URL=
-LANGFUSE_HOST=
-LANGFUSE_TRACING_ENVIRONMENT=development
+# Optional LangSmith tracing
+LANGSMITH_TRACING=true
+LANGSMITH_API_KEY=
+# Optional overrides
+# LANGSMITH_ENDPOINT=https://api.smith.langchain.com
+# LANGSMITH_PROJECT=legal-buddy
 ```
 
 2. Install workspace deps:
@@ -148,7 +148,7 @@ Notes:
 
 ## Observability
 
-Langfuse instrumentation is integrated in the API for retrieval/generation spans. Configure Langfuse env vars to enable ingestion. If keys are not configured, pipeline still runs without tracing.
+LangSmith instrumentation is integrated in the API for retrieval/generation spans. Set `LANGSMITH_TRACING=true` and `LANGSMITH_API_KEY` to enable ingestion. If tracing is disabled or the key is not configured, the pipeline still runs without tracing.
 
 ## Data and Ingestion
 

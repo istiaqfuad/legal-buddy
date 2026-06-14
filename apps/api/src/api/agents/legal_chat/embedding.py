@@ -2,6 +2,7 @@ import json
 
 import boto3
 from botocore.config import Config
+from langsmith import trace
 
 from api.core.config import config
 
@@ -47,22 +48,24 @@ def embed_text_query_with_trace(
     text: str,
     *,
     max_input_chars: int,
-    langfuse,
+    traced: bool,
 ) -> list[float]:
-    if langfuse is None:
+    if not traced:
         return embed_text_query(text, max_input_chars=max_input_chars)
 
     query_text = text[:max_input_chars]
-    with langfuse.start_as_current_observation(
-        as_type="embedding",
+    with trace(
         name="embed-query",
-        model=config.EMBEDDING_MODEL,
-        input={
+        run_type="embedding",
+        inputs={
             "input_chars": len(query_text),
             "max_input_chars": max_input_chars,
         },
-        metadata={"provider": "bedrock"},
+        metadata={
+            "provider": "bedrock",
+            "ls_model_name": config.EMBEDDING_MODEL,
+        },
     ) as embedding_span:
         vector = embed_text_query(text, max_input_chars=max_input_chars)
-        embedding_span.update(output={"embedding_dimensions": len(vector)})
+        embedding_span.end(outputs={"embedding_dimensions": len(vector)})
         return vector

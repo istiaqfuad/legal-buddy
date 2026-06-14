@@ -1,6 +1,8 @@
+from langsmith import trace
+
 from api.api.models import LegalChatResponse
 from api.core.config import config
-from api.core.observability import get_langfuse_client
+from api.core.observability import get_langsmith_client
 
 from api.agents.legal_chat.generation import run_llm
 from api.agents.legal_chat.prompting import build_grounded_prompt
@@ -18,8 +20,8 @@ def legal_chat_pipeline(
         max_tokens if max_tokens is not None else config.ANSWER_MAX_TOKENS
     )
 
-    langfuse = get_langfuse_client()
-    if langfuse is None:
+    client = get_langsmith_client()
+    if client is None:
         sources = retrieve_sources(question, top_k=resolved_top_k)
         if not sources:
             return LegalChatResponse(
@@ -35,10 +37,10 @@ def legal_chat_pipeline(
         )
         return LegalChatResponse(answer=answer, sources=sources)
 
-    with langfuse.start_as_current_observation(
-        as_type="span",
+    with trace(
         name="legal-chat-request",
-        input={
+        run_type="chain",
+        inputs={
             "question": question,
             "top_k": resolved_top_k,
             "max_tokens": resolved_max_tokens,
@@ -51,7 +53,7 @@ def legal_chat_pipeline(
                 answer="I could not find relevant legal sources in the vector store for this question.",
                 sources=[],
             )
-            request_span.update(output=response.model_dump())
+            request_span.end(outputs=response.model_dump())
             return response
 
         messages = build_grounded_prompt(question, sources)
@@ -61,8 +63,8 @@ def legal_chat_pipeline(
             max_tokens=resolved_max_tokens,
         )
         response = LegalChatResponse(answer=answer, sources=sources)
-        request_span.update(
-            output={
+        request_span.end(
+            outputs={
                 "answer_preview": answer[:200],
                 "source_count": len(sources),
             }

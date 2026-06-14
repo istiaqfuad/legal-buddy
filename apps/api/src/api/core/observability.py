@@ -1,63 +1,72 @@
 import logging
+import os
 
-from langfuse import Langfuse
+from langsmith import Client
+from langsmith.utils import tracing_is_enabled
 
 from api.core.config import config
 
 logger = logging.getLogger(__name__)
 
-_langfuse_client: Langfuse | None = None
+_langsmith_client: Client | None = None
 
 
-def _langfuse_host() -> str | None:
-    if config.LANGFUSE_HOST:
-        return config.LANGFUSE_HOST
-    return config.LANGFUSE_BASE_URL
+def configure_tracing() -> None:
+    """Forward config values into the env vars the LangSmith SDK reads.
+
+    The SDK is driven entirely by environment variables, but settings are loaded
+    from ``.env`` via pydantic (which does not export them to the process
+    environment), so we bridge them explicitly here.
+    """
+    if not config.LANGSMITH_TRACING or not config.LANGSMITH_API_KEY:
+        os.environ["LANGSMITH_TRACING"] = "false"
+        return
+
+    os.environ["LANGSMITH_TRACING"] = "true"
+    os.environ["LANGSMITH_API_KEY"] = config.LANGSMITH_API_KEY
+    if config.LANGSMITH_ENDPOINT:
+        os.environ["LANGSMITH_ENDPOINT"] = config.LANGSMITH_ENDPOINT
+    if config.LANGSMITH_PROJECT:
+        os.environ["LANGSMITH_PROJECT"] = config.LANGSMITH_PROJECT
 
 
-def get_langfuse_client():
-    global _langfuse_client
+# Apply configuration on import, before any tracing runs.
+configure_tracing()
 
-    if not config.LANGFUSE_ENABLED:
+
+def get_langsmith_client() -> Client | None:
+    global _langsmith_client
+
+    if not tracing_is_enabled():
         return None
 
-    if not config.LANGFUSE_PUBLIC_KEY or not config.LANGFUSE_SECRET_KEY:
-        return None
-
-    if _langfuse_client is not None:
-        return _langfuse_client
-
-    _langfuse_client = Langfuse(
-        public_key=config.LANGFUSE_PUBLIC_KEY,
-        secret_key=config.LANGFUSE_SECRET_KEY,
-        base_url=_langfuse_host(),
-    )
-    return _langfuse_client
+    if _langsmith_client is None:
+        _langsmith_client = Client()
+    return _langsmith_client
 
 
-def validate_langfuse_auth() -> None:
-    client = get_langfuse_client()
+def validate_langsmith_auth() -> None:
+    client = get_langsmith_client()
     if client is None:
         logger.info(
-            "Langfuse disabled or not configured. Set LANGFUSE_PUBLIC_KEY and LANGFUSE_SECRET_KEY to enable tracing."
+            "LangSmith disabled or not configured. Set LANGSMITH_TRACING=true and "
+            "LANGSMITH_API_KEY to enable tracing."
         )
         return
 
     try:
-        if client.auth_check():
-            logger.info("Langfuse auth check passed.")
-        else:
-            logger.warning("Langfuse auth check failed. Traces may not be ingested.")
+        next(iter(client.list_projects(limit=1)), None)
+        logger.info("LangSmith auth check passed.")
     except Exception:
-        logger.exception("Langfuse auth check failed with an exception.")
+        logger.exception("LangSmith auth check failed. Traces may not be ingested.")
 
 
-def flush_langfuse() -> None:
-    client = get_langfuse_client()
+def flush_langsmith() -> None:
+    client = get_langsmith_client()
     if client is None:
         return
 
     try:
         client.flush()
     except Exception:
-        logger.exception("Failed to flush Langfuse events.")
+        logger.exception("Failed to flush LangSmith events.")

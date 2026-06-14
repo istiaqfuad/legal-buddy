@@ -10,7 +10,7 @@ Backend service for legal RAG chat.
 - Build grounded prompt with source citations
 - Generate final answer with Gemini
 - Return answer + structured sources
-- Emit Langfuse observations when configured
+- Emit LangSmith traces when configured
 
 ## Main Endpoints
 
@@ -79,11 +79,10 @@ QDRANT_COLLECTION=legal_acts_event_rag_full
 RETRIEVAL_TOP_K=6
 ANSWER_MAX_TOKENS=
 
-LANGFUSE_PUBLIC_KEY=
-LANGFUSE_SECRET_KEY=
-LANGFUSE_BASE_URL=
-LANGFUSE_HOST=
-LANGFUSE_TRACING_ENVIRONMENT=development
+LANGSMITH_TRACING=true
+LANGSMITH_API_KEY=
+LANGSMITH_ENDPOINT=https://api.smith.langchain.com
+LANGSMITH_PROJECT=legal-buddy
 ```
 
 ## Run With Docker
@@ -112,11 +111,11 @@ uv run --package api uvicorn api.app:app --host 0.0.0.0 --port 8000 --reload
 - `apps/api/src/api/api/models.py`: request/response models
 - `apps/api/src/api/agents/retrieval_generation.py`: retrieval + generation pipeline
 - `apps/api/src/api/core/config.py`: settings
-- `apps/api/src/api/core/observability.py`: Langfuse client lifecycle
+- `apps/api/src/api/core/observability.py`: LangSmith client lifecycle
 
 ## Troubleshooting
 
 - 500 error with model call: verify `GEMINI_API_KEY` and model name
 - Retrieval returns no sources: check `QDRANT_URL`, collection name, and embedding compatibility
 - Bedrock errors: validate AWS credentials, region, and `EMBEDDING_MODEL`
-- No traces in Langfuse: confirm keys/base URL and startup auth check logs
+- No traces in LangSmith: confirm `LANGSMITH_TRACING=true`, the API key, and startup auth check logs

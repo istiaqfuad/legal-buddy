@@ -8,12 +8,10 @@ class Config(BaseSettings):
     # GROQ_API_KEY: str | None = None
     GEMINI_API_KEY: str | None = None
 
-    LANGFUSE_ENABLED: bool = True
-    LANGFUSE_PUBLIC_KEY: str | None = None
-    LANGFUSE_SECRET_KEY: str | None = None
-    LANGFUSE_BASE_URL: str | None = None
-    LANGFUSE_HOST: str | None = None
-    LANGFUSE_TRACING_ENVIRONMENT: str = "development"
+    LANGSMITH_TRACING: bool = True
+    LANGSMITH_API_KEY: str | None = None
+    LANGSMITH_ENDPOINT: str | None = None
+    LANGSMITH_PROJECT: str | None = "legal-buddy"
 
     AWS_ACCESS_KEY_ID: str
     AWS_SECRET_ACCESS_KEY: str
