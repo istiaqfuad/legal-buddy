@@ -2,15 +2,20 @@ FROM ghcr.io/astral-sh/uv:python3.13-bookworm-slim
 
 WORKDIR /app
 
-# Copy workspace root files for dependency resolution
+ENV UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy
+
+# Install dependencies ONLY (no workspace source).
+# This layer is cached and only rebuilds when manifests/lockfile change,
+# so editing Python source no longer re-downloads/recompiles torch et al.
 COPY pyproject.toml uv.lock ./
+COPY apps/api/pyproject.toml ./apps/api/pyproject.toml
+COPY apps/chatbot_ui/pyproject.toml ./apps/chatbot_ui/pyproject.toml
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --frozen --no-dev --no-install-workspace --package api
 
-# Copy package files and source
+# Copy package source and install the workspace package itself (fast — deps already present)
 COPY apps/api ./apps/api
-
-ENV UV_COMPILE_BYTECODE=1
-
-# Install dependencies including workspace packages
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-dev --package api
 
@@ -23,9 +28,17 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV PATH="/app/.venv/bin:$PATH"
 ENV PYTHONPATH="/app/apps/api/src:$PYTHONPATH"
 
-# Create non-root user and set permissions
+# HuggingFace/sentence-transformers cache the model under $HOME at runtime.
+# A real, writable HOME is required or model download fails with
+# "Permission denied: '/nonexistent'".
+ENV HOME="/home/app"
+ENV HF_HOME="/home/app/.cache/huggingface"
+
+# Create non-root user with a writable home + cache dir
 RUN addgroup --system app && \
-    adduser --system --ingroup app app
+    adduser --system --ingroup app --home /home/app app && \
+    mkdir -p /home/app/.cache/huggingface && \
+    chown -R app:app /home/app
 
 # Switch to non-root user
 USER app

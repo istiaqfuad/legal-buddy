@@ -23,3 +23,9 @@ services:
     restart: unless-stopped
     volumes:
       - ./apps/api/src:/app/apps/api/src
+      # Persist HuggingFace model cache so the embedding model is downloaded
+      # only once, surviving container rebuilds/recreates.
+      - hf-cache:/home/app/.cache/huggingface
+
+volumes:
+  hf-cache:
