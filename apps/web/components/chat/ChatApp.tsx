@@ -192,8 +192,8 @@ function EmptyState({ onPick }: { onPick: (q: string) => void }) {
       <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-accent-soft text-accent">
         <Scale className="h-7 w-7" />
       </span>
-      <h2 className="mt-5 text-xl font-semibold tracking-tight">Ask about the law</h2>
-      <p className="mt-1.5 max-w-md text-sm text-muted">
+      <h2 className="mt-5 text-2xl font-semibold tracking-tight">Ask about the law</h2>
+      <p className="mt-2 max-w-md text-base text-muted">
         Questions on Bangladesh statutory law, answered from the indexed acts with citations you can check.
       </p>
       <div className="mt-6 flex w-full max-w-md flex-col gap-2">
@@ -201,7 +201,7 @@ function EmptyState({ onPick }: { onPick: (q: string) => void }) {
           <button
             key={q}
             onClick={() => onPick(q)}
-            className="rounded-xl border border-border bg-surface px-4 py-3 text-left text-sm text-foreground transition-colors hover:border-accent/40 hover:bg-accent-soft/40"
+            className="rounded-xl border border-border bg-surface px-4 py-3 text-left text-[15px] text-foreground transition-colors hover:border-accent/40 hover:bg-accent-soft/40"
           >
             {q}
           </button>

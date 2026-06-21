@@ -64,8 +64,8 @@ body {
 
 /* Lightweight prose for rendered answers */
 .answer-prose {
-  line-height: 1.7;
-  font-size: 0.95rem;
+  line-height: 1.75;
+  font-size: 1rem;
 }
 .answer-prose p { margin: 0 0 0.75rem; }
 .answer-prose p:last-child { margin-bottom: 0; }

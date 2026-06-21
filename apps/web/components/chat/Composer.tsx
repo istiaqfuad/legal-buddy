@@ -47,7 +47,7 @@ export function Composer({
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={handleKeyDown}
         placeholder="Ask a legal question…"
-        className="block max-h-[200px] flex-1 resize-none bg-transparent px-2 py-2 text-sm outline-none placeholder:text-muted"
+        className="block max-h-[200px] flex-1 resize-none bg-transparent px-2 py-2 text-base outline-none placeholder:text-muted"
       />
       <Button
         size="icon"

@@ -10,7 +10,7 @@ export function Message({ turn }: { turn: Turn }) {
   if (turn.role === "user") {
     return (
       <div className="flex justify-end">
-        <div className="max-w-[85%] whitespace-pre-wrap break-words rounded-2xl rounded-br-md bg-user-bubble px-4 py-2.5 text-sm">
+        <div className="max-w-[85%] whitespace-pre-wrap break-words rounded-2xl rounded-br-md bg-user-bubble px-4 py-2.5 text-[15px] leading-relaxed">
           {turn.content}
         </div>
       </div>
@@ -19,7 +19,7 @@ export function Message({ turn }: { turn: Turn }) {
 
   if (turn.error) {
     return (
-      <div className="flex items-start gap-2 rounded-xl border border-danger/30 bg-danger/5 px-4 py-3 text-sm text-danger">
+      <div className="flex items-start gap-2 rounded-xl border border-danger/30 bg-danger/5 px-4 py-3 text-[15px] text-danger">
         <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
         <span>{turn.content}</span>
       </div>

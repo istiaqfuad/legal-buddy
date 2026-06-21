@@ -13,7 +13,7 @@ export function SourceList({ sources }: { sources: Source[] }) {
     <div className="mt-3">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="inline-flex items-center gap-1.5 rounded-md px-1.5 py-1 text-xs font-medium text-muted transition-colors hover:text-foreground"
+        className="inline-flex items-center gap-1.5 rounded-md px-1.5 py-1 text-sm font-medium text-muted transition-colors hover:text-foreground"
         aria-expanded={open}
       >
         <FileText className="h-3.5 w-3.5" />
@@ -32,7 +32,7 @@ export function SourceList({ sources }: { sources: Source[] }) {
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-sm font-medium text-foreground">
+                  <p className="text-[15px] font-medium text-foreground">
                     <span className="mr-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-md bg-accent-soft px-1 text-xs font-semibold text-accent">
                       {s.citation_id}
                     </span>
@@ -41,7 +41,7 @@ export function SourceList({ sources }: { sources: Source[] }) {
                       <span className="text-muted"> ({s.act_year})</span>
                     ) : null}
                   </p>
-                  <p className="mt-0.5 text-xs text-muted">
+                  <p className="mt-0.5 text-[13px] text-muted">
                     Section {s.section_index ?? "—"} · score {s.score.toFixed(3)}
                   </p>
                 </div>
@@ -58,7 +58,7 @@ export function SourceList({ sources }: { sources: Source[] }) {
                 )}
               </div>
               {s.excerpt && (
-                <p className="mt-2 line-clamp-4 text-xs leading-relaxed text-muted">
+                <p className="mt-2 line-clamp-4 text-[13px] leading-relaxed text-muted">
                   {s.excerpt}
                 </p>
               )}

@@ -30,12 +30,12 @@ export function SidebarContent({
     <div className="flex h-full flex-col">
       {/* Brand */}
       <div className="flex items-center gap-2.5 px-4 py-4">
-        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-accent-soft text-accent">
+        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent-soft text-accent">
           <Scale className="h-5 w-5" strokeWidth={2} />
         </span>
         <div className="leading-tight">
-          <p className="text-sm font-semibold tracking-tight">Law Buddy</p>
-          <p className="text-xs text-muted">Legal answers, cited</p>
+          <p className="text-base font-semibold tracking-tight">Law Buddy</p>
+          <p className="text-sm text-muted">Legal answers, cited</p>
         </div>
       </div>
 
@@ -53,20 +53,21 @@ export function SidebarContent({
             aria-valuetext={`${settings.topK} sources`}
             className="w-full accent-accent"
           />
-          <p className="mt-1 text-xs text-muted">
-            How many statute sections to ground the answer on.
-          </p>
+          <Note>
+            How many statute sections are retrieved and fed to the model. More =
+            broader, better-cited answers but more noise; fewer = tighter, shorter.
+          </Note>
         </Field>
 
         {/* Model (dev-only) */}
         <fieldset className="space-y-4 rounded-xl border border-dashed border-border p-3">
-          <legend className="flex items-center gap-1.5 px-1 text-xs font-medium text-muted">
-            <FlaskConical className="h-3.5 w-3.5" /> Model (dev only)
+          <legend className="flex items-center gap-1.5 px-1 text-sm font-medium text-muted">
+            <FlaskConical className="h-4 w-4" /> Model (dev only)
           </legend>
 
           {/* Provider */}
           <div className="space-y-1.5">
-            <p className="text-xs font-medium text-foreground">Provider</p>
+            <p className="text-sm font-medium text-foreground">Provider</p>
             <div role="radiogroup" aria-label="LLM provider" className="flex rounded-lg border border-border p-0.5">
               {PROVIDERS.map((p) => (
                 <button
@@ -75,7 +76,7 @@ export function SidebarContent({
                   aria-checked={settings.provider === p}
                   onClick={() => pickProvider(p)}
                   className={cn(
-                    "flex-1 rounded-md px-2 py-1.5 text-xs font-medium capitalize transition-colors",
+                    "flex-1 rounded-md px-2 py-1.5 text-sm font-medium capitalize transition-colors",
                     settings.provider === p
                       ? "bg-accent text-accent-foreground"
                       : "text-muted hover:text-foreground",
@@ -85,28 +86,33 @@ export function SidebarContent({
                 </button>
               ))}
             </div>
+            <Note>
+              Which LLM writes the answer. Retrieval is identical either way — only
+              the wording/quality changes. Groq has a more generous free quota.
+            </Note>
           </div>
 
           {/* Model */}
           <label className="block space-y-1.5">
-            <span className="text-xs font-medium text-foreground">Model</span>
+            <span className="text-sm font-medium text-foreground">Model</span>
             <input
               list="sidebar-model-options"
               value={settings.model}
               onChange={(e) => set({ model: e.target.value })}
               placeholder="provider default"
-              className="h-8 w-full rounded-lg border border-border bg-background px-2 text-xs outline-none focus:ring-2 focus:ring-ring"
+              className="h-9 w-full rounded-lg border border-border bg-background px-2.5 text-sm outline-none focus:ring-2 focus:ring-ring"
             />
             <datalist id="sidebar-model-options">
               {PROVIDER_MODELS[settings.provider].map((m) => (
                 <option key={m} value={m} />
               ))}
             </datalist>
+            <Note>The specific model for the chosen provider (pick from the list or type one).</Note>
           </label>
 
           {/* Temperature */}
           <label className="block space-y-1.5">
-            <span className="flex justify-between text-xs font-medium text-foreground">
+            <span className="flex justify-between text-sm font-medium text-foreground">
               Temperature
               <span className="font-mono text-muted">{settings.temperature.toFixed(1)}</span>
             </span>
@@ -120,19 +126,21 @@ export function SidebarContent({
               aria-label="Temperature"
               className="w-full accent-accent"
             />
+            <Note>Randomness of wording. Low (0–0.3) = focused & consistent; high = more varied. Keep low for legal answers.</Note>
           </label>
 
           {/* Max tokens */}
           <label className="block space-y-1.5">
-            <span className="text-xs font-medium text-foreground">Max tokens</span>
+            <span className="text-sm font-medium text-foreground">Max tokens</span>
             <input
               type="number"
               min={1}
               value={settings.maxTokens ?? ""}
               onChange={(e) => set({ maxTokens: e.target.value ? Number(e.target.value) : null })}
               placeholder="auto"
-              className="h-8 w-full rounded-lg border border-border bg-background px-2 text-xs outline-none focus:ring-2 focus:ring-ring"
+              className="h-9 w-full rounded-lg border border-border bg-background px-2.5 text-sm outline-none focus:ring-2 focus:ring-ring"
             />
+            <Note>Upper limit on answer length. Leave blank for the model default; set lower to force shorter replies.</Note>
           </label>
         </fieldset>
       </div>
@@ -141,7 +149,7 @@ export function SidebarContent({
       <div className="border-t border-border px-4 py-3">
         <Button
           variant="outline"
-          size="sm"
+          size="md"
           onClick={onClear}
           disabled={!canClear}
           className="w-full"
@@ -166,7 +174,7 @@ function Field({
   return (
     <div className="space-y-1.5">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-medium text-foreground">{label}</span>
+        <span className="text-sm font-medium text-foreground">{label}</span>
         <span className="rounded-md bg-user-bubble px-1.5 py-0.5 font-mono text-xs text-foreground">
           {value}
         </span>
@@ -174,4 +182,8 @@ function Field({
       {children}
     </div>
   );
+}
+
+function Note({ children }: { children: React.ReactNode }) {
+  return <p className="text-xs leading-relaxed text-muted">{children}</p>;
 }
