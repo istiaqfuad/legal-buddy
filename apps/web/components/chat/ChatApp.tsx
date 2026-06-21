@@ -1,17 +1,16 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Scale } from "lucide-react";
+import { Menu, Scale, X } from "lucide-react";
 import {
   type ChatResponse,
   type ChatSettings,
   type Turn,
   DEFAULT_SETTINGS,
 } from "@/lib/types";
-import { Header } from "./Header";
 import { Message } from "./Message";
 import { Composer } from "./Composer";
-import { TestSettings } from "./TestSettings";
+import { SidebarContent } from "./Sidebar";
 
 const EXAMPLES = [
   "What is the punishment for theft under the Penal Code?",
@@ -23,7 +22,7 @@ export function ChatApp() {
   const [turns, setTurns] = useState<Turn[]>([]);
   const [input, setInput] = useState("");
   const [settings, setSettings] = useState<ChatSettings>(DEFAULT_SETTINGS);
-  const [showSettings, setShowSettings] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -31,13 +30,20 @@ export function ChatApp() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [turns, loading]);
 
+  // Close the mobile drawer on Escape.
+  useEffect(() => {
+    if (!drawerOpen) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setDrawerOpen(false);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [drawerOpen]);
+
   const send = useCallback(
     async (raw?: string) => {
       const question = (raw ?? input).trim();
       if (!question || loading) return;
 
-      const userTurn: Turn = { id: uid(), role: "user", content: question };
-      setTurns((t) => [...t, userTurn]);
+      setTurns((t) => [...t, { id: uid(), role: "user", content: question }]);
       setInput("");
       setLoading(true);
 
@@ -86,43 +92,96 @@ export function ChatApp() {
   );
 
   const isEmpty = turns.length === 0;
+  const sidebar = (
+    <SidebarContent
+      settings={settings}
+      onChange={setSettings}
+      onClear={() => {
+        setTurns([]);
+        setDrawerOpen(false);
+      }}
+      canClear={!isEmpty}
+    />
+  );
 
   return (
-    <div className="flex min-h-full flex-1 flex-col">
-      <Header onClear={() => setTurns([])} canClear={!isEmpty} />
+    <div className="flex h-dvh w-full overflow-hidden">
+      {/* Desktop sidebar */}
+      <aside
+        aria-label="Settings"
+        className="hidden w-72 shrink-0 border-r border-border bg-surface lg:block"
+      >
+        {sidebar}
+      </aside>
 
-      <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col px-4">
-        {isEmpty ? (
-          <EmptyState onPick={(q) => send(q)} />
-        ) : (
-          <div className="flex-1 space-y-6 py-6">
-            {turns.map((turn) => (
-              <Message key={turn.id} turn={turn} />
-            ))}
-            {loading && <Thinking />}
-            <div ref={bottomRef} />
-          </div>
-        )}
-
-        <div className="sticky bottom-0 bg-gradient-to-t from-background via-background to-transparent pb-4 pt-2">
-          {showSettings && (
-            <TestSettings settings={settings} onChange={setSettings} />
-          )}
-          <Composer
-            value={input}
-            onChange={setInput}
-            onSend={() => send()}
-            loading={loading}
-            topK={settings.topK}
-            onTopK={(topK) => setSettings((s) => ({ ...s, topK }))}
-            onToggleSettings={() => setShowSettings((v) => !v)}
-            settingsOpen={showSettings}
+      {/* Mobile drawer */}
+      {drawerOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden">
+          <div
+            className="absolute inset-0 bg-black/40"
+            onClick={() => setDrawerOpen(false)}
+            aria-hidden
           />
-          <p className="mt-2 text-center text-xs text-muted">
-            Answers are grounded in indexed acts and may be incomplete. Verify against the cited sources.
-          </p>
+          <aside
+            aria-label="Settings"
+            className="absolute left-0 top-0 h-full w-72 border-r border-border bg-surface shadow-xl"
+          >
+            <button
+              onClick={() => setDrawerOpen(false)}
+              aria-label="Close settings"
+              className="absolute right-3 top-4 flex h-7 w-7 items-center justify-center rounded-lg text-muted hover:text-foreground"
+            >
+              <X className="h-4 w-4" />
+            </button>
+            {sidebar}
+          </aside>
         </div>
-      </main>
+      )}
+
+      {/* Main column */}
+      <div className="flex min-w-0 flex-1 flex-col">
+        {/* Mobile top bar */}
+        <header className="flex items-center gap-2 border-b border-border px-3 py-2.5 lg:hidden">
+          <button
+            onClick={() => setDrawerOpen(true)}
+            aria-label="Open settings"
+            aria-expanded={drawerOpen}
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-muted hover:text-foreground"
+          >
+            <Menu className="h-5 w-5" />
+          </button>
+          <span className="flex items-center gap-2 text-sm font-semibold">
+            <Scale className="h-4 w-4 text-accent" /> Law Buddy
+          </span>
+        </header>
+
+        {/* Messages */}
+        <main className="flex-1 overflow-y-auto">
+          <div className="mx-auto flex min-h-full max-w-3xl flex-col px-4">
+            {isEmpty ? (
+              <EmptyState onPick={(q) => send(q)} />
+            ) : (
+              <div className="flex-1 space-y-6 py-6">
+                {turns.map((turn) => (
+                  <Message key={turn.id} turn={turn} />
+                ))}
+                {loading && <Thinking />}
+                <div ref={bottomRef} />
+              </div>
+            )}
+          </div>
+        </main>
+
+        {/* Composer */}
+        <div className="shrink-0 border-t border-border bg-background px-4 py-3">
+          <div className="mx-auto max-w-3xl">
+            <Composer value={input} onChange={setInput} onSend={() => send()} loading={loading} />
+            <p className="mt-2 text-center text-xs text-muted">
+              Grounded in indexed acts and may be incomplete. Verify against the cited sources.
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -154,7 +213,7 @@ function EmptyState({ onPick }: { onPick: (q: string) => void }) {
 
 function Thinking() {
   return (
-    <div className="flex items-center gap-1.5 text-muted" aria-label="Thinking">
+    <div className="flex items-center gap-1.5 py-1 text-muted" aria-label="Thinking">
       {[0, 1, 2].map((i) => (
         <span
           key={i}
