@@ -284,7 +284,15 @@ def upsert_with_retry(
 
 
 def get_embedding_model() -> SentenceTransformer:
-    return SentenceTransformer(EMBEDDING_MODEL, device="cpu", token=HF_TOKEN)
+    model = SentenceTransformer(EMBEDDING_MODEL, device="cpu", token=HF_TOKEN)
+    # Optional override of the embedding window. This checkpoint ships with
+    # max_seq_length=128 but the underlying e5-small supports 512 positions;
+    # set EMBEDDING_MAX_TOKENS=512 to embed longer chunks without truncation.
+    override = os.getenv("EMBEDDING_MAX_TOKENS", "").strip()
+    if override.isdigit() and int(override) > 0:
+        model.max_seq_length = int(override)
+        model.tokenizer.model_max_length = int(override)
+    return model
 
 
 def embed_passages(

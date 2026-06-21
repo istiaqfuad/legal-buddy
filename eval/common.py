@@ -23,6 +23,7 @@ HF_TOKEN = os.getenv("HF_TOKEN") or None
 QDRANT_URL = os.getenv("QDRANT_VECTORESTORE", "http://213.136.80.53:6333")
 QDRANT_API_KEY = os.getenv("QDRANT_API_KEY") or None
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY") or None
+GROQ_API_KEY = os.getenv("GROQ_API_KEY") or None
 
 _IS_E5 = bool(EMBEDDING_MODEL) and "e5" in EMBEDDING_MODEL.lower()
 
@@ -44,7 +45,13 @@ def build_qdrant_client():
 def get_model():
     from sentence_transformers import SentenceTransformer
 
-    return SentenceTransformer(EMBEDDING_MODEL, device="cpu", token=HF_TOKEN)
+    model = SentenceTransformer(EMBEDDING_MODEL, device="cpu", token=HF_TOKEN)
+    # EMBEDDING_MAX_TOKENS overrides the 128-token default window (model supports 512).
+    override = os.getenv("EMBEDDING_MAX_TOKENS", "").strip()
+    if override.isdigit() and int(override) > 0:
+        model.max_seq_length = int(override)
+        model.tokenizer.model_max_length = int(override)
+    return model
 
 
 def query_text(text: str) -> str:

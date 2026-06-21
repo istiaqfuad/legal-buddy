@@ -239,5 +239,945 @@
     "section_title": null,
     "section_preview": "431. Whoever commits mischief by doing any act which renders or which he knows to be likely to render any public road, bridge, navigable river or navigable chan",
     "gen_model": "gemini-flash-latest"
+  },
+  {
+    "question": "How can the Collector recover loans, interest, and costs granted under the Land Improvement Loans Act when they become due, and what are the different modes of recovery available to them?",
+    "act_file": "act-print-51",
+    "section_ord": 7,
+    "gold_key": "act-print-51#7",
+    "act_title": "The Land Improvement Loans Act, 1883",
+    "section_title": null,
+    "section_preview": "7. (1) Subject to such rules as may be made under section 10, all loans granted under this Act, all interest (if any) chargeable thereon, and costs (if any) inc",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "Who is eligible to be appointed as the Director General of the Bangladesh Institute of Management and what are their responsibilities?",
+    "act_file": "act-print-1473",
+    "section_ord": 10,
+    "gold_key": "act-print-1473#10",
+    "act_title": "বাংলাদেশ ইনস্টিটিউট অব ম্যানেজমেন্ট আইন, ২০২৩",
+    "section_title": null,
+    "section_preview": "১১।   (১) ইনস্টিটিউটের একজন মহাপরিচালক থাকিবেন, যিনি সরকার কর্তৃক, শিল্প বিষয়ক বিশেষ জ্ঞানসম্পন্ন, সরকারের অতিরিক্ত সচিবগণের মধ্য হইতে নিযুক্ত হইবেন।(২) মহাপরিচ",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "What happens to an order made by the High Court Division regarding an election petition after it is received by the Election Commission?",
+    "act_file": "act-print-424",
+    "section_ord": 78,
+    "gold_key": "act-print-424#78",
+    "act_title": "The Representation of the People Order, 1972 (President's Order)",
+    "section_title": null,
+    "section_preview": "67. (1) The High Court Division shall, as soon as possible after the conclusion of the trial of an election petition, intimate the substance of its decision to ",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "What penalties can a ship's master face if they try to avoid paying certain required sums, and how can they defend themselves in court?",
+    "act_file": "act-print-89",
+    "section_ord": 45,
+    "gold_key": "act-print-89#45",
+    "act_title": "The Ports Act, 1908",
+    "section_title": null,
+    "section_preview": "45. (1) If the master of a vessel evades the payment of any such sum as is mentioned in section 43, he shall be punishable with fine which may extend to five ti",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "What is the time limit for a distributor or service provider to reapply for a license after this law comes into effect if they were already licensed before the law was enacted?",
+    "act_file": "act-print-949",
+    "section_ord": 3,
+    "gold_key": "act-print-949#3",
+    "act_title": "কেবল টেলিভিশন নেটওয়ার্ক পরিচালনা আইন, ২০০৬",
+    "section_title": null,
+    "section_preview": "৪৷ (১) এই আইনের অধীন লাইসেন্সপ্রাপ্ত না হইয়া কোন ব্যক্তি ডিসট্রিবিউটর বা সেবাপ্রদানকারী হিসাবে কার্যক্রম পরিচালনা করিতে পারিবে না৷(২) এই আইন বলবত্ হইবার পূর্বে ",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "What are the different sources of funds that are deposited into a district council's fund according to the law?",
+    "act_file": "act-print-841",
+    "section_ord": 44,
+    "gold_key": "act-print-841#44",
+    "act_title": "জেলা পরিষদ আইন, ২০০০",
+    "section_title": null,
+    "section_preview": "৪২৷ (১) জেলা পরিষদ তহবিল নামে প্রত্যেক পরিষদের একটি তহবিল থাকিবে৷(২) উক্ত তহবিলে নিম্নলিখিত অর্থ জমা হইবে, যথা :-(ক) \tএই আইন দ্বারা গঠিত পরিষদ যে জেলা পরিষদের উ",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "What are the specific academic matters that require a recommendation from the Academic Council before the Rajshahi University of Engineering and Technology can make regulations regarding them?",
+    "act_file": "act-print-908",
+    "section_ord": 37,
+    "gold_key": "act-print-908#37",
+    "act_title": "রাজশাহী প্রকৌশল ও প্রযুক্তি বিশ্ববিদ্যালয় আইন, ২০০৩",
+    "section_title": null,
+    "section_preview": "৩৮৷ বিশ্ববিদ্যালয় বিধান সিন্ডিকেট কর্তৃক প্রণীত হইবে:তবে শর্ত থাকে যে, নিম্নবর্ণিত বিষয়ে একাডেমিক কাউন্সিলের সুপারিশ ব্যতীত বিশ্ববিদ্যালয়ের বিধান প্রণয়ন করা যাই",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "If a child is born as a result of rape, who will be responsible for the child's upbringing and maintenance, and until what age will the state provide financial support?",
+    "act_file": "act-print-835",
+    "section_ord": 14,
+    "gold_key": "act-print-835#14",
+    "act_title": "নারী ও শিশু নির্যাতন দমন আইন, ২০০০",
+    "section_title": null,
+    "section_preview": "১৩। (১) অন্য কোন আইনে ভিন্নতর যাহা কিছুই থাকুক না কেন, ধর্ষণের কারণে কোন সন্তান জন্মলাভ করিলে-(ক) উক্ত সন্তানকে তাহার মাতা কিংবা তাহার মাতৃকুলীয় আত্মীয় স্বজনের ",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "What are the limits of the right to self-defense if someone is trying to commit theft or vandalism against me?",
+    "act_file": "act-print-11",
+    "section_ord": 112,
+    "gold_key": "act-print-11#112",
+    "act_title": "1The Penal Code, 1860",
+    "section_title": null,
+    "section_preview": "104. If the offence, the committing of which, or the attempting to commit which, occasions the exercise of the right of private defence, be theft, mischief, or ",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "What is considered a criminal offense for a public servant who intentionally hides or misrepresents information about a planned crime that they are supposed to prevent?",
+    "act_file": "act-print-11",
+    "section_ord": 128,
+    "gold_key": "act-print-11#128",
+    "act_title": "1The Penal Code, 1860",
+    "section_title": null,
+    "section_preview": "119. Whoever, being a public servant intending to facilitate or knowing it to be likely that he will thereby facilitate the commission of an offence which it is",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "What conditions must be met for a registered person to have their turnover tax registration cancelled in Bangladesh?",
+    "act_file": "act-print-1106",
+    "section_ord": 10,
+    "gold_key": "act-print-1106#10",
+    "act_title": "মূল্য সংযোজন কর ও সম্পূরক শুল্ক আইন, ২০১২",
+    "section_title": null,
+    "section_preview": "১১। (১) প্রত্যেক তালিকাভুক্ত ব্যক্তি নিম্নবর্ণিত কারণে তাহার টার্নওভার কর তালিকাভুক্তি বাতিলের জন্যসংশ্লিষ্ট কর্মকর্তার নিকট নির্ধারিত সময়সীমা, শর্ত ও পদ্ধতিতে,",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "What are the requirements for transferring ownership of a hotel or restaurant in Bangladesh, and what steps must the new owner take to obtain a license?",
+    "act_file": "act-print-1154",
+    "section_ord": 13,
+    "gold_key": "act-print-1154#13",
+    "act_title": "বাংলাদেশ হোটেল ও রেস্তোরাঁ আইন, ২০১৪",
+    "section_title": null,
+    "section_preview": "১৪। (১) কোনো মালিক তাহার হোটেল বা রেস্তোরাঁর মালিকানা স্বত্ব, নিয়ন্ত্রককে অবহিতক্রমে, অন্য কোনো ব্যক্তির নিকট হস্তান্তর করিতে পারিবেন এবং উক্ত মালিককে তাহার বরা",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "What are the requirements and conditions under which the Bangladesh Rice Research Institute can provide fellowships to individuals who have obtained degrees in agricultural sciences from recognized universities?",
+    "act_file": "act-print-1219",
+    "section_ord": 21,
+    "gold_key": "act-print-1219#21",
+    "act_title": "বাংলাদেশ ধান গবেষণা ইনস্টিটিউট আইন, ২০১৭",
+    "section_title": null,
+    "section_preview": "২২। ইনস্টিটিউট সরকারের পূর্বানুমোদনক্রমে ও তদ্কর্তৃক স্বীকৃত কোন বিশ্ববিদ্যালয় হইতে কৃষি বিজ্ঞানের বিভিন্ন বিষয়ে সাফল্য ও কৃতিত্বের সহিত ডিগ্রি অর্জনকারী ব্যক্ত",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "What are the responsibilities of the librarian at the Bangladesh University of Professionals in terms of managing the library and its resources?",
+    "act_file": "act-print-1016",
+    "section_ord": 34,
+    "gold_key": "act-print-1016#34",
+    "act_title": "বাংলাদেশ ইউনিভার্সিটি অব প্রফেশনালস আইন, ২০০৯",
+    "section_title": null,
+    "section_preview": "৩৫। (১) বিশ্ববিদ্যালয়ের একটি কেন্দ্রীয় লাইব্রেরী ও আর্কাইভ থাকিবে।(২) লাইব্রেরীয়ান নিম্নবর্ণিত কার্যক্রম গ্রহণ করিবেন, যথাঃ-(ক) লাইব্রেরীর উন্নয়নের জন্য নীতিমাল",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "Who is responsible for overseeing the educational curriculum and admissions process at the Bangladesh Maritime University?",
+    "act_file": "act-print-1130",
+    "section_ord": 7,
+    "gold_key": "act-print-1130#7",
+    "act_title": "1[বাংলাদেশ মেরিটাইম ইউনিভার্সিটি] আইন, ২০১৩",
+    "section_title": null,
+    "section_preview": "৮। (১) বিশ্ববিদ্যালয়ের সকল স্বীকৃত শিক্ষা ও গবেষণা কার্যক্রম, বিশ্ববিদ্যালয় বা ইহার অঙ্গীভূত একাডেমি, ইনস্টিটিউট বা গবেষণা কেন্দ্র কর্তৃক পরিচালিত হইবে এবং পরীক",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "Where are the meetings of the executive board of the Bangladesh Economic Zone Authority typically held, and who presides over these meetings?",
+    "act_file": "act-print-1053",
+    "section_ord": 26,
+    "gold_key": "act-print-1053#26",
+    "act_title": "বাংলাদেশ অর্থনৈতিক অঞ্চল আইন, ২০১০",
+    "section_title": null,
+    "section_preview": "২৫। (১) এই ধারার অন্যান্য বিধানাবলী সাপেক্ষে নির্বাহী বোর্ড উহার সভার কার্যপদ্ধতি নির্ধারণ করিবে।(২) সচিব, নির্বাহী চেয়ারম্যানের পরামর্শক্রমে, নির্বাহী বোর্ডের ",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "What is the process for appealing a decision made by a Revenue Officer regarding compensation for damages caused by military manoeuvres in Bangladesh?",
+    "act_file": "act-print-176",
+    "section_ord": 5,
+    "gold_key": "act-print-176#5",
+    "act_title": "The Manoeuvres, Field Firing and Artillery Practice Act, 1938",
+    "section_title": null,
+    "section_preview": "6. (1) The Collector of the district in which any area utilised for the purpose of manoeuvres is situated shall depute one or more Revenue Officers to accompany",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "What types of land are considered non-agricultural land under the Non-Agricultural Tenancy Act, and are there any specific exceptions or conditions that apply to this definition?",
+    "act_file": "act-print-232",
+    "section_ord": 1,
+    "gold_key": "act-print-232#1",
+    "act_title": "The Non-Agricultural Tenancy Act, 1949 (East Bengal Act)",
+    "section_title": null,
+    "section_preview": "2. In this Act, unless there is anything repugnant in the subject or context,-(1)\t“Bengali year” means a year ending on the last day of the Bengali month of Cha",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "What are the sources of funds for the Bangladesh Rehabilitation Council, and how are these funds managed and utilized?",
+    "act_file": "act-print-1284",
+    "section_ord": 11,
+    "gold_key": "act-print-1284#11",
+    "act_title": "বাংলাদেশ রিহ্যাবিলিটেশন কাউন্সিল আইন, ২০১৮",
+    "section_title": null,
+    "section_preview": "১২। (১) বাংলাদেশ রিহ্যাবিলিটেশন কাউন্সিল তহবিল নামে কাউন্সিলের একটি তহবিল থাকিবে এবং নিম্নবর্ণিত উৎস হইতে প্রাপ্ত অর্থ দ্বারা উক্ত তহবিল গঠিত হইবে, যথা:-(ক) সরক",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "What happens to the equipment of an unlicensed individual if they fail to obtain a license within 30 days of having their equipment seized?",
+    "act_file": "act-print-949",
+    "section_ord": 22,
+    "gold_key": "act-print-949#22",
+    "act_title": "কেবল টেলিভিশন নেটওয়ার্ক পরিচালনা আইন, ২০০৬",
+    "section_title": null,
+    "section_preview": "২৩৷ (১) ধারা ১০ এর অধীন যন্ত্রপাতি আটকের অনধিক ৩০ (ত্রিশ) দিনের মধ্যে লাইসেন্সবিহীন ব্যক্তিকে ধারা ৪ এর অধীন লাইসেন্স গ্রহণ করিতে হইবে, অন্যথায় আটককৃত যন্ত্রপাত",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "মানিলন্ডারিং প্রতিরোধ আইনের অধীনে অবরুদ্ধ বা বাজেয়াপ্ত সম্পত্তির ব্যবস্থাপনার জন্য আদালত কি ধরনের ব্যব",
+    "act_file": "act-print-1088",
+    "section_ord": 20,
+    "gold_key": "act-print-1088#20",
+    "act_title": "মানিলন্ডারিং প্রতিরোধ আইন, ২০১২",
+    "section_title": null,
+    "section_preview": "২১। এই আইনের অধীন কোন সম্পত্তি অবরুদ্ধ, ক্রোক বা বাজেয়াপ্ত করা হইলে, তদন্তকারী সংস্থা বা উহার নিকট হইতে ক্ষমতাপ্রাপ্ত কোন কর্মকর্তার আবেদনের প্রেক্ষিতে উক্তরূপ ",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "What is the process for establishing institutes within the Habiganj Agricultural University for higher education and research purposes?",
+    "act_file": "act-print-1341",
+    "section_ord": 23,
+    "gold_key": "act-print-1341#23",
+    "act_title": "হবিগঞ্জ কৃষি বিশ্ববিদ্যালয় আইন, ২০২০",
+    "section_title": null,
+    "section_preview": "২৪।(১)বিশ্ববিদ্যালয় প্রয়োজনবোধে, কোনো গুরুত্বপূর্ণ বিষয়ে উচ্চতর শিক্ষা ও গবেষণার জন্য সংবিধি দ্বারা নির্ধারিত পদ্ধতিতে,আচার্যেরঅনুমোদনক্রমে এক বা একাধিক ইনস্টিট",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "What are the potential penalties for operating a vessel in a reckless or negligent manner that puts people's lives at risk in Bangladesh?",
+    "act_file": "act-print-11",
+    "section_ord": 317,
+    "gold_key": "act-print-11#317",
+    "act_title": "1The Penal Code, 1860",
+    "section_title": null,
+    "section_preview": "280. Whoever navigates any vessel in a manner so rash or negligent as to endanger human life, or to be likely to cause hurt or injury to any other person, shall",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "What is the definition of 'বলাৎকার' under the Women and Children Repression Prevention Act of 2000 in Bangladesh?",
+    "act_file": "act-print-835",
+    "section_ord": 1,
+    "gold_key": "act-print-835#1",
+    "act_title": "নারী ও শিশু নির্যাতন দমন আইন, ২০০০",
+    "section_title": null,
+    "section_preview": "২৷ বিষয় বা প্রসংগের পরিপন্থী কোন কিছু না থাকিলে, এই আইনে,-(ক) “অপরাধ” অর্থ এই আইনের অধীন শাস্তিযোগ্য কোন অপরাধ;(খ) “অপহরণ” অর্থ বলপ্রয়োগ বা প্রলুব্ধ করিয়া বা ফু",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "কোন ব্যক্তি যদি তালিকাভুক্তিসীমা অতিক্রম করে কিন্তু নিবন্ধনসীমা অতিক্রম না করে, সেই ক্ষেত্রে তালিকাভু",
+    "act_file": "act-print-1106",
+    "section_ord": 9,
+    "gold_key": "act-print-1106#9",
+    "act_title": "মূল্য সংযোজন কর ও সম্পূরক শুল্ক আইন, ২০১২",
+    "section_title": null,
+    "section_preview": "১০। (১) যদি কোন ব্যক্তি অর্থনৈতিক কার্যক্রম পরিচালনা করিয়া ১২ মাসের কোন ত্রৈমাসিক শেষে তালিকাভুক্তিসীমা অতিক্রম করেন কিন্তু যদি নিবন্ধনসীমা অতিক্রম না করেন, তাহ",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "What are the potential penalties for someone who knowingly engages in behavior that could spread a life-threatening disease in Bangladesh?",
+    "act_file": "act-print-11",
+    "section_ord": 306,
+    "gold_key": "act-print-11#306",
+    "act_title": "1The Penal Code, 1860",
+    "section_title": null,
+    "section_preview": "269. Whoever unlawfully or negligently does any act which is, and which he knows or has reason to believe to be, likely to spread the infection of any disease d",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "What is the time period for which the funds allocated by the Appropriation (Railways) Act are intended to be used?",
+    "act_file": "act-print-615",
+    "section_ord": 2,
+    "gold_key": "act-print-615#2",
+    "act_title": "The Appropriation (Railways) Act, 1981",
+    "section_title": null,
+    "section_preview": "3. The sums authorised to be paid and applied from and out of the Consolidated Fund by this Act shall be appropriated for the services and purposes expressed in",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "Who has the authority to perform the duties of the Chairman of the Bangladesh Technical Education Board if the Chairman is absent or unable to perform their duties?",
+    "act_file": "act-print-1279",
+    "section_ord": 11,
+    "gold_key": "act-print-1279#11",
+    "act_title": "বাংলাদেশ কারিগরি শিক্ষা বোর্ড আইন, ২০১৮",
+    "section_title": null,
+    "section_preview": "১২। (১) বোর্ডের একজন চেয়ারম্যান থাকিবেন।(২) চেয়ারম্যান সরকার কর্তৃক নিযুক্ত হইবেন এবং তাহার চাকরির মেয়াদ ও শর্তাবলি সরকার কর্তৃক স্থিরীকৃত হইবে।(৩) চেয়ারম্যান ব",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "বাংলাদেশ ইউনিভার্সিটি অব প্রফেশনালস-এ পরীক্ষা পরিচালনার দায়িত্বে থাকা পরীক্ষক অসমর্থ হলে তার স্থলে অন",
+    "act_file": "act-print-1016",
+    "section_ord": 50,
+    "gold_key": "act-print-1016#50",
+    "act_title": "বাংলাদেশ ইউনিভার্সিটি অব প্রফেশনালস আইন, ২০০৯",
+    "section_title": null,
+    "section_preview": "৫১। (১) ভাইস-চ্যান্সেলরের সাধারণ নিয়ন্ত্রণাধীনে পরীক্ষা নিয়ন্ত্রক পরীক্ষা পরিচালনার জন্য যাবতীয় ব্যবস্থা গ্রহণ করিবেন।(২) একাডেমিক কাউন্সিল পরীক্ষা কমিটিসমূহ নি",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "What is the punishment for someone who intentionally helps or hides a person who has committed or is planning to commit robbery in Bangladesh?",
+    "act_file": "act-print-11",
+    "section_ord": 250,
+    "gold_key": "act-print-11#250",
+    "act_title": "1The Penal Code, 1860",
+    "section_title": null,
+    "section_preview": "216A. Whoever, knowing or having reason to believe that any persons are about to commit or have recently committed robbery or dacoity, harbours them or any of t",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "Can the government appoint an officer to investigate the affairs of a district council and what powers will that officer have during the investigation?",
+    "act_file": "act-print-841",
+    "section_ord": 62,
+    "gold_key": "act-print-841#62",
+    "act_title": "জেলা পরিষদ আইন, ২০০০",
+    "section_title": null,
+    "section_preview": "৬০৷ (১) সরকার, স্বেচ্ছায় অথবা কোন ব্যক্তির আবেদনের ভিত্তিতে, পরিষদের বিষয়াবলী সাধারণভাবে অথবা তৎসংক্রান্ত কোন বিশেষ ব্যাপার সম্বন্ধে তদন্ত করিবার জন্য কোন কর্মক",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "What are the requirements for a political party to apply for registration under the Representation of the People Order, and are there any exceptions or provisional arrangements allowed for parties that do not yet have a fully ratified constitution?",
+    "act_file": "act-print-424",
+    "section_ord": 108,
+    "gold_key": "act-print-424#108",
+    "act_title": "The Representation of the People Order, 1972 (President's Order)",
+    "section_title": null,
+    "section_preview": "90D. Any political party complying with the conditions laid down in Article 90A, Article 90B and not disqualified under Article 90C may apply for registration i",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "What is the punishment for refusing to sign a statement when legally required to do so by a public servant?",
+    "act_file": "act-print-11",
+    "section_ord": 212,
+    "gold_key": "act-print-11#212",
+    "act_title": "1The Penal Code, 1860",
+    "section_title": null,
+    "section_preview": "180. Whoever refuses to sign any statement made by him, when required to sign that statement by a public servant legally competent to require that he shall sign",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "কোন ধরনের আচরণের জন্য আনসার ব্যাটালিয়নের সদস্যদের বিরুদ্ধে বিভাগীয় কার্যধারা নেওয়া যেতে পারে?",
+    "act_file": "act-print-1484",
+    "section_ord": 15,
+    "gold_key": "act-print-1484#15",
+    "act_title": "আনসার ব্যাটালিয়ন আইন, ২০২৩",
+    "section_title": null,
+    "section_preview": "১৬।  (১) ব্যাটালিয়ন সদস্য কর্তৃক নিম্নবর্ণিত কোনো আচরণ সংঘটিত হইলে তাহার বিরুদ্ধে বিভাগীয় কার্যধারা রুজু করা যাইবে, যথা:-(ক) শৃঙ্খলা পরিপন্থি আচরণ বা অসদাচরণ কর",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "কোন সমবায় সমিতির সদস্য কি সমিতির কাছ থেকে ইজারা নেওয়া জমি অন্য কাউকে হস্তান্তর করতে পারে, এবং এই ধ",
+    "act_file": "act-print-876",
+    "section_ord": 45,
+    "gold_key": "act-print-876#45",
+    "act_title": "সমবায় সমিতি আইন, ২০০১",
+    "section_title": null,
+    "section_preview": "৪২৷ এই আইনের অন্য কোন ধারায় কিংবা আপাততঃ বলবত্ অন্য কোন আইনে যাহাই থাকুক না কেন-(ক) \tযেই সমবায় সমিতির উদ্দেশ্য হইতেছে পতিত জমি পুনরুদ্ধার ও স্থায়ী বসবাসের ব্যবস",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "Who presides over a committee meeting when the chairperson is absent, according to the rules governing the proceedings of the committee?",
+    "act_file": "act-print-934",
+    "section_ord": 4,
+    "gold_key": "act-print-934#4",
+    "act_title": "সার ব্যবস্থাপনা আইন, ২০০৬",
+    "section_title": null,
+    "section_preview": "৫৷ (১)\tএই ধারার বিধানাবলী সাপেক্ষে কমিটি উহার সভার কার্যপদ্ধতি নির্ধারণ করিতে পারিবে৷(২) কমিটির সভা উহার সভাপতি কর্তৃক নির্ধারিত স্থান ও সময়ে অনুষ্ঠিত হইবে৷(৩) ",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "What are the potential penalties for intentionally setting fire to a building that is used as a place of worship or a human dwelling?",
+    "act_file": "act-print-11",
+    "section_ord": 487,
+    "gold_key": "act-print-11#487",
+    "act_title": "1The Penal Code, 1860",
+    "section_title": null,
+    "section_preview": "436. Whoever commits mischief by fire or any explosive substance, intending to cause, or knowing it to be likely that he will thereby cause, the destruction of ",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "What are the penalties for election officials or agents who reveal the secrets of the voting process or share unauthorized information about marked ballots in Bangladesh?",
+    "act_file": "act-print-424",
+    "section_ord": 94,
+    "gold_key": "act-print-424#94",
+    "act_title": "The Representation of the People Order, 1972 (President's Order)",
+    "section_title": null,
+    "section_preview": "83. A Returning Officer, Assistant Returning Officer, Presiding Officer, Assistant Presiding Officer, or Polling Officer, or any candidate, election agent or po",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "What are the responsibilities of teachers at the university, specifically in terms of teaching, research, student guidance, and other academic and administrative tasks?",
+    "act_file": "act-print-1184",
+    "section_ord": 36,
+    "gold_key": "act-print-1184#36",
+    "act_title": "রাজশাহী মেডিকেল বিশ্ববিদ্যালয় আইন, ২০১৬",
+    "section_title": null,
+    "section_preview": "৩৭। শিক্ষকদের দায়িত্ব হইবে নিম্নরূপ, যথা :-(ক)  বক্তৃতা, টিউটোরিয়াল, আলোচনা, সেমিনার, হাতে কলমে প্রদর্শন ও কর্মশালার মাধ্যমে শিক্ষার্থীগণকে শিক্ষাদান করা;(খ)  গ",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "What are the grounds on which a person can be considered ineligible to hold the position of chairman or full-time member of the Cox's Bazar Development Authority?",
+    "act_file": "act-print-1179",
+    "section_ord": 7,
+    "gold_key": "act-print-1179#7",
+    "act_title": "কক্সবাজার উন্নয়ন কর্তৃপক্ষ আইন, ২০১৬",
+    "section_title": null,
+    "section_preview": "৮। (১) কোন ব্যক্তি চেয়ারম্যান বা সার্বক্ষণিক সদস্য হইবার যোগ্য হইবেন না অথবা চেয়ারম্যান বা সার্বক্ষণিক সদস্য থাকিতে পারিবেন না, যদি তিনি -(ক) \tবাংলাদেশের নাগরিক",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "How must loans granted by the Bangladesh Shilpa Bank in foreign currency be repaid, and what exchange rates apply to such repayments?",
+    "act_file": "act-print-417",
+    "section_ord": 28,
+    "gold_key": "act-print-417#28",
+    "act_title": "The Bangladesh Shilpa Bank Order, 1972 (President's Order)",
+    "section_title": null,
+    "section_preview": "28.(1) All loans granted to an indutrial corcetrn in foreign currency shall be repaid in accordance with such terms and conditions as may be determined by the B",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "বাংলাদেশে ১৯৮২ সালের ২৪ মার্চ থেকে ১৯৮৬ সালের ১১ নভেম্বরের মধ্যে জারি করা অধ্যাদেশগুলি এখনও ক",
+    "act_file": "act-print-1111",
+    "section_ord": 3,
+    "gold_key": "act-print-1111#3",
+    "act_title": "১৯৮২ সালের ২৪ মার্চ হইতে ১৯৮৬ সালের ১১ নভেম্বর তারিখ পর্যন্ত সময়ের মধ্যে জারীকৃত কতিপয় অধ্যাদেশ কার্যকরকরণ (বিশেষ বিধান) আইন,২০১৩",
+    "section_title": null,
+    "section_preview": "৪। ১৯৮২ সালের ২৪ মার্চ হইতে ১৯৮৬ সালের ১১ নভেম্বর তারিখ পর্যন্ত (উভয় দিনসহ) সময়ের মধ্যে জারীকৃত -(ক) তফসিলভুক্ত অধ্যাদেশসমূহ, এবং(খ) অন্যান্য অধ্যাদেশসমূহ দ্বার",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "বাংলাদেশ অর্থনৈতিক অঞ্চল কর্তৃপক্ষের হিসাব কীভাবে পরিচালিত ও নিরীক্ষণ করা হয়?",
+    "act_file": "act-print-1053",
+    "section_ord": 33,
+    "gold_key": "act-print-1053#33",
+    "act_title": "বাংলাদেশ অর্থনৈতিক অঞ্চল আইন, ২০১০",
+    "section_title": null,
+    "section_preview": "৩২। (১) কর্তৃপক্ষের হিসাব সরকার কর্তৃক নির্ধারিত পদ্ধতিতে পরিচালিত হইবে।(২) Comptroller and Auditor-General (Additional Functions) Act,1974 (Act No. XXIV of 197",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "Can the government appoint a first-class government official to manage a cooperative society that has received a government guarantee for its shares, loans, or debts?",
+    "act_file": "act-print-876",
+    "section_ord": 20,
+    "gold_key": "act-print-876#20",
+    "act_title": "সমবায় সমিতি আইন, ২০০১",
+    "section_title": null,
+    "section_preview": "২১।(১) যে সকল সমিতিতে সরকারের শেয়ার, ঋণ বা উক্ত সমিতির গৃহীত ঋণের ব্যাপারে সরকারের গ্যারান্টি রহিয়াছে সে সকল সমিতিতে সরকার, নির্ধারিত শর্ত সাপেক্ষে, কোন প্রথম শ",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "What types of supplies are exempt from value-added tax under the Value Added Tax and Supplementary Duty Act, 2012?",
+    "act_file": "act-print-1106",
+    "section_ord": 25,
+    "gold_key": "act-print-1106#25",
+    "act_title": "মূল্য সংযোজন কর ও সম্পূরক শুল্ক আইন, ২০১২",
+    "section_title": null,
+    "section_preview": "২৬। এই আইনে যাহা কিছুই থাকুক না কেন, নিম্নবর্ণিত সরবরাহসমূহ মূসক অব্যাহতিপ্রাপ্ত হইবে, যথা:―(ক) \tপ্রথম তফসিলে উল্লিখিত কোন সরবরাহ বা আমদানি; বা(খ) \tঅব্যাহতিপ্রা",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "What options do courts have when sentencing an offender to imprisonment that can be of either description, in terms of choosing between rigorous and simple imprisonment?",
+    "act_file": "act-print-11",
+    "section_ord": 65,
+    "gold_key": "act-print-11#65",
+    "act_title": "1The Penal Code, 1860",
+    "section_title": null,
+    "section_preview": "60. In every case in which an offender is punishable with imprisonment which may be of either description, it shall be competent to the Court which sentences su",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "What are the rules for amending customs documents after they have been presented at the customhouse in Bangladesh, and who has the authority to make such amendments?",
+    "act_file": "act-print-940",
+    "section_ord": 5,
+    "gold_key": "act-print-940#5",
+    "act_title": "অর্থ আইন, ২০০৬",
+    "section_title": null,
+    "section_preview": "৬৷  Customs Act এর section 205 এর পরিবর্তে নিম্নরূপ section 205 প্রতিস্থাপিত হইবে, যথাঃ-\"205. Amendment of documents.- Except in the case provided for by sectio",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "What benefits are available to the chairman or members of the Bangladesh Public Service Commission who are not otherwise entitled to a pension or other retirement benefits when they leave their position?",
+    "act_file": "act-print-464",
+    "section_ord": 11,
+    "gold_key": "act-print-464#11",
+    "act_title": "The Members of the Bangladesh Public Service Commission (Terms and Conditions of Service) Act, 1974",
+    "section_title": null,
+    "section_preview": "8. A person who-(a)\tis not, at the time of his appointment as chairman or member, in the service of the Republic or of a statutory body or nationalised enterpri",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "When did the Bangladesh Medical University Act, 1998 come into effect?",
+    "act_file": "act-print-818",
+    "section_ord": 0,
+    "gold_key": "act-print-818#0",
+    "act_title": "বাংলাদেশ মেডিক্যাল বিশ্ববিদ্যালয় আইন, ১৯৯৮",
+    "section_title": null,
+    "section_preview": "১৷ (১) এই আইনবাংলাদেশ মেডিক্যাল বিশ্ববিদ্যালয় আইন, ১৯৯৮ নামে অভিহিত হইবে।(২) এই আইন-(ক) ১৭ই বৈশাখ, ১৪০৫ মোতাবেক ৩০শে এপ্রিল, ১৯৯৮ তারিখ বলবৎ হইবে; অথবা(খ) সরকার",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "What happens to the licenses, actions, and proceedings that were initiated under the Fish and Fish Products (Inspection and Quality Control) Ordinance of 1983 after it has been repealed by the new law?",
+    "act_file": "act-print-1348",
+    "section_ord": 48,
+    "gold_key": "act-print-1348#48",
+    "act_title": "মৎস্য ও মৎস্যপণ্য (পরিদর্শন ও মান নিয়ন্ত্রণ) আইন, ২০২০",
+    "section_title": null,
+    "section_preview": "৪৯।(১)Fish and Fish Products (Inspection and Quality Control) Ordinance, 1983(Ordinance No. XX of 1983)অতঃপর রহিতOrdinanceবলিয়া উল্লিখিত, এতদ্দ্বারা রহিত করা হই",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "কেউ যদি দুর্নীতি দমন কমিশনের কাছে তথ্য প্রদানে ব্যর্থ হয় বা মিথ্যা তথ্য প্রদান করে, তাহলে তার বিরুদ্ধে ক",
+    "act_file": "act-print-914",
+    "section_ord": 27,
+    "gold_key": "act-print-914#27",
+    "act_title": "দুর্নীতি দমন কমিশন আইন, ২০০৪",
+    "section_title": null,
+    "section_preview": "২৬৷ (১) কমিশন কোন তথ্যের ভিত্তিতে এবং উহার বিবেচনায় প্রয়োজনীয়অনুসন্ধান পরিচালনার পর যদি এই মর্মে সন্তুষ্ট হয় যে, কোন ব্যক্তি, বা তাহার পক্ষে অন্য কোন ব্যক্তি, ব",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "What does the term \"অতি গুরুত্বপূর্ণ ব্যক্তি\" mean under the Special Security Force law, and who can be considered as such an individual?",
+    "act_file": "act-print-1389",
+    "section_ord": 1,
+    "gold_key": "act-print-1389#1",
+    "act_title": "বিশেষ নিরাপত্তা বাহিনী (Special Security Force) আইন, ২০২১",
+    "section_title": null,
+    "section_preview": "২।   বিষয় বা প্রসঙ্গের পরিপন্থি কোনো কিছু না থাকিলে, এই আইনে-(ক) ‘‘অতি গুরুত্বপূর্ণ ব্যক্তি’’ অর্থ সরকার কর্তৃক, সরকারি গেজেটে প্রজ্ঞাপন দ্বারা, কোনো বিদেশি রাষ",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "What are the specific academic matters that require a recommendation from the Academic Council before the university can make any regulations?",
+    "act_file": "act-print-870",
+    "section_ord": 38,
+    "gold_key": "act-print-870#38",
+    "act_title": "নোয়াখালী বিজ্ঞান ও প্রযুক্তি বিশ্ববিদ্যালয় আইন, ২০০১",
+    "section_title": null,
+    "section_preview": "৩৯৷ বিশ্ববিদ্যালয় বিধান রিজেন্ট বোর্ড কর্তৃক প্রণীত হইবে:তবে শর্ত থাকে যে, নিম্নবর্ণিত বিষয়ে একাডেমিক কাউন্সিলের সুপারিশ ব্যতীত বিশ্ববিদ্যালয়ের বিধান প্রণয়ন করা",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "What is the maximum punishment for someone who steals while preparing to harm or restrain others to carry out the theft or escape with the stolen property?",
+    "act_file": "act-print-11",
+    "section_ord": 431,
+    "gold_key": "act-print-11#431",
+    "act_title": "1The Penal Code, 1860",
+    "section_title": null,
+    "section_preview": "382. Whoever commits theft, having made preparation for causing death, or hurt, or restraint, or fear of death, or of hurt, or of restraint, to any person, in o",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "What types of benefits or funds can Rangpur University establish for the welfare of its teachers, officers, and other employees?",
+    "act_file": "act-print-864",
+    "section_ord": 55,
+    "gold_key": "act-print-864#55",
+    "act_title": "রংপুর বিজ্ঞান ও প্রযুক্তি বিশ্ববিদ্যালয় আইন, ২০০১",
+    "section_title": null,
+    "section_preview": "৫৬৷ সংবিধি দ্বারা নির্ধারিত পদ্ধতি এবং শর্তাবলী সাপেক্ষে, বিশ্ববিদ্যালয় উহার শিক্ষক, কর্মকর্তা ও অন্যান্য কর্মচারীর কল্যাণার্থে যেইরূপ সমীচীন মনে করেন সেইরূপ অব",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "বিভাগীয় প্রধান নিয়োগের জন্য রাজশাহী প্রকৌশল ও প্রযুক্তি বিশ্ববিদ্যালয়ে কোন পদ্ধতি অনুসরণ কর",
+    "act_file": "act-print-908",
+    "section_ord": 24,
+    "gold_key": "act-print-908#24",
+    "act_title": "রাজশাহী প্রকৌশল ও প্রযুক্তি বিশ্ববিদ্যালয় আইন, ২০০৩",
+    "section_title": null,
+    "section_preview": "২৫৷ (১) বিশ্ববিদ্যালয়ে শিক্ষাদান করা হয় এমন একটি বিষয়ের সকল শিক্ষকদের সমন্বয়ে একেকটি বিভাগ গঠিত হইবে৷(২) বিভাগীয় অধ্যাপকের মধ্যে হইতে জ্যেষ্ঠতার ভিত্তিতে পালাক্",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "What is the process for objecting to a government notification regarding an antiquity, and how long do I have to make my objection after being notified?",
+    "act_file": "act-print-353",
+    "section_ord": 10,
+    "gold_key": "act-print-353#10",
+    "act_title": "The Antiquities Act, 1968",
+    "section_title": null,
+    "section_preview": "11. (1) The owner of an antiquity to which a notification under section 10 relates, or any person having any right or interest in the antiquity, may, within thr",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "খুলনা মেডিক্যাল বিশ্ববিদ্যালয়ের সিন্ডিকেটের সদস্যদের মেয়াদকাল কত এবং তারা কতবার পুনরায় মনোনী",
+    "act_file": "act-print-1371",
+    "section_ord": 19,
+    "gold_key": "act-print-1371#19",
+    "act_title": "খুলনা মেডিক্যাল বিশ্ববিদ্যালয়, আইন, ২০২১",
+    "section_title": null,
+    "section_preview": "২০।(১)সিন্ডিকেট নিম্নরূপ সদস্য সমন্বয়ে গঠিত হইবে,যথা:-(ক)উপাচার্য, যিনি ইহার সভাপতিও হইবেন;(খ)জাতীয়সংসদেরস্পীকার কর্তৃক মনোনীত জাতীয় সংসদের ২(দুই) জন সদস্য;(গ)উ",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "ডিপজিটরি আইনের অধীনে কোন ডিপজিটরি বা ইস্যুয়ারের তদন্ত করার ক্ষমতা কমিশনের আছে কি, এবং তদন্তকারীরা ক",
+    "act_file": "act-print-829",
+    "section_ord": 12,
+    "gold_key": "act-print-829#12",
+    "act_title": "ডিপজিটরি আইন, ১৯৯৯",
+    "section_title": null,
+    "section_preview": "১৩৷ (১) কমিশন, স্বতই অথবা কোন অভিযোগ প্রাপ্তির ভিত্তিতে, যে কোন সময় লিখিত আদেশ দ্বারা এতদুদ্দেশ্যে নিযুক্ত কোন ব্যক্তির মাধ্যমে নিম্নবর্ণিত বিষয়ে তদন্ত করাইতে প",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "দুর্নীতি দমন কমিশনের কী কী কাজ ও দায়িত্ব রয়েছে?",
+    "act_file": "act-print-914",
+    "section_ord": 17,
+    "gold_key": "act-print-914#17",
+    "act_title": "দুর্নীতি দমন কমিশন আইন, ২০০৪",
+    "section_title": null,
+    "section_preview": "১৭৷ কমিশন নিম্নবর্ণিত সকল বা যে কোন কার্য সম্পাদন করিতে পারিবে, যথা:-(ক) \tতফসিলে উল্লিখিত অপরাধসমূহের অনুসন্ধান ও তদন্ত পরিচালনা;(খ) \tঅনুচ্ছেদ (ক) এর অধীন অনুসন",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "What are the sources of funds for the Bangladesh Technical Education Board, and how are these funds managed and utilized?",
+    "act_file": "act-print-1279",
+    "section_ord": 16,
+    "gold_key": "act-print-1279#16",
+    "act_title": "বাংলাদেশ কারিগরি শিক্ষা বোর্ড আইন, ২০১৮",
+    "section_title": "আর্থিক বিষয়াবলি",
+    "section_preview": "১৭। (১) বোর্ডের একটি তহবিল থাকিবে এবং উহাতে নিম্নবর্ণিত উৎস হইতে প্রাপ্ত অর্থ জমা হইবে, যথা:-(ক) সরকারের নিকট হইতে প্রাপ্ত অনুদান;(খ) কোনো ব্যক্তি বা প্রতিষ্ঠান",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "What are the penalties for interfering with military manoeuvres or entering a camp without permission in an area where the army is conducting exercises?",
+    "act_file": "act-print-176",
+    "section_ord": 6,
+    "gold_key": "act-print-176#6",
+    "act_title": "The Manoeuvres, Field Firing and Artillery Practice Act, 1938",
+    "section_title": null,
+    "section_preview": "7. If, within the area and during the period specified in a notification under sub-section (1) of section 2 any person-(a)\twilfully obstructs or interferes with",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "If a person is living in a building that is subject to demolition under the Cox's Bazar Development Authority Act, but they are not the owner of the building, what steps must be taken to notify them to vacate the premises?",
+    "act_file": "act-print-1179",
+    "section_ord": 25,
+    "gold_key": "act-print-1179#25",
+    "act_title": "কক্সবাজার উন্নয়ন কর্তৃপক্ষ আইন, ২০১৬",
+    "section_title": null,
+    "section_preview": "২৬। (১) ধারা ২৫ এর অধীন নির্মাণাধীন কোন ইমারতের মালিককে নোটিশ প্রদান করা হইলে, উক্ত ইমারতের মালিক নন এমন কোন ব্যক্তি সেখানে বসবাস করিলে, তাহাকেও প্রবিধান দ্বারা",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "Can a doctor be held liable for causing harm to a patient if the treatment was done in good faith, with the patient's consent, and the harm was a known risk, even if the treatment ultimately results in the patient's death?",
+    "act_file": "act-print-11",
+    "section_ord": 93,
+    "gold_key": "act-print-11#93",
+    "act_title": "1The Penal Code, 1860",
+    "section_title": null,
+    "section_preview": "88. Nothing, which is not intended to cause death, is an offence by reason of any harm which it may cause, or be intended by the doer to cause, or be known by t",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "What responsibilities and tasks are assigned to the Council of the Bangladesh College of Physicians and Surgeons under the law?",
+    "act_file": "act-print-1224",
+    "section_ord": 9,
+    "gold_key": "act-print-1224#9",
+    "act_title": "বাংলাদেশ কলেজ অব ফিজিশিয়ানস্ এন্ড সার্জনস্ আইন, ২০১৮",
+    "section_title": null,
+    "section_preview": "১০। কাউন্সিল নিম্নবর্ণিত কার্যাবলি সম্পাদন করিবে, যথা :-(ক) এফসিপিএস পরীক্ষা পরিচালনা এবং এফসিপিএস পরীক্ষয় উত্তীর্ণদের সনদ প্রদান;(খ) এমসিপিএস পরীক্ষা পরিচালনা ",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "What are the potential penalties for a parent who abandons a child under 12 years old with the intention of never returning to care for them?",
+    "act_file": "act-print-11",
+    "section_ord": 361,
+    "gold_key": "act-print-11#361",
+    "act_title": "1The Penal Code, 1860",
+    "section_title": null,
+    "section_preview": "317. Whoever being the father or mother of a child under the age of twelve years, or having the care of such child, shall expose or leave such child in any plac",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "What is the time limit for the tax authority to raise a demand for unpaid taxes for a fully export-oriented industrial entity in Bangladesh after the end of a tax period?",
+    "act_file": "act-print-1106",
+    "section_ord": 91,
+    "gold_key": "act-print-1106#91",
+    "act_title": "মূল্য সংযোজন কর ও সম্পূরক শুল্ক আইন, ২০১২",
+    "section_title": null,
+    "section_preview": "৯০। (১) কর ফাঁকি রোধকল্পে কমিশনার বা মহাপরিচালক এই আইন বা তদধীন প্রণীত বিধিমালার অধীন যেকোন ব্যক্তির অর্থনৈতিক কার্যক্রমের যাবতীয় বিষয় নিরীক্ষা এবং অনুসন্ধান কর",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "Which medical colleges, dental colleges, nursing colleges, and other medical institutions will be affiliated with the university under this law?",
+    "act_file": "act-print-1184",
+    "section_ord": 50,
+    "gold_key": "act-print-1184#50",
+    "act_title": "রাজশাহী মেডিকেল বিশ্ববিদ্যালয় আইন, ২০১৬",
+    "section_title": null,
+    "section_preview": "৫১।  (১) আপাতত বলবৎ অন্য কোন আইন বা আইনগত দলিলে যাহা কিছুই থাকুক না কেন, এই আইন কার্যকর হইবার সঙ্গে সঙ্গেRajshahi University Act, 1973(Act No. XXVI of 1973) এর ",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "What are the potential penalties for someone who causes serious injury to another person in response to sudden and severe provocation, but did not intend to harm anyone else?",
+    "act_file": "act-print-11",
+    "section_ord": 380,
+    "gold_key": "act-print-11#380",
+    "act_title": "1The Penal Code, 1860",
+    "section_title": null,
+    "section_preview": "335. Whoever voluntarily causes grievous hurt on grave and sudden provocation, if he neither intends nor knows himself to be likely to cause grievous hurt to an",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "What is the punishment for someone who knowingly serves on a jury or as an assessor in a case when they are not legally entitled to do so?",
+    "act_file": "act-print-11",
+    "section_ord": 265,
+    "gold_key": "act-print-11#265",
+    "act_title": "1The Penal Code, 1860",
+    "section_title": null,
+    "section_preview": "229. Whoever by personation or otherwise, shall intentionally cause, or knowingly suffer himself to be returned, empanelled or sworn as a juryman or assessor in",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "Can a prisoner who has not yet been convicted of a crime meet with their lawyer in private while they are being held in prison?",
+    "act_file": "act-print-69",
+    "section_ord": 39,
+    "gold_key": "act-print-69#39",
+    "act_title": "The Prisons Act, 1894",
+    "section_title": "VISITS TO PRISONERS",
+    "section_preview": "40. Due provision shall be made for the admission, at proper times and under proper restrictions, into every prison of persons with whom civil or unconvicted cr",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "What happens to seized unauthorized newspapers or news-sheets after they are taken by the authorities, and what options do the courts have for dealing with them?",
+    "act_file": "act-print-437",
+    "section_ord": 23,
+    "gold_key": "act-print-437#23",
+    "act_title": "The Printing Presses and Publications (Declaration and Registration) Act, 1973",
+    "section_title": null,
+    "section_preview": "22. (1) Any police-officer, or any other person empowered in this behalf by the Government may seize any unauthorised news-sheet or unauthorised newspaper, wher",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "Which government department is responsible for providing state guarantees under the Government Loan Act, 2022, and what are the rules governing the provision of such guarantees?",
+    "act_file": "act-print-1413",
+    "section_ord": 4,
+    "gold_key": "act-print-1413#4",
+    "act_title": "সরকারি ঋণ আইন, ২০২২",
+    "section_title": null,
+    "section_preview": "৫।  (১) সরকারের পক্ষে অর্থ বিভাগ, অর্থ মন্ত্রণালয় এই আইনের অধীন প্রণীত বিধি বা গাইডলাইন বা প্রজ্ঞাপনের বিধান অনুযায়ী রাষ্ট্রীয় গ্যারান্টি বা এই ধরনের নিশ্চয়তা প",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "What are the potential penalties for providing false information to the Bangladesh Shilpa Bank in connection with a loan or other financial assistance?",
+    "act_file": "act-print-417",
+    "section_ord": 40,
+    "gold_key": "act-print-417#40",
+    "act_title": "The Bangladesh Shilpa Bank Order, 1972 (President's Order)",
+    "section_title": null,
+    "section_preview": "37. (1) Whoever wilfully makes a false statement or knowingly permits any false statement to be made, or to remain, in any bill of lading, warehouse receipt or ",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "ব্যাংক-কোম্পানীতে সর্বোচ্চ কতজন পরিচালক থাকতে পারে এবং তাদের মধ্যে কতজন স্বতন্ত্র পরিচালক থাকা আবশ",
+    "act_file": "act-print-1430",
+    "section_ord": 8,
+    "gold_key": "act-print-1430#8",
+    "act_title": "ব্যাংক-কোম্পানী (সংশোধন) আইন, ২০২৩",
+    "section_title": null,
+    "section_preview": "৯। উক্ত আইনের ধারা ১৫ এর-(ক) উপান্তটীকা “নূতন পরিচালক নির্বাচন” এর পরিবর্তে “পরিচালক নির্বাচন, ব্যবস্থাপনা পরিচালক বা প্রধান নির্বাহী কর্মকর্তা নিয়োগ, ইত্যাদি” ",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "What is the penalty for graving, breaming, or smoking a vessel in a port in Bangladesh without following the conservator's directions or within prohibited areas?",
+    "act_file": "act-print-89",
+    "section_ord": 22,
+    "gold_key": "act-print-89#22",
+    "act_title": "The Ports Act, 1908",
+    "section_title": null,
+    "section_preview": "22. If any person graves, breams, or smokes any vessel in any such port contrary to the directions of the conservator, or at any time or within any limits at or",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "What are the penalties for a member of the Border Guard who intentionally leaves out important information or fails to prepare and send reports as required by their duties?",
+    "act_file": "act-print-1067",
+    "section_ord": 43,
+    "gold_key": "act-print-1067#43",
+    "act_title": "বর্ডার গার্ড বাংলাদেশ আইন, ২০১০",
+    "section_title": null,
+    "section_preview": "৪৪। অধিভুক্ত কোন ব্যক্তি যদি-(ক) বেতন, অস্ত্র, গোলাবারুদ, সরঞ্জাম, পোষাক-পরিচ্ছদ বা ভাতার সম্পর্কিত কোন সরকারি বা বাহিনীর সম্পত্তির দলিল স্বাক্ষরের সময় জ্ঞাতসার",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "সমবায় সমিতির সম্পত্তি নিলামে বিক্রির ক্ষেত্রে সমিতির ব্যবস্থাপনা কমিটির সদস্য বা কর্মচারীদের ক্রয়ে অং",
+    "act_file": "act-print-876",
+    "section_ord": 79,
+    "gold_key": "act-print-876#79",
+    "act_title": "সমবায় সমিতি আইন, ২০০১",
+    "section_title": null,
+    "section_preview": "৭৬৷ এই অধ্যায়ের অধীনে কোন স্থাবর অথবা অস্থাবর সম্পত্তি বিক্রয়ে, কোনসমবায় ভূমি উন্নয়ন ব্যাংক, কেন্দ্রীয় বা জাতীয় সমিতির ব্যবস্থাপনা কমিটির কোন সদস্য বা কর্মচারী ",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "What are the grounds on which the District Magistrate can cancel the authentication of a declaration for a newspaper, and what recourse does the affected person have if they disagree with the cancellation decision?",
+    "act_file": "act-print-437",
+    "section_ord": 21,
+    "gold_key": "act-print-437#21",
+    "act_title": "The Printing Presses and Publications (Declaration and Registration) Act, 1973",
+    "section_title": null,
+    "section_preview": "20. (1) If, at any time, the District Magistrate, who authenticated a declaration under section 12, is satisfied that, subsequent to the authentication,-(a)\tthe",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "What laws, in addition to the Non-Agricultural Tenancy Act, still apply to non-agricultural tenancies in Bangladesh, and how do they interact with this Act?",
+    "act_file": "act-print-232",
+    "section_ord": 37,
+    "gold_key": "act-print-232#37",
+    "act_title": "The Non-Agricultural Tenancy Act, 1949 (East Bengal Act)",
+    "section_title": null,
+    "section_preview": "71. The provisions of theTransfer of Property Act, 1882, and of any other law for the time being in force, in so far as they may be applicable and in so far as ",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "এসিড নিয়ন্ত্রণের জন্য সরকার কীভাবে বিধি প্রণয়ন করতে পারে এবং সেই বিধিতে কী কী বিষয়ে বিধান থাকতে পার",
+    "act_file": "act-print-882",
+    "section_ord": 50,
+    "gold_key": "act-print-882#50",
+    "act_title": "এসিড নিয়ন্ত্রণ আইন, ২০০২",
+    "section_title": null,
+    "section_preview": "৫১৷ (১) সরকার, সরকারী গেজেটে প্রজ্ঞাপন দ্বারা, এই আইনের উদ্দেশ্য পূরণকল্পে বিধি প্রণয়ন করিতে পারিবে৷(২) উপ-ধারা (১) এ উল্লিখিত ক্ষমতার সামগ্রিকতাকে ক্ষুন্ন না ক",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "What is the punishment for someone who knowingly delivers or tries to pass on counterfeit coins to another person with the intention of committing fraud?",
+    "act_file": "act-print-11",
+    "section_ord": 286,
+    "gold_key": "act-print-11#286",
+    "act_title": "1The Penal Code, 1860",
+    "section_title": null,
+    "section_preview": "250. Whoever, having coin in his possession with respect to which the offence defined in section 246 or 248 has been committed, and having known at the time whe",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "What are the qualifications and responsibilities required for the position of Treasurer at the Narayanganj Science and Technology University?",
+    "act_file": "act-print-1479",
+    "section_ord": 11,
+    "gold_key": "act-print-1479#11",
+    "act_title": "1[নারায়ণগঞ্জ বিজ্ঞান ও প্রযুক্তি বিশ্ববিদ্যালয়] আইন, ২০২৩",
+    "section_title": null,
+    "section_preview": "১২। (১) আচার্য, তৎকর্তৃক নির্ধারিত শর্তে, ৪ (চার) বৎসর মেয়াদের জন্য১ (এক) জন কোষাধ্যক্ষ নিযুক্ত করিবেন:তবে শর্ত থাকে যে, কোনো ব্যক্তি একাদিক্রমে বা অন্য কোনোভাব",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "When did Pakistani bank notes of 5 and 10 rupees denomination, which were previously made legal tender in Bangladesh, stop being accepted as legal tender in the country?",
+    "act_file": "act-print-393",
+    "section_ord": 3,
+    "gold_key": "act-print-393#3",
+    "act_title": "The Bangladesh (Demonetisation of Bank Notes) Order, 1972 (President's Order)",
+    "section_title": null,
+    "section_preview": "4. All Pakistani Bank notes of Rs. 10 and Rs. 5 denominations which were made legal tender in Bangladesh in pursuance of the Bangladesh Bank (Temporary) Order, ",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "What is the punishment for someone who knowingly possesses a false weighing instrument, weight, or measure with the intention of using it to cheat others?",
+    "act_file": "act-print-11",
+    "section_ord": 303,
+    "gold_key": "act-print-11#303",
+    "act_title": "1The Penal Code, 1860",
+    "section_title": null,
+    "section_preview": "266. Whoever is in possession of any instrument for weighing, or of any weight, or of any measure of length or capacity, which he knows to be false, and intendi",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "What are the obligations and potential penalties for a landowner if an unlawful assembly or riot occurs on their property in Bangladesh?",
+    "act_file": "act-print-11",
+    "section_ord": 175,
+    "gold_key": "act-print-11#175",
+    "act_title": "1The Penal Code, 1860",
+    "section_title": null,
+    "section_preview": "154. Whenever any unlawful assembly or riot takes place, the owner or occupier of the land upon which such unlawful assembly is held, or such riot is committed,",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "যদি কোন ব্যক্তি যৌতুকের জন্য তার স্ত্রীকে মারাত্মকভাবে জখম করে, তাহলে তার বিরুদ্ধে কী ধরনের শাস্তি হত",
+    "act_file": "act-print-835",
+    "section_ord": 12,
+    "gold_key": "act-print-835#12",
+    "act_title": "নারী ও শিশু নির্যাতন দমন আইন, ২০০০",
+    "section_title": null,
+    "section_preview": "১১৷ যদি কোন নারীর স্বামী অথবা স্বামীর পিতা, মাতা, অভিভাবক, আত্মীয় বা স্বামীর পক্ষে অন্য কোন ব্যক্তি যৌতুকের জন্য উক্ত নারীর মৃত্যু ঘটান বা মৃত্যু ঘটানোর চেষ্টা ",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "Are imported goods brought into a private export processing zone in Bangladesh subject to customs duty, value-added tax, or other taxes and fees?",
+    "act_file": "act-print-810",
+    "section_ord": 14,
+    "gold_key": "act-print-810#14",
+    "act_title": "বাংলাদেশ বেসরকারী রপ্তানী প্রক্রিয়াকরণ অঞ্চল আইন, ১৯৯৬",
+    "section_title": null,
+    "section_preview": "১৫৷ আপাততঃ বলবত্ অন্য কোন আইনে যাহা কিছুই থাকুক না কেন, এতদুদ্দেশ্যে প্রণীত বিধি সাপেক্ষে,-(ক) \tকোন জোনে কাঁচামালসহ আমদানীকৃত কোন পণ্যের উপর কোন কাষ্টম ডিউটি, ম",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "পেট্রোলিয়াম আমদানি, পরিবহন বা শোধনের সময় যদি কোনো বিপদ দেখা দেয়, তাহলে সরকার কীভাবে জনসাধারণকে",
+    "act_file": "act-print-1190",
+    "section_ord": 31,
+    "gold_key": "act-print-1190#31",
+    "act_title": "পেট্রোলিয়াম আইন, ২০১৬",
+    "section_title": null,
+    "section_preview": "৩২। পেট্রোলিয়াম আমদানি, পরিবহন, মজুদ, বিতরণ, উৎপাদন, শোধন, মিশ্রণ বা প্রক্রিয়াজাতকরণের মাধ্যমে পুনঃব্যবহার উপযোগীকরণের প্রক্রিয়া হইতে সৃষ্ট বিপদ হইতে জনসাধারণকে",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "How can the Council of the Chartered Secretaries form committees to carry out its responsibilities under the Chartered Secretaries Act, 2010?",
+    "act_file": "act-print-1045",
+    "section_ord": 12,
+    "gold_key": "act-print-1045#12",
+    "act_title": "চার্টার্ড সেক্রেটারীজ আইন, ২০১০",
+    "section_title": null,
+    "section_preview": "১৩।(১) কাউন্সিল, উহার উপর অর্পিত দায়িত্ব সুষ্ঠুভাবে সম্পন্ন করিবার লক্ষ্যে প্রবিধান দ্বারা নির্ধারিত পদ্ধতিতে, এক বা একাধিক স্থায়ী কমিটি গঠন ও পরিচালনা করিতে পা",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "How can a person recover costs awarded to them by the High Court Division in an election dispute, and what are the procedures for enforcing such an order?",
+    "act_file": "act-print-424",
+    "section_ord": 83,
+    "gold_key": "act-print-424#83",
+    "act_title": "The Representation of the People Order, 1972 (President's Order)",
+    "section_title": null,
+    "section_preview": "72. (1) The High Court Division shall, when making an order under Article 62, also make an order determining in its discretion the costs and specifying the pers",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "কক্সবাজার উন্নয়ন কর্তৃপক্ষের আওতাধীন এলাকার উন্নয়ন ও নির্মাণ পরিকল্পনা কেমন করে অনুমোদন করা হয়?",
+    "act_file": "act-print-1179",
+    "section_ord": 19,
+    "gold_key": "act-print-1179#19",
+    "act_title": "কক্সবাজার উন্নয়ন কর্তৃপক্ষ আইন, ২০১৬",
+    "section_title": null,
+    "section_preview": "২০। (১) কর্তৃপক্ষের আওতাধীন এলাকায় বিদ্যুৎ ও পানি সরবরাহ, নৌ, বিমান, সড়ক ও রেল যোগাযোগ, টেলিযোগাযোগ বা অন্য কোন সংস্থার বা কোন স্থানীয় কর্তৃপক্ষ এবং সরকারি, বেস",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "Who is responsible for appointing the executive chairman and members of the executive board of the Bangladesh Economic Zone Authority?",
+    "act_file": "act-print-1053",
+    "section_ord": 25,
+    "gold_key": "act-print-1053#25",
+    "act_title": "বাংলাদেশ অর্থনৈতিক অঞ্চল আইন, ২০১০",
+    "section_title": null,
+    "section_preview": "২৪। (১) কর্তৃপক্ষের একটি নির্বাহী বোর্ড থাকিবে এবং উক্ত বোর্ড একজন চেয়ারম্যান ও তিন জন সদস্য সমন্বয়ে গঠিত হইবে।(২) নির্বাহী বোর্ডের চেয়ারম্যান নির্বাহী চেয়ারম্য",
+    "gen_model": "groq:llama-3.3-70b-versatile"
+  },
+  {
+    "question": "Can a person be held criminally liable for an action they took while intoxicated, if they were unaware that the substance was being administered to them or did not consent to its use?",
+    "act_file": "act-print-11",
+    "section_ord": 90,
+    "gold_key": "act-print-11#90",
+    "act_title": "1The Penal Code, 1860",
+    "section_title": null,
+    "section_preview": "85. Nothing is an offence which is done by a person who, at the time of doing it, is, by reason of intoxication, incapable of knowing the nature of the act, or ",
+    "gen_model": "groq:llama-3.3-70b-versatile"
   }
 ]
