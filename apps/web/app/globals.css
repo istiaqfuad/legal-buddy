@@ -73,11 +73,16 @@ body {
 .answer-prose ol { margin: 0 0 0.75rem; padding-left: 1.25rem; }
 .answer-prose li { margin: 0.2rem 0; }
 .answer-prose strong { font-weight: 600; }
+/* Citations: link text is the bare number; brackets come from CSS → "[2]" */
 .answer-prose a {
   color: var(--accent);
   text-decoration: none;
   font-weight: 500;
+  font-size: 0.85em;
+  white-space: nowrap;
 }
+.answer-prose a::before { content: "["; }
+.answer-prose a::after { content: "]"; }
 .answer-prose a:hover { text-decoration: underline; }
 
 @keyframes pulse-dot {

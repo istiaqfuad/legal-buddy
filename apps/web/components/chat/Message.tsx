@@ -46,12 +46,13 @@ export function Message({ turn }: { turn: Turn }) {
   );
 }
 
-// Turn "[Source 2]" into a markdown link to that source's url, mirroring the API's
-// [Source N] citation convention.
+// Render the API's "[Source 2]" citations as compact "[2]" markers. The link text
+// is the bare number; the surrounding brackets are added by CSS (.answer-prose a)
+// so every citation renders as "[2]" whether or not it links out.
 function linkifyCitations(answer: string, sources: Source[]): string {
   const byId = new Map(sources.map((s) => [s.citation_id, s]));
-  return answer.replace(/\[Source\s+(\d+)\]/g, (match, n) => {
+  return answer.replace(/\[Source\s+(\d+)\]/g, (_match, n) => {
     const src = byId.get(Number(n));
-    return src?.source_url ? `[Source ${n}](${src.source_url})` : match;
+    return src?.source_url ? `[${n}](${src.source_url})` : `[${n}]`;
   });
 }
