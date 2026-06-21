@@ -10,7 +10,7 @@ import random
 import re
 import time
 
-from common import ACTS_DIR, EVAL_DIR, GEMINI_API_KEY, gold_key
+from common import ACTS_DIR, GEMINI_API_KEY, GOLDSET_PATH, SUBSET_PATH, gold_key
 
 TARGET = 60
 SAMPLE = 90  # oversample; some generations fail/are filtered
@@ -41,7 +41,7 @@ def clean(t: str) -> str:
 
 def gather_candidates():
     cands = []
-    subset = json.loads((EVAL_DIR / "subset_acts.json").read_text(encoding="utf-8"))
+    subset = json.loads(SUBSET_PATH.read_text(encoding="utf-8"))
     for stem in subset:
         try:
             obj = json.loads((ACTS_DIR / f"{stem}.json").read_text(encoding="utf-8"))
@@ -116,10 +116,10 @@ def main():
             print(f"  generated {len(gold)}/{TARGET}")
         time.sleep(0.5)
 
-    EVAL_DIR.joinpath("goldset.json").write_text(
+    GOLDSET_PATH.write_text(
         json.dumps(gold, indent=2, ensure_ascii=False), encoding="utf-8"
     )
-    print(f"wrote {len(gold)} gold questions -> eval/goldset.json")
+    print(f"wrote {len(gold)} gold questions -> {GOLDSET_PATH}")
 
 
 if __name__ == "__main__":

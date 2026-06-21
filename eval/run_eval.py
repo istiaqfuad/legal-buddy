@@ -14,10 +14,11 @@ import argparse
 import json
 
 from common import (
-    EVAL_DIR,
+    GOLDSET_PATH,
     build_qdrant_client,
     dedupe_preserve,
     embed_queries,
+    metrics_path,
     recall_at_k,
     reciprocal_rank,
 )
@@ -36,7 +37,7 @@ def main():
     ap.add_argument("--tag", required=True)
     args = ap.parse_args()
 
-    gold = json.loads((EVAL_DIR / "goldset.json").read_text(encoding="utf-8"))
+    gold = json.loads(GOLDSET_PATH.read_text(encoding="utf-8"))
     client = build_qdrant_client()
     vectors = embed_queries([g["question"] for g in gold])
 
@@ -81,7 +82,7 @@ def main():
         agg[gran]["mrr"] = round(agg[gran]["mrr"] / n, 4)
 
     out = {"tag": args.tag, "collection": args.collection, "n": n, "metrics": agg, "per_q": per_q}
-    path = EVAL_DIR / f"metrics_{args.tag}.json"
+    path = metrics_path(args.tag)
     path.write_text(json.dumps(out, indent=2, ensure_ascii=False), encoding="utf-8")
 
     print(f"=== {args.tag} ({args.collection}) n={n} ===")

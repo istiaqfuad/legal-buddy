@@ -14,7 +14,7 @@ from common import (
     ACTS_DIR,
     COLLECTION_BASELINE,
     COLLECTION_IMPROVED,
-    EVAL_DIR,
+    SUBSET_PATH,
     build_qdrant_client,
     get_model,
     gold_key,
@@ -26,7 +26,7 @@ UPSERT_BATCH = 64
 
 
 def collect_records(mode: str):
-    subset = json.loads((EVAL_DIR / "subset_acts.json").read_text(encoding="utf-8"))
+    subset = json.loads(SUBSET_PATH.read_text(encoding="utf-8"))
     model = get_model()
 
     if mode == "baseline":

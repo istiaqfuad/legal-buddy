@@ -16,7 +16,19 @@ from dotenv import load_dotenv
 ROOT = Path(__file__).resolve().parents[1]
 ACTS_DIR = ROOT / "data" / "acts"
 EVAL_DIR = ROOT / "eval"
+DATA_DIR = EVAL_DIR / "data"        # curated inputs (subset, gold set)
+RESULTS_DIR = EVAL_DIR / "results"  # generated metrics
+DATA_DIR.mkdir(exist_ok=True)
+RESULTS_DIR.mkdir(exist_ok=True)
 load_dotenv(ROOT / ".env")
+
+# Canonical artifact paths — scripts import these instead of building their own.
+SUBSET_PATH = DATA_DIR / "subset_acts.json"
+GOLDSET_PATH = DATA_DIR / "goldset.json"
+
+
+def metrics_path(tag: str) -> Path:
+    return RESULTS_DIR / f"metrics_{tag}.json"
 
 EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL")
 HF_TOKEN = os.getenv("HF_TOKEN") or None

@@ -3,7 +3,7 @@ Reads metrics_baseline.json, metrics_improved.json, metrics_improved512.json.
 Uses section-level recall (parent-document) as the effective metric."""
 import json
 
-from common import EVAL_DIR
+from common import metrics_path
 
 KS = ("1", "3", "5", "10")
 TAGS = [
@@ -15,7 +15,7 @@ TAGS = [
 
 
 def load(tag):
-    p = EVAL_DIR / f"metrics_{tag}.json"
+    p = metrics_path(tag)
     return json.loads(p.read_text(encoding="utf-8")) if p.exists() else None
 
 

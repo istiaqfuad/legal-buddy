@@ -6,7 +6,7 @@ import json
 import random
 import time
 
-from common import EVAL_DIR, GROQ_API_KEY, gold_key
+from common import GOLDSET_PATH, GROQ_API_KEY, gold_key
 from gen_goldset import PROMPT, gather_candidates
 
 TARGET_TOTAL = 120
@@ -20,7 +20,7 @@ def main():
     from openai import OpenAI
 
     client = OpenAI(api_key=GROQ_API_KEY, base_url=BASE_URL)
-    gold = json.loads((EVAL_DIR / "goldset.json").read_text(encoding="utf-8"))
+    gold = json.loads(GOLDSET_PATH.read_text(encoding="utf-8"))
     used = {g["gold_key"] for g in gold}
     print(f"existing: {len(gold)}; target {TARGET_TOTAL}")
 
@@ -80,12 +80,12 @@ def main():
         )
         if len(gold) % 15 == 0:
             print(f"  total {len(gold)}")
-            (EVAL_DIR / "goldset.json").write_text(
+            GOLDSET_PATH.write_text(
                 json.dumps(gold, indent=2, ensure_ascii=False), encoding="utf-8"
             )
         time.sleep(0.4)
 
-    (EVAL_DIR / "goldset.json").write_text(
+    GOLDSET_PATH.write_text(
         json.dumps(gold, indent=2, ensure_ascii=False), encoding="utf-8"
     )
     print(f"wrote {len(gold)} gold questions")

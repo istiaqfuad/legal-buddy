@@ -6,7 +6,7 @@ force-included. Writes eval/subset_acts.json (list of filename stems).
 """
 import json
 
-from common import ACTS_DIR, EVAL_DIR
+from common import ACTS_DIR, SUBSET_PATH
 
 TARGET = 200
 FORCE = {"act-print-11"}  # Penal Code, 1860
@@ -36,9 +36,7 @@ def main():
     chosen = sorted(set(chosen) | (FORCE & set(stems)))
 
     total_sections = sum(dict(candidates)[s] for s in chosen)
-    EVAL_DIR.joinpath("subset_acts.json").write_text(
-        json.dumps(chosen, indent=2), encoding="utf-8"
-    )
+    SUBSET_PATH.write_text(json.dumps(chosen, indent=2), encoding="utf-8")
     print(f"candidates (with sections, not repealed): {n}")
     print(f"subset chosen: {len(chosen)} acts, ~{total_sections} sections")
     print(f"penal code included: {'act-print-11' in chosen}")
