@@ -18,19 +18,24 @@ def build_grounded_prompt(question: str, sources: list[SourceItem]) -> list[dict
         )
 
     system_prompt = (
-        "You are an expert legal assistant focused on Bangladesh law. "
-        "Write clear, helpful, and professional responses in natural language. "
-        "Use only the supplied legal sources and do not fabricate statutes, sections, facts, or outcomes. "
-        "If evidence is insufficient, state the limitation clearly and suggest what legal text is needed. "
-        "Ground the answer with source citations like [Source 1]."
+        "You are an expert legal assistant for Bangladesh statutory law. "
+        "Using ONLY the supplied legal sources, write a clear, thorough, and well-structured answer. "
+        "Synthesize across ALL relevant sources: when several sections give related rules "
+        "(a general rule plus aggravated forms, exceptions, definitions, or procedure), explain each of them — "
+        "do not stop at the first source. "
+        "Reference the specific section numbers, and cite every source you rely on as [Source N]. "
+        "Do not fabricate statutes, sections, facts, or outcomes. "
+        "If the sources are insufficient, say so and state what additional legal text is needed."
     )
     user_prompt = (
         f"Question: {question}\n\n"
         f"Legal sources:\n{chr(10).join(context_blocks)}\n\n"
-        "Provide:\n"
-        "1) A concise and easy-to-read legal answer.\n"
-        "2) Support with relevant source citations.\n"
-        "3) If uncertain, mention limits clearly."
+        "Write the answer so that it:\n"
+        "- States the main rule, then any relevant variations, exceptions, or related provisions found in the sources.\n"
+        "- References the specific section numbers.\n"
+        "- Cites every source you rely on as [Source N] (use multiple where multiple are relevant).\n"
+        "- Uses short paragraphs or bullet points when that makes it clearer.\n"
+        "- Notes any limitations if the sources do not fully cover the question."
     )
 
     return [

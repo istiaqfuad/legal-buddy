@@ -50,12 +50,16 @@ def _normalize_source_ids(source_ids: list[int], max_source_id: int) -> list[int
 def _render_structured_answer(answer: StructuredLegalAnswer, max_source_id: int) -> str:
     lines: list[str] = []
     answer_text = answer.answer.strip()
-    citation_ids = _normalize_source_ids(answer.citations, max_source_id)
-    source_tags = _source_tag_list(citation_ids)
-    if source_tags:
-        lines.append(f"{answer_text} {source_tags}")
-    else:
+
+    # If the model already cites inline (e.g. "... [Source 2]"), don't append a
+    # redundant trailing dump of every citation id. Only append as a fallback when
+    # the answer text has no inline [Source n] markers at all.
+    if "[Source" in answer_text:
         lines.append(answer_text)
+    else:
+        citation_ids = _normalize_source_ids(answer.citations, max_source_id)
+        source_tags = _source_tag_list(citation_ids)
+        lines.append(f"{answer_text} {source_tags}".strip() if source_tags else answer_text)
 
     if answer.limitations:
         lines.append(f"\nLimitations: {answer.limitations.strip()}")
@@ -71,13 +75,14 @@ def _build_structured_messages(messages: list[dict]) -> list[dict]:
     user_message = messages[1]
     structured_instruction = (
         "\n\nReturn JSON for this schema:\n"
-        "- answer: string\n"
-        "- citations: int[]\n"
+        "- answer: string — a complete, well-structured answer that covers all the "
+        "relevant sources (main rule plus related provisions); use short paragraphs "
+        "or bullet points where it helps.\n"
+        "- citations: int[] — every source id you relied on, not just one.\n"
         "- limitations: string | null\n"
         "Rules:\n"
-        "- Use only source ids from provided [Source n] context.\n"
-        "- Never invent citations.\n"
-        "- Keep answer concise, natural, and grounded."
+        "- Use only source ids from the provided [Source n] context; never invent citations.\n"
+        "- Reference specific section numbers and cite all relevant sources."
     )
     return [
         system_message,
