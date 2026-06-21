@@ -1,6 +1,6 @@
 "use client";
 
-import { FlaskConical, Scale, Trash2 } from "lucide-react";
+import { Scale, Trash2 } from "lucide-react";
 import {
   type ChatSettings,
   type Provider,
@@ -29,7 +29,7 @@ export function SidebarContent({
   return (
     <div className="flex h-full flex-col">
       {/* Brand */}
-      <div className="flex items-center gap-2.5 px-4 py-4">
+      <div className="flex items-center gap-3 px-5 py-5">
         <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent-soft text-accent">
           <Scale className="h-5 w-5" strokeWidth={2} />
         </span>
@@ -39,9 +39,10 @@ export function SidebarContent({
         </div>
       </div>
 
-      <div className="flex-1 space-y-6 overflow-y-auto px-4 py-2">
+      <div className="flex-1 overflow-y-auto px-5">
         {/* Retrieval */}
-        <Field label="Sources to retrieve" value={settings.topK}>
+        <Section title="Retrieval">
+          <Row label="Sources to retrieve" value={settings.topK} />
           <input
             type="range"
             min={3}
@@ -53,22 +54,14 @@ export function SidebarContent({
             aria-valuetext={`${settings.topK} sources`}
             className="w-full accent-accent"
           />
-          <Note>
-            How many statute sections are retrieved and fed to the model. More =
-            broader, better-cited answers but more noise; fewer = tighter, shorter.
-          </Note>
-        </Field>
+          <Hint>Statute sections fed to the model. More = broader & better-cited; fewer = tighter.</Hint>
+        </Section>
 
-        {/* Model (dev-only) */}
-        <fieldset className="space-y-4 rounded-xl border border-dashed border-border p-3">
-          <legend className="flex items-center gap-1.5 px-1 text-sm font-medium text-muted">
-            <FlaskConical className="h-4 w-4" /> Model (dev only)
-          </legend>
-
-          {/* Provider */}
-          <div className="space-y-1.5">
-            <p className="text-sm font-medium text-foreground">Provider</p>
-            <div role="radiogroup" aria-label="LLM provider" className="flex rounded-lg border border-border p-0.5">
+        {/* Model */}
+        <Section title="Model" tag="dev only" divider>
+          <div className="space-y-2">
+            <Label>Provider</Label>
+            <div role="radiogroup" aria-label="LLM provider" className="flex rounded-lg border border-border p-1">
               {PROVIDERS.map((p) => (
                 <button
                   key={p}
@@ -76,7 +69,7 @@ export function SidebarContent({
                   aria-checked={settings.provider === p}
                   onClick={() => pickProvider(p)}
                   className={cn(
-                    "flex-1 rounded-md px-2 py-1.5 text-sm font-medium capitalize transition-colors",
+                    "flex-1 rounded-md px-3 py-2 text-sm font-medium capitalize transition-colors",
                     settings.provider === p
                       ? "bg-accent text-accent-foreground"
                       : "text-muted hover:text-foreground",
@@ -86,36 +79,26 @@ export function SidebarContent({
                 </button>
               ))}
             </div>
-            <Note>
-              Which LLM writes the answer. Retrieval is identical either way — only
-              the wording/quality changes. Groq has a more generous free quota.
-            </Note>
           </div>
 
-          {/* Model */}
-          <label className="block space-y-1.5">
-            <span className="text-sm font-medium text-foreground">Model</span>
+          <label className="block space-y-2">
+            <Label>Model</Label>
             <input
               list="sidebar-model-options"
               value={settings.model}
               onChange={(e) => set({ model: e.target.value })}
               placeholder="provider default"
-              className="h-9 w-full rounded-lg border border-border bg-background px-2.5 text-sm outline-none focus:ring-2 focus:ring-ring"
+              className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
             />
             <datalist id="sidebar-model-options">
               {PROVIDER_MODELS[settings.provider].map((m) => (
                 <option key={m} value={m} />
               ))}
             </datalist>
-            <Note>The specific model for the chosen provider (pick from the list or type one).</Note>
           </label>
 
-          {/* Temperature */}
-          <label className="block space-y-1.5">
-            <span className="flex justify-between text-sm font-medium text-foreground">
-              Temperature
-              <span className="font-mono text-muted">{settings.temperature.toFixed(1)}</span>
-            </span>
+          <div className="space-y-2">
+            <Row label="Temperature" value={settings.temperature.toFixed(1)} />
             <input
               type="range"
               min={0}
@@ -126,27 +109,26 @@ export function SidebarContent({
               aria-label="Temperature"
               className="w-full accent-accent"
             />
-            <Note>Randomness of wording. Low (0–0.3) = focused & consistent; high = more varied. Keep low for legal answers.</Note>
-          </label>
+            <Hint>Lower = focused & consistent. Keep low for legal answers.</Hint>
+          </div>
 
-          {/* Max tokens */}
-          <label className="block space-y-1.5">
-            <span className="text-sm font-medium text-foreground">Max tokens</span>
+          <label className="block space-y-2">
+            <Label>Max tokens</Label>
             <input
               type="number"
               min={1}
               value={settings.maxTokens ?? ""}
               onChange={(e) => set({ maxTokens: e.target.value ? Number(e.target.value) : null })}
               placeholder="auto"
-              className="h-9 w-full rounded-lg border border-border bg-background px-2.5 text-sm outline-none focus:ring-2 focus:ring-ring"
+              className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
             />
-            <Note>Upper limit on answer length. Leave blank for the model default; set lower to force shorter replies.</Note>
+            <Hint>Caps answer length. Blank = model default.</Hint>
           </label>
-        </fieldset>
+        </Section>
       </div>
 
       {/* Footer */}
-      <div className="border-t border-border px-4 py-3">
+      <div className="border-t border-border px-5 py-4">
         <Button
           variant="outline"
           size="md"
@@ -162,28 +144,47 @@ export function SidebarContent({
   );
 }
 
-function Field({
-  label,
-  value,
+function Section({
+  title,
+  tag,
+  divider,
   children,
 }: {
-  label: string;
-  value: React.ReactNode;
+  title: string;
+  tag?: string;
+  divider?: boolean;
   children: React.ReactNode;
 }) {
   return (
-    <div className="space-y-1.5">
-      <div className="flex items-center justify-between">
-        <span className="text-sm font-medium text-foreground">{label}</span>
-        <span className="rounded-md bg-user-bubble px-1.5 py-0.5 font-mono text-xs text-foreground">
-          {value}
-        </span>
-      </div>
-      {children}
+    <section className={cn("py-5", divider && "border-t border-border")}>
+      <h2 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted">
+        {title}
+        {tag && (
+          <span className="rounded bg-user-bubble px-1.5 py-0.5 text-[10px] font-medium normal-case tracking-normal">
+            {tag}
+          </span>
+        )}
+      </h2>
+      <div className="space-y-5">{children}</div>
+    </section>
+  );
+}
+
+function Row({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <div className="flex items-center justify-between">
+      <span className="text-sm font-medium text-foreground">{label}</span>
+      <span className="rounded-md bg-user-bubble px-2 py-0.5 font-mono text-xs text-foreground">
+        {value}
+      </span>
     </div>
   );
 }
 
-function Note({ children }: { children: React.ReactNode }) {
+function Label({ children }: { children: React.ReactNode }) {
+  return <span className="text-sm font-medium text-foreground">{children}</span>;
+}
+
+function Hint({ children }: { children: React.ReactNode }) {
   return <p className="text-xs leading-relaxed text-muted">{children}</p>;
 }

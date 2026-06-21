@@ -109,7 +109,7 @@ export function ChatApp() {
       {/* Desktop sidebar */}
       <aside
         aria-label="Settings"
-        className="hidden w-72 shrink-0 border-r border-border bg-surface lg:block"
+        className="hidden w-80 shrink-0 border-r border-border bg-surface lg:block"
       >
         {sidebar}
       </aside>
@@ -124,7 +124,7 @@ export function ChatApp() {
           />
           <aside
             aria-label="Settings"
-            className="absolute left-0 top-0 h-full w-72 border-r border-border bg-surface shadow-xl"
+            className="absolute left-0 top-0 h-full w-80 max-w-[85vw] border-r border-border bg-surface shadow-xl"
           >
             <button
               onClick={() => setDrawerOpen(false)}
