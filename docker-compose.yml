@@ -1,4 +1,16 @@
 services:
+  web:
+    build:
+      context: ./apps/web
+    ports:
+      - "3000:3000"
+    environment:
+      # Server-side only: the Next.js route handler proxies to the api service.
+      - API_URL=http://api:8000
+    depends_on:
+      - api
+    restart: unless-stopped
+
   streamlit-app:
     build:
       context: .

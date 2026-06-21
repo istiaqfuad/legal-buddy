@@ -6,9 +6,13 @@ class Config(BaseSettings):
         env_file=".env", env_file_encoding="utf-8", extra="ignore"
     )
 
-    # Gemini chat model
+    # Chat LLM. provider selects the backend; each has its own default model.
+    DEFAULT_LLM_PROVIDER: str = "gemini"  # "gemini" | "groq"
     GEMINI_API_KEY: str | None = None
     CHAT_MODEL: str = "gemini-2.5-flash"
+    # Groq (OpenAI-compatible). Useful for testing without the Gemini free-tier cap.
+    GROQ_API_KEY: str | None = None
+    GROQ_MODEL: str = "llama-3.3-70b-versatile"
 
     # HuggingFace embedding model (run locally via sentence-transformers)
     HF_TOKEN: str | None = None

@@ -9,6 +9,10 @@ from api.core.observability import get_langsmith_client
 
 from api.agents.legal_chat.structured_models import StructuredLegalAnswer
 
+GROQ_BASE_URL = "https://api.groq.com/openai/v1"
+DEFAULT_TEMPERATURE = 0.2
+DEFAULT_TOP_P = 0.9
+
 
 def _extract_gemini_usage(response: types.GenerateContentResponse) -> dict[str, int]:
     usage = getattr(response, "usage_metadata", None)
@@ -84,124 +88,135 @@ def _build_structured_messages(messages: list[dict]) -> list[dict]:
     ]
 
 
-def _run_llm_text(messages: list[dict], max_tokens: int | None = None) -> str:
+# --------------------------------------------------------------------------- #
+# Gemini
+# --------------------------------------------------------------------------- #
+
+def _gemini_config(temperature: float, max_tokens: int | None) -> types.GenerateContentConfig:
+    kwargs: dict[str, int | float] = {"temperature": temperature, "top_p": DEFAULT_TOP_P}
+    if max_tokens is not None:
+        kwargs["max_output_tokens"] = max_tokens
+    return types.GenerateContentConfig(**kwargs)
+
+
+def _run_gemini_text(
+    messages: list[dict], model: str, temperature: float, max_tokens: int | None
+) -> str:
     if not config.GEMINI_API_KEY:
         raise ValueError("GEMINI_API_KEY is not configured")
-
-    tracing = get_langsmith_client() is not None
     client = genai.Client(api_key=config.GEMINI_API_KEY)
-
-    generation_config_kwargs: dict[str, int | float] = {
-        "temperature": 0.2,
-        "top_p": 0.9,
-    }
-    if max_tokens is not None:
-        generation_config_kwargs["max_output_tokens"] = max_tokens
-    generation_config = types.GenerateContentConfig(**generation_config_kwargs)
-
-    if not tracing:
-        response = client.models.generate_content(
-            model=config.CHAT_MODEL,
-            contents=[message["content"] for message in messages],
-            config=generation_config,
-        )
-        return response.text or "No response generated."
-
-    model_parameters: dict[str, int | float] = {
-        "temperature": 0.2,
-        "top_p": 0.9,
-    }
-    if max_tokens is not None:
-        model_parameters["max_output_tokens"] = max_tokens
-
-    with trace(
-        name="answer-generation",
-        run_type="llm",
-        inputs={"messages": messages},
-        metadata={
-            "ls_provider": "google_genai",
-            "ls_model_name": config.CHAT_MODEL,
-            **model_parameters,
-        },
-    ) as generation:
-        response = client.models.generate_content(
-            model=config.CHAT_MODEL,
-            contents=[message["content"] for message in messages],
-            config=generation_config,
-        )
-        answer = response.text or "No response generated."
-        outputs: dict = {"output": answer}
-        usage_details = _extract_gemini_usage(response)
-        if usage_details:
-            outputs["usage_metadata"] = usage_details
-        generation.end(outputs=outputs)
-        return answer
+    response = client.models.generate_content(
+        model=model,
+        contents=[message["content"] for message in messages],
+        config=_gemini_config(temperature, max_tokens),
+    )
+    return response.text or "No response generated."
 
 
-def run_llm(
-    messages: list[dict], sources: list[SourceItem], max_tokens: int | None = None
+def _run_gemini(
+    messages: list[dict],
+    sources: list[SourceItem],
+    model: str,
+    temperature: float,
+    max_tokens: int | None,
 ) -> str:
     if not config.GEMINI_API_KEY:
         raise ValueError("GEMINI_API_KEY is not configured")
 
-    tracing = get_langsmith_client() is not None
     client = genai.Client(api_key=config.GEMINI_API_KEY)
     structured_client = instructor.from_genai(
-        client,
-        model=config.CHAT_MODEL,
-        mode=instructor.Mode.GENAI_STRUCTURED_OUTPUTS,
+        client, model=model, mode=instructor.Mode.GENAI_STRUCTURED_OUTPUTS
     )
-
-    generation_config_kwargs: dict[str, int | float] = {
-        "temperature": 0.2,
-        "top_p": 0.9,
-    }
-    if max_tokens is not None:
-        generation_config_kwargs["max_output_tokens"] = max_tokens
-    generation_config = types.GenerateContentConfig(**generation_config_kwargs)
-
     structured_messages = _build_structured_messages(messages)
     max_source_id = len(sources)
+    try:
+        structured_answer = structured_client.create(
+            response_model=StructuredLegalAnswer,
+            messages=structured_messages,
+            config=_gemini_config(temperature, max_tokens),
+        )
+        return _render_structured_answer(structured_answer, max_source_id)
+    except Exception:
+        return _run_gemini_text(messages, model, temperature, max_tokens)
 
-    if not tracing:
-        try:
-            structured_answer = structured_client.create(
-                response_model=StructuredLegalAnswer,
-                messages=structured_messages,
-                config=generation_config,
-            )
-            return _render_structured_answer(structured_answer, max_source_id)
-        except Exception:
-            return _run_llm_text(messages=messages, max_tokens=max_tokens)
 
-    model_parameters: dict[str, int | float] = {
-        "temperature": 0.2,
-        "top_p": 0.9,
-    }
-    if max_tokens is not None:
-        model_parameters["max_output_tokens"] = max_tokens
+# --------------------------------------------------------------------------- #
+# Groq (OpenAI-compatible)
+# --------------------------------------------------------------------------- #
+
+def _run_groq(
+    messages: list[dict],
+    sources: list[SourceItem],
+    model: str,
+    temperature: float,
+    max_tokens: int | None,
+) -> str:
+    if not config.GROQ_API_KEY:
+        raise ValueError("GROQ_API_KEY is not configured")
+    from openai import OpenAI
+
+    base = OpenAI(api_key=config.GROQ_API_KEY, base_url=GROQ_BASE_URL)
+    structured_client = instructor.from_openai(base)
+    structured_messages = _build_structured_messages(messages)
+    max_source_id = len(sources)
+    extra: dict = {"max_tokens": max_tokens} if max_tokens is not None else {}
+    try:
+        structured_answer = structured_client.chat.completions.create(
+            model=model,
+            response_model=StructuredLegalAnswer,
+            messages=structured_messages,
+            temperature=temperature,
+            **extra,
+        )
+        return _render_structured_answer(structured_answer, max_source_id)
+    except Exception:
+        response = base.chat.completions.create(
+            model=model, messages=messages, temperature=temperature, **extra
+        )
+        return response.choices[0].message.content or "No response generated."
+
+
+# --------------------------------------------------------------------------- #
+# Dispatcher
+# --------------------------------------------------------------------------- #
+
+def run_llm(
+    messages: list[dict],
+    sources: list[SourceItem],
+    max_tokens: int | None = None,
+    *,
+    provider: str | None = None,
+    model: str | None = None,
+    temperature: float | None = None,
+) -> str:
+    provider = (provider or config.DEFAULT_LLM_PROVIDER or "gemini").lower()
+    temperature = DEFAULT_TEMPERATURE if temperature is None else float(temperature)
+
+    if provider == "groq":
+        model = model or config.GROQ_MODEL
+        runner = _run_groq
+        ls_provider = "groq"
+    else:
+        provider = "gemini"
+        model = model or config.CHAT_MODEL
+        runner = _run_gemini
+        ls_provider = "google_genai"
+
+    if get_langsmith_client() is None:
+        return runner(messages, sources, model, temperature, max_tokens)
 
     with trace(
         name="answer-generation",
         run_type="llm",
-        inputs={"messages": structured_messages},
+        inputs={"messages": _build_structured_messages(messages)},
         metadata={
-            "ls_provider": "google_genai",
-            "ls_model_name": config.CHAT_MODEL,
-            **model_parameters,
+            "ls_provider": ls_provider,
+            "ls_model_name": model,
+            "temperature": temperature,
+            "top_p": DEFAULT_TOP_P,
+            **({"max_output_tokens": max_tokens} if max_tokens is not None else {}),
         },
     ) as generation:
-        try:
-            structured_answer = structured_client.create(
-                response_model=StructuredLegalAnswer,
-                messages=structured_messages,
-                config=generation_config,
-            )
-            answer_text = _render_structured_answer(structured_answer, max_source_id)
-            generation.end(outputs={"output": answer_text})
-            return answer_text
-        except Exception:
-            fallback_answer = _run_llm_text(messages=messages, max_tokens=max_tokens)
-            generation.add_metadata({"fallback": "plain-genai-response"})
-            generation.end(outputs={"output": fallback_answer})
-            return fallback_answer
+        answer_text = runner(messages, sources, model, temperature, max_tokens)
+        generation.end(outputs={"output": answer_text})
+        return answer_text

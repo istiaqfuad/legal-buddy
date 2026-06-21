@@ -24,6 +24,9 @@ async def legal_chat(payload: LegalChatRequest) -> LegalChatResponse:
             payload.question,
             top_k=payload.top_k,
             max_tokens=payload.max_tokens,
+            provider=payload.provider,
+            model=payload.model,
+            temperature=payload.temperature,
         )
     except Exception as exc:
         logger.exception("Error in /legal/chat")

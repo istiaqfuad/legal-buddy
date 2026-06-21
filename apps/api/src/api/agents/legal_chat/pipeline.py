@@ -14,11 +14,15 @@ def legal_chat_pipeline(
     *,
     top_k: int | None = None,
     max_tokens: int | None = None,
+    provider: str | None = None,
+    model: str | None = None,
+    temperature: float | None = None,
 ) -> LegalChatResponse:
     resolved_top_k = top_k or config.RETRIEVAL_TOP_K
     resolved_max_tokens = (
         max_tokens if max_tokens is not None else config.ANSWER_MAX_TOKENS
     )
+    llm_kwargs = {"provider": provider, "model": model, "temperature": temperature}
 
     client = get_langsmith_client()
     if client is None:
@@ -34,6 +38,7 @@ def legal_chat_pipeline(
             messages=messages,
             sources=sources,
             max_tokens=resolved_max_tokens,
+            **llm_kwargs,
         )
         return LegalChatResponse(answer=answer, sources=sources)
 
@@ -61,6 +66,7 @@ def legal_chat_pipeline(
             messages=messages,
             sources=sources,
             max_tokens=resolved_max_tokens,
+            **llm_kwargs,
         )
         response = LegalChatResponse(answer=answer, sources=sources)
         request_span.end(
