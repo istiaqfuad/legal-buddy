@@ -1,8 +1,8 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 
 class LegalChatRequest(BaseModel):
-    question: str = Field(min_length=3)
+    question: str
     max_tokens: int | None = None
     top_k: int | None = None
 

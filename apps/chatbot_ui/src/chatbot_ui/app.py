@@ -170,7 +170,14 @@ if prompt := st.chat_input("Ask a legal question..."):
                 {"question": prompt, "answer": error_msg}
             )
         except requests.exceptions.HTTPError as e:
-            error_msg = f"HTTP Error: {e.response.status_code} - {e.response.text}"
+            try:
+                detail = e.response.json().get("detail")
+            except ValueError:
+                detail = e.response.text
+            # FastAPI validation errors arrive as a list of {msg, loc, ...}.
+            if isinstance(detail, list):
+                detail = "; ".join(d.get("msg", str(d)) for d in detail)
+            error_msg = f"Could not process your request: {detail}"
             st.error(error_msg)
             st.session_state.conversation.append(
                 {"question": prompt, "answer": error_msg}
