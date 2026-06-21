@@ -6,7 +6,12 @@ import json
 from common import EVAL_DIR
 
 KS = ("1", "3", "5", "10")
-TAGS = [("baseline", "chunk"), ("improved", "section"), ("improved512", "section")]
+TAGS = [
+    ("baseline", "chunk"),
+    ("improved", "section"),
+    ("improved512", "section"),
+    ("mle5base512", "section"),
+]
 
 
 def load(tag):

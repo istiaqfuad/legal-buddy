@@ -23,18 +23,22 @@ Qdrant collections on the configured remote server (`legal_acts_eval_baseline`,
 
 | variant | R@1 | R@3 | R@5 | R@10 | MRR |
 |---|---|---|---|---|---|
-| baseline       | 0.258 | 0.400 | 0.508 | 0.575 | 0.364 |
-| **improved-128** | **0.308** | **0.458** | 0.500 | **0.608** | **0.408** |
-| improved-512   | 0.175 | 0.308 | 0.392 | 0.458 | 0.274 |
+| baseline                 | 0.258 | 0.400 | 0.508 | 0.575 | 0.364 |
+| improved-128 (#1–#4)     | 0.308 | 0.458 | 0.500 | 0.608 | 0.408 |
+| improved-512             | 0.175 | 0.308 | 0.392 | 0.458 | 0.274 |
+| **multilingual-e5-base @512** | **0.567** | **0.733** | **0.825** | **0.883** | **0.675** |
 
-Δ improved-128 vs baseline: R@1 **+0.050**, R@3 **+0.058**, R@5 −0.008,
-R@10 **+0.033**, MRR **+0.044**.
-Δ improved-512 vs baseline: R@1 −0.083, R@3 −0.092, R@5 −0.117, R@10 −0.117.
+Δ improved-128 vs baseline: R@1 +0.050, R@3 +0.058, R@5 −0.008, R@10 +0.033,
+MRR +0.044 — a real, consistent win (4/5 metrics; n=26 had hidden it in noise).
+Δ improved-512 vs baseline: −0.08 to −0.12 everywhere — worse.
+Δ **multilingual-e5-base @512 vs baseline: +0.31 R@1, +0.33 R@3, +0.32 R@5,
++0.31 R@10, +0.31 MRR** — every metric roughly doubles.
 
-**improved-128 is a real, consistent win** — better on 4 of 5 metrics (R@5 flat),
-each delta 4–7 questions and pointing the same direction. (At the earlier n=26
-these gains were buried in noise; n=120 resolves them.) Parent-document dedup (#4)
-adds a touch more at section level (R@3 0.442→0.458, R@10 0.600→0.608).
+**The model swap dwarfs every chunking change.** Same improved chunking, same
+n=120 gold set, same parent-doc retrieval — only the embedding model changed
+(`triBne-e5-small` 384-dim/128-tok → `intfloat/multilingual-e5-base`
+768-dim/512-tok). R@1 went 0.26 → 0.57, R@10 0.58 → 0.88. The chunking work buys
+~5 points; the right model buys ~31.
 
 ## Two firm findings
 
@@ -65,18 +69,19 @@ leverage next step, well above any further chunking tweak.
 
 ## Verdict & recommendations
 
-1. **Ship improved-128 (#1–#4).** It beats baseline consistently at n=120
-   (+5pp R@1, +5.8pp R@3, +3.3pp R@10, +4.4pp MRR). The only cost is ~2.7× more
-   points in Qdrant (17.8k vs 6.7k) — cheap at this corpus size.
-2. **Do NOT raise the embedding window to 512.** Empirically 8–12 points worse —
-   the checkpoint is a true 128-token model. Leave `EMBEDDING_MAX_TOKENS` unset.
-3. **Highest-leverage next step is the model.** Swap `triBne-e5-small` for a
-   checkpoint actually trained at 512 tokens and strong on Bengali (e.g.
-   `intfloat/multilingual-e5-base`). Re-run this harness to confirm before
-   committing — it changes the vector size, so it needs a full re-ingest.
-4. **Optional: per-feature ablation.** #1–#4 were shipped as a bundle; if you want
-   to know each part's contribution, the harness supports it (one collection per
-   feature). Not required to ship.
+1. **Switch the embedding model to `intfloat/multilingual-e5-base` — this is the
+   headline change.** +31 points across the board (R@1 0.26→0.57, R@10 0.58→0.88,
+   MRR 0.36→0.68). It is genuinely trained at 512 tokens and strong on Bengali.
+   Cost: vector size 384→768, so it needs a full prod re-ingest (drop + recreate
+   the collection) and the same model on the query side. `EMBEDDING_MODEL` already
+   drives both ingest and API, so it's a one-line config change + re-ingest.
+2. **Keep the improved chunking (#1–#4).** It's a real +5pp on its own and these
+   results were produced with it; ship it alongside the model.
+3. **Do NOT force the 128-token model to 512.** `triBne-e5-small` at 512 was the
+   worst variant (−8 to −12pp) — its positions 128–512 are untrained. The 512 gain
+   only materialises with a model actually trained at 512.
+4. **Re-run this harness after the model swap on prod** to confirm at full corpus
+   scale, and consider a per-feature ablation of #1–#4 (harness supports it).
 
 ## Reproduce
 
