@@ -11,19 +11,6 @@ services:
       - api
     restart: unless-stopped
 
-  streamlit-app:
-    build:
-      context: .
-      dockerfile: apps/chatbot_ui/Dockerfile
-    ports:
-      - "8501:8501"
-    env_file:
-      - .env
-    depends_on:
-      - api
-    restart: unless-stopped
-    volumes:
-      - ./apps/chatbot_ui/src:/app/apps/chatbot_ui/src
   api:
     build:
       context: .
@@ -35,6 +22,7 @@ services:
     restart: unless-stopped
     volumes:
       - ./apps/api/src:/app/apps/api/src
+      - ./apps/shared/src:/app/apps/shared/src
       # Persist HuggingFace model cache so the embedding model is downloaded
       # only once, surviving container rebuilds/recreates.
       - hf-cache:/home/app/.cache/huggingface

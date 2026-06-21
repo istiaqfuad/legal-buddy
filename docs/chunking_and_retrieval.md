@@ -49,10 +49,12 @@ Optional `EMBEDDING_MAX_TOKENS` env var overrides the model's `max_seq_length`
 
 ---
 
-## 3. Ingestion — `notebooks/ingest_qdrant.py`
+## 3. Ingestion — `apps/ingestion` (chunking from `shared`)
 
-Run: `uv run python notebooks/ingest_qdrant.py`. Reads config from `.env`
-(`EMBEDDING_MODEL`, `QDRANT_VECTORESTORE`, `QDRANT_COLLECTION`, `HF_TOKEN`).
+Run: `uv run ingest`. The orchestration lives in `apps/ingestion`; the embedding,
+Qdrant, and chunking logic comes from the `shared` package (one source of truth
+with the API query side). Reads config from `.env` (`EMBEDDING_MODEL`,
+`QDRANT_VECTORESTORE`, `QDRANT_COLLECTION`, `HF_TOKEN`).
 
 ### 3.1 Cleaning & filtering (per section)
 

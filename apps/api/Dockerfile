@@ -8,14 +8,18 @@ ENV UV_COMPILE_BYTECODE=1 \
 # Install dependencies ONLY (no workspace source).
 # This layer is cached and only rebuilds when manifests/lockfile change,
 # so editing Python source no longer re-downloads/recompiles torch et al.
+# All workspace member manifests are needed for uv to resolve the graph.
 COPY pyproject.toml uv.lock ./
 COPY apps/api/pyproject.toml ./apps/api/pyproject.toml
-COPY apps/chatbot_ui/pyproject.toml ./apps/chatbot_ui/pyproject.toml
+COPY apps/shared/pyproject.toml ./apps/shared/pyproject.toml
+COPY apps/ingestion/pyproject.toml ./apps/ingestion/pyproject.toml
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-dev --no-install-workspace --package api
 
-# Copy package source and install the workspace package itself (fast — deps already present)
+# Copy source for api + its editable workspace dep (shared), then install the
+# api package itself (fast — external deps already present).
 COPY apps/api ./apps/api
+COPY apps/shared ./apps/shared
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-dev --package api
 

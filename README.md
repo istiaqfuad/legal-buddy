@@ -4,9 +4,11 @@ Production-style Retrieval Augmented Generation (RAG) project for Bangladesh leg
 
 This workspace contains:
 
-- A FastAPI backend that performs retrieval from Qdrant and answer generation with Gemini
-- A Streamlit frontend chat UI for end users
-- Shared workspace tooling via `uv`, Docker, and Docker Compose
+- A FastAPI backend: Qdrant retrieval + answer generation (Gemini or Groq)
+- A Next.js chat frontend (`apps/web`)
+- A `shared` package (embedding, Qdrant, chunking) used by both the API and ingestion
+- An `ingestion` package that builds the Qdrant index from `data/acts/`
+- Workspace tooling via `uv`, Docker, and Docker Compose
 
 ## What This Project Does
 
@@ -23,13 +25,16 @@ The UI displays the answer and expandable source cards with similarity scores.
 ## Repository Layout
 
 ```text
-llm_engineering/
+law_buddy/
 ├── apps/
-│   ├── api/                # FastAPI RAG service
-│   └── chatbot_ui/         # Streamlit chat frontend
-├── data/acts/              # Legal act JSON corpus
-├── notebooks/
-│   └── qdrant_ingestion.ipynb
+│   ├── api/                # FastAPI RAG service (query side)
+│   ├── web/                # Next.js chat frontend
+│   ├── shared/             # embedding, Qdrant, chunking (one source of truth)
+│   └── ingestion/          # builds the Qdrant index (passage side)
+├── data/acts/              # legal act JSON corpus (gitignored)
+├── eval/                   # chunking/retrieval A/B harness (see eval/README.md)
+├── docs/                   # chunking_and_retrieval.md, …
+├── notebooks/              # exploratory notebooks only
 ├── docker-compose.yml
 ├── Makefile
 ├── pyproject.toml          # uv workspace root
@@ -101,7 +106,7 @@ docker compose up --build
 
 4. Open apps:
 
-- UI: `http://localhost:8501`
+- UI: `http://localhost:3000`
 - API docs: `http://localhost:8000/docs`
 - Health: `http://localhost:8000/rag/health`
 
@@ -119,10 +124,12 @@ Run API:
 uv run --package api uvicorn api.app:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-Run UI in another terminal:
+Run the web UI in another terminal (Node 20+ / pnpm):
 
 ```bash
-API_URL=http://localhost:8000 uv run --package chatbot-ui streamlit run apps/chatbot_ui/src/chatbot_ui/app.py
+cd apps/web
+pnpm install
+API_URL=http://localhost:8000 pnpm dev   # http://localhost:3000
 ```
 
 ## API Contract Summary
@@ -144,7 +151,8 @@ Notes:
 - `question` is required
 - `top_k` is optional and falls back to `RETRIEVAL_TOP_K`
 - `max_tokens` is optional. If omitted/null and `ANSWER_MAX_TOKENS` is also unset, the model default token limit behavior is used.
-- The Streamlit UI currently does not expose `max_tokens` to end users.
+- `provider` (`gemini`|`groq`), `model`, and `temperature` are optional per-request
+  testing knobs; the web UI exposes them (plus `top_k`/`max_tokens`) in a dev settings panel.
 
 ## Observability
 
@@ -156,12 +164,12 @@ LangSmith instrumentation is integrated in the API for retrieval/generation span
 - Reingest the corpus into Qdrant with the configured HuggingFace embedding model:
 
 ```bash
-uv run python notebooks/ingest_qdrant.py
+uv run ingest
 ```
 
   This recreates `QDRANT_COLLECTION` with the embedding model's vector size and upserts all
   non-repealed sections. Set `INGEST_MAX_RECORDS=N` to limit records for a quick smoke test.
-- The exploratory workflow is also documented in `notebooks/qdrant_ingestion.ipynb`
+  Orchestration lives in `apps/ingestion`; chunking/embedding/Qdrant come from `shared`.
 
 ## Useful Commands
 
@@ -173,4 +181,8 @@ make run-docker-compose  # sync + docker compose up --build
 ## Additional Docs
 
 - API details: `apps/api/README.md`
-- UI details: `apps/chatbot_ui/README.md`
+- Web UI: `apps/web/README.md`
+- Shared primitives: `apps/shared/README.md`
+- Ingestion: `apps/ingestion/README.md`
+- Chunking & retrieval strategy: `docs/chunking_and_retrieval.md`
+- Eval harness: `eval/README.md`

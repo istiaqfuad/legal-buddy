@@ -32,12 +32,15 @@ def collect_records(mode: str):
     if mode == "baseline":
         from baseline_chunk import section_records
     else:
-        # Improved chunker lives in the production pipeline (notebooks/ingest_qdrant.py).
-        import importlib, sys, pathlib
+        # Improved chunker is the shared production chunker.
+        from common import EMBEDDING_MODEL
+        from shared.chunking import section_records as _shared_records
+        from shared.embedding import is_e5
 
-        sys.path.insert(0, str(pathlib.Path(ACTS_DIR).parents[1] / "notebooks"))
-        ingest_mod = importlib.import_module("ingest_qdrant")
-        section_records = ingest_mod.improved_section_records
+        e5 = is_e5(EMBEDDING_MODEL)
+
+        def section_records(act_obj, section, model):
+            return _shared_records(act_obj, section, model, e5)
 
     records = []
     stats = {"acts": 0, "sections": 0, "chunks": 0, "skipped_sections": 0}

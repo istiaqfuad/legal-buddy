@@ -1,13 +1,11 @@
-from urllib.parse import urlparse
-
 from langsmith import trace
-from qdrant_client import QdrantClient
 
 from api.api.models import SourceItem
 from api.core.config import config
 from api.core.observability import get_langsmith_client
 
 from api.agents.legal_chat.embedding import embed_text_query_with_trace
+from shared.qdrant import build_client
 
 # Parent-document retrieval (#4): pull several chunks per query, then collapse to
 # unique sections so the LLM receives whole sections (not headless split parts) and
@@ -15,22 +13,9 @@ from api.agents.legal_chat.embedding import embed_text_query_with_trace
 CANDIDATE_MULTIPLIER = 5
 MIN_CANDIDATES = 20
 
-
-def _build_qdrant_client() -> QdrantClient:
-    parsed = urlparse(config.QDRANT_VECTORESTORE)
-    kwargs: dict = {
-        "url": config.QDRANT_VECTORESTORE,
-        "api_key": config.QDRANT_API_KEY,
-        "timeout": 30,
-    }
-    # qdrant-client defaults to port 6333 when the URL omits a port; an https
-    # endpoint behind a reverse proxy (e.g. Cloudflare) is served on 443.
-    if parsed.scheme == "https" and parsed.port is None:
-        kwargs["port"] = 443
-    return QdrantClient(**kwargs)
-
-
-_qdrant_client = _build_qdrant_client()
+_qdrant_client = build_client(
+    config.QDRANT_VECTORESTORE, config.QDRANT_API_KEY, timeout=30
+)
 
 
 def _hits_to_sources(hits, top_k: int) -> list[SourceItem]:

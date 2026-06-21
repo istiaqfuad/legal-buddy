@@ -1,34 +1,17 @@
-from functools import lru_cache
-
 from langsmith import trace
-from sentence_transformers import SentenceTransformer
 
 from api.core.config import config
+from shared.embedding import embed_query, is_e5, load_embedding_model
 
 
-@lru_cache(maxsize=1)
-def get_embedding_model() -> SentenceTransformer:
-    """Load the HuggingFace sentence-transformers model once, on CPU."""
-    return SentenceTransformer(
-        config.EMBEDDING_MODEL,
-        device="cpu",
-        token=config.HF_TOKEN,
-    )
-
-
-def _apply_query_prefix(text: str) -> str:
-    # e5-family models are asymmetric and expect a "query:" prefix on queries
-    # (passages are embedded with a "passage:" prefix at ingestion time).
-    if "e5" in config.EMBEDDING_MODEL.lower():
-        return f"query: {text}"
-    return text
+def get_embedding_model():
+    """The query-side embedding model — same loader the ingestion side uses."""
+    return load_embedding_model(config.EMBEDDING_MODEL, config.HF_TOKEN)
 
 
 def embed_text_query(text: str, *, max_input_chars: int = 2048) -> list[float]:
-    query_text = _apply_query_prefix(text[:max_input_chars])
     model = get_embedding_model()
-    vector = model.encode(query_text, normalize_embeddings=True)
-    return vector.tolist()
+    return embed_query(model, text[:max_input_chars], is_e5(config.EMBEDDING_MODEL))
 
 
 def embed_text_query_with_trace(
