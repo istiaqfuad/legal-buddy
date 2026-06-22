@@ -183,15 +183,16 @@ def retrieve_cases(
         return _case_groups_to_sources(groups, top_k)
 
 
-def retrieve_all_sources(
+def retrieve_dual(
     question: str, *, statute_k: int, case_k: int
-) -> list[SourceItem]:
-    """Dual-retrieve statutes + precedents, drop sub-floor hits, renumber ids.
+) -> tuple[list[SourceItem], list[SourceItem]]:
+    """Dual-retrieve, returning (statutes, precedents) SEPARATELY.
 
-    The query is embedded once and reused for both collections. Sources below
-    their per-corpus score floor are dropped so a scenario with no on-point
-    precedent falls back to statute-only (and, when nothing clears either floor,
-    the empty result drives abstention upstream).
+    The query is embedded once and reused for both collections. Sub-floor hits are
+    dropped. Only STATUTES are citable user-facing sources, so only they get
+    sequential citation ids; PRECEDENTS are reasoning-only background (not shown to
+    the user, never cited), so they keep their raw ids and are passed to the prompt
+    as an unnumbered context block.
     """
     traced = get_langsmith_client() is not None
     vector = _embed(question, traced)
@@ -201,13 +202,12 @@ def retrieve_all_sources(
         for s in retrieve_sources(question, statute_k, vector=vector)
         if s.score >= config.STATUTE_SCORE_FLOOR
     ]
-    cases = [
+    precedents = [
         c
         for c in retrieve_cases(question, case_k, vector=vector)
         if c.score >= config.CASE_SCORE_FLOOR
     ]
 
-    merged = statutes + cases
-    for new_id, source in enumerate(merged, start=1):
+    for new_id, source in enumerate(statutes, start=1):
         source.citation_id = new_id
-    return merged
+    return statutes, precedents

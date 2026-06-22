@@ -6,7 +6,7 @@ from api.core.observability import get_langsmith_client
 
 from api.agents.legal_chat.generation import run_llm
 from api.agents.legal_chat.prompting import build_grounded_prompt
-from api.agents.legal_chat.retrieval import retrieve_all_sources
+from api.agents.legal_chat.retrieval import retrieve_dual
 
 
 def legal_chat_pipeline(
@@ -26,23 +26,24 @@ def legal_chat_pipeline(
 
     client = get_langsmith_client()
     if client is None:
-        sources = retrieve_all_sources(
+        statutes, precedents = retrieve_dual(
             question, statute_k=resolved_top_k, case_k=config.CASES_TOP_K
         )
-        if not sources:
+        if not statutes and not precedents:
             return LegalChatResponse(
                 answer="I could not find relevant legal sources in the vector store for this question.",
                 sources=[],
             )
 
-        messages = build_grounded_prompt(question, sources)
+        messages = build_grounded_prompt(question, statutes, precedents)
         answer = run_llm(
             messages=messages,
-            sources=sources,
+            sources=statutes,
             max_tokens=resolved_max_tokens,
             **llm_kwargs,
         )
-        return LegalChatResponse(answer=answer, sources=sources)
+        # Precedents are reasoning-only context; only statutes are user-facing sources.
+        return LegalChatResponse(answer=answer, sources=statutes)
 
     with trace(
         name="legal-chat-request",
@@ -54,10 +55,10 @@ def legal_chat_pipeline(
         },
         metadata={"endpoint": "/rag/legal/chat"},
     ) as request_span:
-        sources = retrieve_all_sources(
+        statutes, precedents = retrieve_dual(
             question, statute_k=resolved_top_k, case_k=config.CASES_TOP_K
         )
-        if not sources:
+        if not statutes and not precedents:
             response = LegalChatResponse(
                 answer="I could not find relevant legal sources in the vector store for this question.",
                 sources=[],
@@ -65,18 +66,20 @@ def legal_chat_pipeline(
             request_span.end(outputs=response.model_dump())
             return response
 
-        messages = build_grounded_prompt(question, sources)
+        messages = build_grounded_prompt(question, statutes, precedents)
         answer = run_llm(
             messages=messages,
-            sources=sources,
+            sources=statutes,
             max_tokens=resolved_max_tokens,
             **llm_kwargs,
         )
-        response = LegalChatResponse(answer=answer, sources=sources)
+        # Precedents are reasoning-only context; only statutes are user-facing sources.
+        response = LegalChatResponse(answer=answer, sources=statutes)
         request_span.end(
             outputs={
                 "answer_preview": answer[:200],
-                "source_count": len(sources),
+                "source_count": len(statutes),
+                "precedent_count": len(precedents),
             }
         )
         return response
