@@ -20,16 +20,23 @@ def query_prefix(text: str, e5: bool) -> str:
 
 
 @lru_cache(maxsize=4)
-def load_embedding_model(model_name: str, token: str | None = None, max_tokens: int | None = None):
-    """Load a sentence-transformers model on CPU, cached per (model, token, window).
+def load_embedding_model(
+    model_name: str,
+    token: str | None = None,
+    max_tokens: int | None = None,
+    device: str = "cpu",
+):
+    """Load a sentence-transformers model, cached per (model, token, window, device).
 
     max_tokens overrides the model's max_seq_length — some e5 checkpoints ship a
     128-token window but support 512; set it to embed longer chunks without
-    silent truncation.
+    silent truncation. ``device`` is "cpu" by default; pass "cuda" to embed on a
+    GPU (e.g. the Fedora RTX 2070 for the large cases corpus). The API/query side
+    stays on CPU; only the bulk ingestion run needs the GPU.
     """
     from sentence_transformers import SentenceTransformer
 
-    model = SentenceTransformer(model_name, device="cpu", token=token)
+    model = SentenceTransformer(model_name, device=device, token=token)
     if max_tokens:
         model.max_seq_length = int(max_tokens)
         model.tokenizer.model_max_length = int(max_tokens)
