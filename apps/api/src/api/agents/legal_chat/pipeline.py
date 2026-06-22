@@ -6,7 +6,7 @@ from api.core.observability import get_langsmith_client
 
 from api.agents.legal_chat.generation import run_llm
 from api.agents.legal_chat.prompting import build_grounded_prompt
-from api.agents.legal_chat.retrieval import retrieve_sources
+from api.agents.legal_chat.retrieval import retrieve_all_sources
 
 
 def legal_chat_pipeline(
@@ -26,7 +26,9 @@ def legal_chat_pipeline(
 
     client = get_langsmith_client()
     if client is None:
-        sources = retrieve_sources(question, top_k=resolved_top_k)
+        sources = retrieve_all_sources(
+            question, statute_k=resolved_top_k, case_k=config.CASES_TOP_K
+        )
         if not sources:
             return LegalChatResponse(
                 answer="I could not find relevant legal sources in the vector store for this question.",
@@ -52,7 +54,9 @@ def legal_chat_pipeline(
         },
         metadata={"endpoint": "/rag/legal/chat"},
     ) as request_span:
-        sources = retrieve_sources(question, top_k=resolved_top_k)
+        sources = retrieve_all_sources(
+            question, statute_k=resolved_top_k, case_k=config.CASES_TOP_K
+        )
         if not sources:
             response = LegalChatResponse(
                 answer="I could not find relevant legal sources in the vector store for this question.",

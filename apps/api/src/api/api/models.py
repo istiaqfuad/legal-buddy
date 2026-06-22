@@ -16,10 +16,20 @@ class LegalChatRequest(BaseModel):
 
 class SourceItem(BaseModel):
     citation_id: int
+    # "statute" (act/section) or "precedent" (court judgment). Defaults to statute
+    # so existing acts retrieval is unchanged.
+    source_type: Literal["statute", "precedent"] = "statute"
+    # Statute fields
     act_title: str | None = None
     act_year: int | None = None
     section_index: str | None = None
     source_url: str | None = None
+    # Precedent (case-law) fields
+    full_case_ref: str | None = None
+    court: str | None = None
+    disposition: str | None = None
+    judgment_date: str | None = None
+    case_year: int | None = None
     excerpt: str
     score: float
 
