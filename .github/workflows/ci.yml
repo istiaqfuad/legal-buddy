@@ -1,9 +1,9 @@
 name: CI
 
-# Gate for the production deploy: run on pushes to main and on PRs targeting
-# production (and main). Protect the `production` branch in GitHub settings to
-# require this workflow to pass before merge, so a broken build never reaches
-# Dokploy (which auto-deploys on push to production).
+# Gate for the production deploy: runs on every push to main (and on PRs
+# targeting main/production). Dokploy auto-deploys on tag push (e.g. vX.Y.Z),
+# so the flow is: push to main -> CI must pass -> tag the green commit -> deploy.
+# Only tag commits whose CI has gone green, so a broken build never ships.
 on:
   push:
     branches: [main]
