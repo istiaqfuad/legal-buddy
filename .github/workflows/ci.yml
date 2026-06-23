@@ -1,0 +1,54 @@
+name: CI
+
+# Gate for the production deploy: run on pushes to main and on PRs targeting
+# production (and main). Protect the `production` branch in GitHub settings to
+# require this workflow to pass before merge, so a broken build never reaches
+# Dokploy (which auto-deploys on push to production).
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [production, main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  api:
+    name: api · syntax check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - name: Sync api dependencies (CPU torch index)
+        run: uv sync --frozen --no-dev --package api
+      # compileall checks syntax without importing (no EMBEDDING_MODEL env or
+      # model download needed). Catches syntax/indentation breakage pre-deploy.
+      - name: Byte-compile api + shared
+        run: uv run python -m compileall -q apps/api/src apps/shared/src
+
+  web:
+    name: web · next build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.5.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: apps/web/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      # The standalone production build — the change most likely to break a deploy.
+      - run: pnpm build
+        env:
+          NEXT_TELEMETRY_DISABLED: "1"
