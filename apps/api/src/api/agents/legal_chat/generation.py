@@ -63,9 +63,6 @@ def _render_structured_answer(answer: StructuredLegalAnswer, max_source_id: int)
         source_tags = _source_tag_list(citation_ids)
         lines.append(f"{answer_text} {source_tags}".strip() if source_tags else answer_text)
 
-    if answer.limitations:
-        lines.append(f"\nLimitations: {answer.limitations.strip()}")
-
     return "\n".join(lines).strip()
 
 
@@ -77,11 +74,18 @@ def _build_structured_messages(messages: list[dict]) -> list[dict]:
     user_message = messages[1]
     structured_instruction = (
         "\n\nReturn JSON for this schema:\n"
-        "- answer: string — a concise, bullet-first answer grounded in the sources. "
-        "If the question is too vague or under-specified to answer reliably, "
-        "instead ask 1-2 short clarifying questions here and leave citations empty.\n"
+        "- answer: string — Markdown. A direct, grounded answer; structure it "
+        "however best fits the question (prose, a few bullets, or a single line), "
+        "varying with the question rather than a fixed template. Be concise, don't "
+        "repeat a point or citation, cite as [Source N] with one number per "
+        "bracket. When the user describes their OWN situation you may end with one "
+        "short follow-up question about a fact that would change the answer. Stick "
+        "to what the sources support — no generic procedure/recovery/sentencing "
+        "speculation. If the question is too vague to answer reliably, instead ask "
+        "1-2 short clarifying questions here and leave citations empty.\n"
         "- citations: int[] — every source id you relied on, not just one.\n"
-        "- limitations: string | null\n"
+        "- limitations: string | null — leave null unless there is a genuine legal "
+        "caveat; do not put a disclaimer or the follow-up question here.\n"
         "Rules:\n"
         "- Use only source ids from the provided [Source n] context; never invent citations.\n"
         "- Reference specific section numbers and cite all relevant sources."

@@ -46,13 +46,22 @@ export function Message({ turn }: { turn: Turn }) {
   );
 }
 
-// Render the API's "[Source 2]" citations as compact "[2]" markers. The link text
+// Render the API's "[Source N]" citations as compact "[N]" markers. The link text
 // is the bare number; the surrounding brackets are added by CSS (.answer-prose a)
-// so every citation renders as "[2]" whether or not it links out.
+// so every citation renders as "[2]" whether or not it links out. Handles every
+// shape the model emits — "[Source 2]", "[Source 2, 5]", "[Source 2, Source 5]",
+// "[Sources 2 and 5]" — by grabbing the whole bracketed block and expanding each
+// number to its own compact marker, so citations are consistent throughout.
 function linkifyCitations(answer: string, sources: Source[]): string {
   const byId = new Map(sources.map((s) => [s.citation_id, s]));
-  return answer.replace(/\[Source\s+(\d+)\]/g, (_match, n) => {
-    const src = byId.get(Number(n));
-    return src?.source_url ? `[${n}](${src.source_url})` : `[${n}]`;
+  return answer.replace(/\[Sources?\b[^\]]*\]/gi, (block) => {
+    const nums = block.match(/\d+/g);
+    if (!nums) return block;
+    return nums
+      .map((n) => {
+        const src = byId.get(Number(n));
+        return src?.source_url ? `[${n}](${src.source_url})` : `[${n}]`;
+      })
+      .join("");
   });
 }

@@ -40,7 +40,7 @@ class Config(BaseSettings):
 
     POSTGRES_CONNECTION_STRING: str | None = None
 
-    RETRIEVAL_TOP_K: int = 6
+    RETRIEVAL_TOP_K: int = 8
     # Precedents to include alongside the statute top-k.
     CASES_TOP_K: int = 4
     # Minimum cosine score for a retrieved source to count as relevant. A corpus
@@ -53,12 +53,18 @@ class Config(BaseSettings):
     STATUTE_SCORE_FLOOR: float = 0.0
     CASE_SCORE_FLOOR: float = 0.82
     ANSWER_MAX_TOKENS: int | None = None
-    # Top-statute cosine below this routes the turn to a clarifying question
-    # (with no sources) instead of answering from junk hits. Empirical for
-    # multilingual-e5-base: clear/answerable queries top out ~0.85+, while vague
-    # or off-topic ones plateau ~0.81-0.82 (e5 cosine has a high baseline). Thin
-    # margin — a cross-encoder reranker is the robust fix; tune against eval.
-    CLARIFY_SCORE_FLOOR: float = 0.83
+    # Two-tier clarify control. The e5 cosine is a WEAK separator — measured,
+    # off-topic "what time is it" scores 0.836 while answerable "my neighbor keeps
+    # threatening me" tops out at 0.818 (with the correct §503 as its top hit). So
+    # no single floor cleanly splits answerable from off-topic. Instead:
+    #   • CLARIFY_SCORE_FLOOR (hard, low): only genuine garbage below this routes
+    #     to a deterministic no-source clarify (e.g. "best pizza recipe" 0.781).
+    #   • LOW_CONFIDENCE_FLOOR (soft, higher): between the two, the turn still goes
+    #     to the model WITH its sources plus a low-confidence hint, and the model
+    #     decides whether to answer or ask. Borderline judgment is the model's, not
+    #     a brittle cutoff. A cross-encoder reranker is the robust long-term fix.
+    CLARIFY_SCORE_FLOOR: float = 0.79
+    LOW_CONFIDENCE_FLOOR: float = 0.83
 
 
 config = Config()

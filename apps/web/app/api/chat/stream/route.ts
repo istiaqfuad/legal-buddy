@@ -61,6 +61,8 @@ export async function POST(request: Request) {
         model,
         temperature: num(body.temperature),
         max_tokens: num(body.max_tokens),
+        clarify_score_floor: num(body.clarify_score_floor),
+        low_confidence_floor: num(body.low_confidence_floor),
       }),
       signal: controller.signal,
     });

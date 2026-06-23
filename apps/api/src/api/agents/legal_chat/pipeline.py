@@ -19,10 +19,19 @@ def _trim_history(history: list[ChatMessage] | None) -> list[ChatMessage]:
     return history[-config.HISTORY_WINDOW_TURNS :]
 
 
-def _is_low_confidence(statutes: list) -> bool:
-    """Top-statute score below the clarify floor (or nothing retrieved) — used to
-    nudge the answer prompt toward asking instead of guessing."""
-    return not statutes or statutes[0].score < config.CLARIFY_SCORE_FLOOR
+def _is_no_match(statutes: list, floor: float) -> bool:
+    """Genuine no-match: nothing retrieved, or the top hit is below the hard floor
+    (off-topic garbage). Only this routes to a deterministic clarify — borderline
+    cases go to the model, which decides whether to answer or ask. The e5 score is
+    a weak separator, so this floor is set low and the real judgment is the model's."""
+    return not statutes or statutes[0].score < floor
+
+
+def _is_low_confidence(statutes: list, floor: float) -> bool:
+    """Top-statute score shaky (below the low-confidence floor) — passed to the
+    answer prompt as a soft hint so the model leans toward clarifying when the
+    sources may not fit, without forcing a hard branch."""
+    return not statutes or statutes[0].score < floor
 
 
 def legal_chat_pipeline(
@@ -34,10 +43,22 @@ def legal_chat_pipeline(
     provider: str | None = None,
     model: str | None = None,
     temperature: float | None = None,
+    clarify_score_floor: float | None = None,
+    low_confidence_floor: float | None = None,
 ) -> LegalChatResponse:
     resolved_top_k = top_k or config.RETRIEVAL_TOP_K
     resolved_max_tokens = (
         max_tokens if max_tokens is not None else config.ANSWER_MAX_TOKENS
+    )
+    clarify_floor = (
+        clarify_score_floor
+        if clarify_score_floor is not None
+        else config.CLARIFY_SCORE_FLOOR
+    )
+    low_conf_floor = (
+        low_confidence_floor
+        if low_confidence_floor is not None
+        else config.LOW_CONFIDENCE_FLOOR
     )
     history = _trim_history(history)
     llm_kwargs = {"provider": provider, "model": model, "temperature": temperature}
@@ -52,7 +73,7 @@ def legal_chat_pipeline(
         statutes, precedents = retrieve_dual(
             search_query, statute_k=resolved_top_k, case_k=config.CASES_TOP_K
         )
-        if _is_low_confidence(statutes):
+        if _is_no_match(statutes, clarify_floor):
             # Nothing to ground an answer in — ask for specifics, don't dead-end.
             clarify = run_llm_text(build_clarify_prompt(question, history), **llm_kwargs)
             return LegalChatResponse(answer=clarify, sources=[])
@@ -62,7 +83,7 @@ def legal_chat_pipeline(
             statutes,
             precedents,
             history,
-            low_confidence=_is_low_confidence(statutes),
+            low_confidence=_is_low_confidence(statutes, low_conf_floor),
         )
         answer = run_llm(
             messages=messages,
@@ -88,7 +109,7 @@ def legal_chat_pipeline(
         statutes, precedents = retrieve_dual(
             search_query, statute_k=resolved_top_k, case_k=config.CASES_TOP_K
         )
-        if _is_low_confidence(statutes):
+        if _is_no_match(statutes, clarify_floor):
             clarify = run_llm_text(build_clarify_prompt(question, history), **llm_kwargs)
             response = LegalChatResponse(answer=clarify, sources=[])
             request_span.end(outputs=response.model_dump())
@@ -99,7 +120,7 @@ def legal_chat_pipeline(
             statutes,
             precedents,
             history,
-            low_confidence=_is_low_confidence(statutes),
+            low_confidence=_is_low_confidence(statutes, low_conf_floor),
         )
         answer = run_llm(
             messages=messages,
@@ -128,6 +149,8 @@ def legal_chat_pipeline_stream(
     provider: str | None = None,
     model: str | None = None,
     temperature: float | None = None,
+    clarify_score_floor: float | None = None,
+    low_confidence_floor: float | None = None,
 ) -> Iterator[dict]:
     """Streaming variant for the chat UI.
 
@@ -140,6 +163,16 @@ def legal_chat_pipeline_stream(
     resolved_max_tokens = (
         max_tokens if max_tokens is not None else config.ANSWER_MAX_TOKENS
     )
+    clarify_floor = (
+        clarify_score_floor
+        if clarify_score_floor is not None
+        else config.CLARIFY_SCORE_FLOOR
+    )
+    low_conf_floor = (
+        low_confidence_floor
+        if low_confidence_floor is not None
+        else config.LOW_CONFIDENCE_FLOOR
+    )
     history = _trim_history(history)
 
     search_query = condense_question(question, history, provider=provider)
@@ -149,7 +182,7 @@ def legal_chat_pipeline_stream(
 
     yield {"type": "sources", "sources": [s.model_dump() for s in statutes]}
 
-    if _is_low_confidence(statutes):
+    if _is_no_match(statutes, clarify_floor):
         # Nothing to ground an answer in — stream a clarifying question instead.
         for chunk in run_llm_stream(
             build_clarify_prompt(question, history),
@@ -167,7 +200,7 @@ def legal_chat_pipeline_stream(
         statutes,
         precedents,
         history,
-        low_confidence=_is_low_confidence(statutes),
+        low_confidence=_is_low_confidence(statutes, low_conf_floor),
     )
     for chunk in run_llm_stream(
         messages,

@@ -23,6 +23,11 @@ export interface ChatSettings {
   temperature: number;
   maxTokens: number | null;
   topK: number;
+  // Clarify thresholds (top-statute cosine). clarifyScoreFloor = hard no-match
+  // floor (below -> deterministic clarify); lowConfidenceFloor = soft hint floor
+  // (below -> nudge the model toward asking). Mirror the API config defaults.
+  clarifyScoreFloor: number;
+  lowConfidenceFloor: number;
 }
 
 export const PROVIDER_MODELS: Record<Provider, string[]> = {
@@ -36,6 +41,8 @@ export const DEFAULT_SETTINGS: ChatSettings = {
   temperature: 0.2,
   maxTokens: null,
   topK: 6,
+  clarifyScoreFloor: 0.79,
+  lowConfidenceFloor: 0.83,
 };
 
 export type Role = "user" | "assistant";

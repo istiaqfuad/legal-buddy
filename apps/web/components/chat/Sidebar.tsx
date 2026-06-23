@@ -57,6 +57,53 @@ export function SidebarContent({
           <Hint>Statute sections fed to the model. More = broader & better-cited; fewer = tighter.</Hint>
         </Section>
 
+        {/* Clarification thresholds */}
+        <Section title="Clarification" divider>
+          <div className="space-y-2">
+            <Row label="Clarify floor (hard)" value={settings.clarifyScoreFloor.toFixed(2)} />
+            <input
+              type="range"
+              min={0.7}
+              max={0.95}
+              step={0.01}
+              value={settings.clarifyScoreFloor}
+              onChange={(e) => {
+                const v = Number(e.target.value);
+                set({
+                  clarifyScoreFloor: v,
+                  lowConfidenceFloor: Math.max(v, settings.lowConfidenceFloor),
+                });
+              }}
+              aria-label="Clarify score floor"
+              aria-valuetext={settings.clarifyScoreFloor.toFixed(2)}
+              className="w-full accent-accent"
+            />
+            <Hint>Below this top-match score the answer is replaced by a clarifying question. Lower = answers more; higher = asks more.</Hint>
+          </div>
+
+          <div className="space-y-2">
+            <Row label="Low-confidence floor (soft)" value={settings.lowConfidenceFloor.toFixed(2)} />
+            <input
+              type="range"
+              min={0.7}
+              max={0.95}
+              step={0.01}
+              value={settings.lowConfidenceFloor}
+              onChange={(e) => {
+                const v = Number(e.target.value);
+                set({
+                  lowConfidenceFloor: v,
+                  clarifyScoreFloor: Math.min(v, settings.clarifyScoreFloor),
+                });
+              }}
+              aria-label="Low confidence floor"
+              aria-valuetext={settings.lowConfidenceFloor.toFixed(2)}
+              className="w-full accent-accent"
+            />
+            <Hint>Between this and the hard floor the model keeps the sources but is nudged to ask if they don&apos;t fit. Kept ≥ hard floor.</Hint>
+          </div>
+        </Section>
+
         {/* Model */}
         <Section title="Model" tag="dev only" divider>
           <div className="space-y-2">

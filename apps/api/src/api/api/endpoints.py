@@ -19,6 +19,33 @@ logger = logging.getLogger(__name__)
 rag_router = APIRouter()
 
 
+def _client_error(exc: Exception) -> tuple[int, str]:
+    """Map an internal exception to a (status, user-safe message) pair.
+
+    The raw exception text (provider JSON, stack details, keys) must never reach
+    the browser — it is logged server-side instead. Known failure classes get a
+    helpful, plain-language message; everything else gets a generic one."""
+    low = str(exc).lower()
+    if any(
+        k in low
+        for k in ("resource_exhausted", "429", "quota", "rate limit", "rate-limit")
+    ):
+        return 429, (
+            "The model provider is rate-limited right now (free-tier quota "
+            "reached). Wait a few seconds and try again, or switch the provider "
+            "or model in settings."
+        )
+    if any(
+        k in low
+        for k in ("api_key", "api key", "unauthenticated", "permission denied", "401", "403")
+    ):
+        return 503, (
+            "The assistant is temporarily unavailable due to a configuration "
+            "issue. Please try again later."
+        )
+    return 500, "Something went wrong while generating the answer. Please try again."
+
+
 @rag_router.get("/health")
 async def health() -> dict:
     return {"status": "ok"}
@@ -35,10 +62,13 @@ async def legal_chat(payload: LegalChatRequest) -> LegalChatResponse:
             provider=payload.provider,
             model=payload.model,
             temperature=payload.temperature,
+            clarify_score_floor=payload.clarify_score_floor,
+            low_confidence_floor=payload.low_confidence_floor,
         )
     except Exception as exc:
         logger.exception("Error in /legal/chat")
-        raise HTTPException(status_code=500, detail=str(exc)) from exc
+        status, message = _client_error(exc)
+        raise HTTPException(status_code=status, detail=message) from exc
 
 
 def _sse(event: str, data: dict) -> str:
@@ -63,6 +93,8 @@ async def legal_chat_stream(payload: LegalChatRequest) -> StreamingResponse:
                 provider=payload.provider,
                 model=payload.model,
                 temperature=payload.temperature,
+                clarify_score_floor=payload.clarify_score_floor,
+                low_confidence_floor=payload.low_confidence_floor,
             ):
                 etype = event.get("type")
                 if etype == "sources":
@@ -73,7 +105,8 @@ async def legal_chat_stream(payload: LegalChatRequest) -> StreamingResponse:
                     yield _sse("done", {})
         except Exception as exc:
             logger.exception("Error in /legal/chat/stream")
-            yield _sse("error", {"error": str(exc)})
+            _, message = _client_error(exc)
+            yield _sse("error", {"error": message})
 
     return StreamingResponse(
         event_stream(),

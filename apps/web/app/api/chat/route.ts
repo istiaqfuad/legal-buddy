@@ -27,6 +27,8 @@ export async function POST(request: Request) {
     typeof body.model === "string" && body.model.trim() ? body.model.trim() : undefined;
   const temperature = num(body.temperature);
   const maxTokens = num(body.max_tokens);
+  const clarifyScoreFloor = num(body.clarify_score_floor);
+  const lowConfidenceFloor = num(body.low_confidence_floor);
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
@@ -42,6 +44,8 @@ export async function POST(request: Request) {
         model,
         temperature,
         max_tokens: maxTokens,
+        clarify_score_floor: clarifyScoreFloor,
+        low_confidence_floor: lowConfidenceFloor,
       }),
       signal: controller.signal,
     });

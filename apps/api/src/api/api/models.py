@@ -21,6 +21,12 @@ class LegalChatRequest(BaseModel):
     provider: Literal["gemini", "groq"] | None = None
     model: str | None = None
     temperature: float | None = None
+    # Per-request overrides for the two clarify thresholds (sidebar sliders).
+    # None -> fall back to the config defaults. clarify_score_floor is the hard
+    # no-match floor (below it -> deterministic clarify); low_confidence_floor is
+    # the soft hint floor (below it -> nudge the model toward clarifying).
+    clarify_score_floor: float | None = None
+    low_confidence_floor: float | None = None
 
 
 class SourceItem(BaseModel):

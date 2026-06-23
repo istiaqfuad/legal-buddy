@@ -107,6 +107,8 @@ export function ChatApp() {
             model: settings.model || undefined,
             temperature: settings.temperature,
             max_tokens: settings.maxTokens ?? undefined,
+            clarify_score_floor: settings.clarifyScoreFloor,
+            low_confidence_floor: settings.lowConfidenceFloor,
           }),
         });
 
@@ -243,7 +245,7 @@ export function ChatApp() {
           <div className="mx-auto max-w-3xl">
             <Composer value={input} onChange={setInput} onSend={() => send()} loading={loading} />
             <p className="mt-2 text-center text-xs text-muted">
-              Grounded in indexed acts and may be incomplete. Verify against the cited sources.
+              General legal information, not legal advice; consult a lawyer.
             </p>
           </div>
         </div>
