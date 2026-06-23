@@ -1,6 +1,6 @@
 "use client";
 
-import { Scale, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import {
   type ChatSettings,
   type Provider,
@@ -27,19 +27,13 @@ export function SidebarContent({
     set({ provider, model: PROVIDER_MODELS[provider][0] });
 
   return (
-    <div className="flex h-full flex-col">
-      {/* Brand */}
-      <div className="flex items-center gap-3 px-5 py-5">
-        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent-soft text-accent">
-          <Scale className="h-5 w-5" strokeWidth={2} />
-        </span>
-        <div className="leading-tight">
-          <p className="text-base font-semibold tracking-tight">Law Buddy</p>
-          <p className="text-sm text-muted">Legal answers, cited</p>
-        </div>
+    <div className="flex h-full flex-col bg-surface">
+      <div className="px-6 pb-4 pt-6">
+        <h2 className="text-lg font-semibold tracking-tight text-text">Settings</h2>
+        <p className="mt-0.5 text-[13px] text-muted">Tune retrieval and the model.</p>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-5">
+      <div className="flex-1 overflow-y-auto px-6">
         {/* Retrieval */}
         <Section title="Retrieval">
           <Row label="Sources to retrieve" value={settings.topK} />
@@ -108,7 +102,7 @@ export function SidebarContent({
         <Section title="Model" tag="dev only" divider>
           <div className="space-y-2">
             <Label>Provider</Label>
-            <div role="radiogroup" aria-label="LLM provider" className="flex rounded-lg border border-border p-1">
+            <div role="radiogroup" aria-label="LLM provider" className="flex rounded-lg border border-line p-1">
               {PROVIDERS.map((p) => (
                 <button
                   key={p}
@@ -116,10 +110,10 @@ export function SidebarContent({
                   aria-checked={settings.provider === p}
                   onClick={() => pickProvider(p)}
                   className={cn(
-                    "flex-1 rounded-md px-3 py-2 text-sm font-medium capitalize transition-colors",
+                    "flex-1 rounded-md px-3 py-1.5 text-sm font-medium capitalize transition-colors",
                     settings.provider === p
-                      ? "bg-accent text-accent-foreground"
-                      : "text-muted hover:text-foreground",
+                      ? "bg-accent text-white"
+                      : "text-muted hover:text-text",
                   )}
                 >
                   {p}
@@ -135,7 +129,7 @@ export function SidebarContent({
               value={settings.model}
               onChange={(e) => set({ model: e.target.value })}
               placeholder="provider default"
-              className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
+              className="h-10 w-full rounded-lg border border-line bg-bg px-3 text-sm text-text outline-none focus:border-accent/50"
             />
             <datalist id="sidebar-model-options">
               {PROVIDER_MODELS[settings.provider].map((m) => (
@@ -167,22 +161,15 @@ export function SidebarContent({
               value={settings.maxTokens ?? ""}
               onChange={(e) => set({ maxTokens: e.target.value ? Number(e.target.value) : null })}
               placeholder="auto"
-              className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
+              className="h-10 w-full rounded-lg border border-line bg-bg px-3 text-sm text-text outline-none focus:border-accent/50"
             />
             <Hint>Caps answer length. Blank = model default.</Hint>
           </label>
         </Section>
       </div>
 
-      {/* Footer */}
-      <div className="border-t border-border px-5 py-4">
-        <Button
-          variant="outline"
-          size="md"
-          onClick={onClear}
-          disabled={!canClear}
-          className="w-full"
-        >
+      <div className="border-t border-line px-6 py-4">
+        <Button variant="outline" size="md" onClick={onClear} disabled={!canClear} className="w-full">
           <Trash2 className="h-4 w-4" />
           Clear conversation
         </Button>
@@ -203,15 +190,15 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className={cn("py-5", divider && "border-t border-border")}>
-      <h2 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted">
+    <section className={cn("py-5", divider && "border-t border-line")}>
+      <h3 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-faint">
         {title}
         {tag && (
-          <span className="rounded bg-user-bubble px-1.5 py-0.5 text-[10px] font-medium normal-case tracking-normal">
+          <span className="rounded bg-accent-soft px-1.5 py-0.5 text-[10px] font-medium normal-case tracking-normal text-accent">
             {tag}
           </span>
         )}
-      </h2>
+      </h3>
       <div className="space-y-5">{children}</div>
     </section>
   );
@@ -220,8 +207,8 @@ function Section({
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="flex items-center justify-between">
-      <span className="text-sm font-medium text-foreground">{label}</span>
-      <span className="rounded-md bg-user-bubble px-2 py-0.5 font-mono text-xs text-foreground">
+      <span className="text-sm font-medium text-text">{label}</span>
+      <span className="rounded-md bg-accent-soft px-2 py-0.5 text-xs font-medium tabular-nums text-accent">
         {value}
       </span>
     </div>
@@ -229,9 +216,9 @@ function Row({ label, value }: { label: string; value: React.ReactNode }) {
 }
 
 function Label({ children }: { children: React.ReactNode }) {
-  return <span className="text-sm font-medium text-foreground">{children}</span>;
+  return <span className="text-sm font-medium text-text">{children}</span>;
 }
 
 function Hint({ children }: { children: React.ReactNode }) {
-  return <p className="text-xs leading-relaxed text-muted">{children}</p>;
+  return <p className="text-[13px] leading-relaxed text-muted">{children}</p>;
 }

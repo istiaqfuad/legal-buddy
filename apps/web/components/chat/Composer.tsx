@@ -2,7 +2,6 @@
 
 import { useRef, useEffect } from "react";
 import { ArrowUp } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 export function Composer({
   value,
@@ -35,7 +34,7 @@ export function Composer({
   }
 
   return (
-    <div className="flex items-end gap-2 rounded-2xl border border-border bg-surface p-2 shadow-sm focus-within:ring-2 focus-within:ring-ring">
+    <div className="flex items-end gap-2 rounded-2xl border border-line bg-surface p-2 shadow-sm transition-colors focus-within:border-accent/50 focus-within:ring-2 focus-within:ring-accent/15">
       <label htmlFor="composer" className="sr-only">
         Ask a legal question
       </label>
@@ -47,17 +46,17 @@ export function Composer({
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={handleKeyDown}
         placeholder="Ask a legal question…"
-        className="block max-h-[200px] flex-1 resize-none bg-transparent px-2 py-2 text-base outline-none placeholder:text-muted"
+        className="block max-h-[200px] flex-1 resize-none bg-transparent px-2 py-2 text-base text-text outline-none placeholder:text-faint"
       />
-      <Button
-        size="icon"
+      <button
+        type="button"
         onClick={onSend}
         disabled={!canSend}
-        aria-label="Send message"
-        className="rounded-xl"
+        aria-label="Send"
+        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-accent text-white transition-colors hover:bg-accent-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-40"
       >
-        <ArrowUp className="h-4 w-4" />
-      </Button>
+        <ArrowUp className="h-4 w-4" strokeWidth={2.5} />
+      </button>
     </div>
   );
 }

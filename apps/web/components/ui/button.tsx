@@ -5,11 +5,9 @@ type Variant = "primary" | "ghost" | "outline";
 type Size = "sm" | "md" | "icon";
 
 const variants: Record<Variant, string> = {
-  primary:
-    "bg-accent text-accent-foreground hover:opacity-90 disabled:opacity-50",
-  ghost: "text-muted hover:bg-user-bubble hover:text-foreground",
-  outline:
-    "border border-border bg-surface text-foreground hover:bg-user-bubble",
+  primary: "bg-accent text-white hover:bg-accent-strong disabled:opacity-45",
+  ghost: "text-muted hover:bg-accent-soft hover:text-accent-strong",
+  outline: "border border-line bg-surface text-text hover:border-accent/40 hover:text-accent-strong",
 };
 
 const sizes: Record<Size, string> = {
