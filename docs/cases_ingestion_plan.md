@@ -47,7 +47,29 @@ on day one (scale note in §6).
 ## Pipeline (mirrors `notebooks/ingest_qdrant.py`, reuses the e5-base + parent-doc work)
 
 ### 1. Extraction — hybrid: fast text path + Docling (GPU) for the hard tail
-Two tiers, routed by a cheap probe (chars-per-page + Bengali-garble heuristic):
+Two tiers, routed by a cheap probe (chars-per-page + Bengali-garble heuristic).
+The probe that actually shipped — now run *per page* (Docling was dropped, see
+[Update 3](#update-3--page-level-hybrid-final-pipeline)) — is exactly this routing
+function:
+
+```python
+# apps/ingestion/src/ingestion/cases_hybrid.py
+def probe_page(text: str, has_image: bool) -> str:
+    """Route a single page from its tier-1 text. See module docstring."""
+    stripped = text.strip()
+    if len(stripped) < SCANNED_PAGE_CHARS:
+        return "scanned" if has_image else "empty"
+    if _bengali_ratio(text) >= PAGE_BENGALI_RATIO:
+        return "bengali"
+    if _nonascii_ratio(text) >= PAGE_NONASCII_RATIO:
+        return "garbled"
+    return "ok"
+```
+
+> The `PdfPipelineOptions` / `EasyOcrOptions` / `AcceleratorDevice` Docling config
+> below is the *original* plan and is **not implemented** — the shipped pipeline
+> calls EasyOCR directly per page (`cases_hybrid._make_reader` / `_ocr_page`), no
+> Docling dependency.
 
 - **Tier 1 — fast path (~95%+, local CPU):** `pdftotext`/`pymupdf` for clean
   born-digital **English** PDFs. Instant, no models. Normalize to Unicode **NFC**.
@@ -80,16 +102,99 @@ Two tiers, routed by a cheap probe (chars-per-page + Bengali-garble heuristic):
   (allowed/dismissed/disposed of).
 - Write to `data/cases_json/<case_id>.json` (intermediate, reviewable, re-runnable).
 
+The shipped record (`parse_case`) is close to the sketch above, with provenance
+fields added (`ref_source`, `fn_type`, `fn_part`) and parties kept as raw blocks:
+
+```python
+# apps/ingestion/src/ingestion/cases_structure.py  (parse_case return value)
+return {
+    "case_id": fn["case_id"],
+    "seq": fn["seq"],
+    "source_file": f"{stem}.pdf",
+    "court": _first(_COURT_RE, head),
+    "division": _first(_DIVISION_RE, head),
+    "jurisdiction": _first(_JURISDICTION_RE, head),
+    # ...
+    "case_type": case_type,
+    "case_no": case_no,
+    "case_year": case_year,
+    "full_case_ref": full_ref,
+    "ref_source": "header" if ref["full_case_ref"] else "filename",
+    # ...
+    "petitioners_raw": pet,
+    "respondents_raw": resp,
+    "advocates": _advocates(header),
+    "heard_dates": heard,
+    "judgment_date": judgment_date,
+    "disposition": _disposition(fn["fn_status"], text),
+    "body_text": text,
+}
+```
+
+`_disposition` reads filename status first, then falls back to body cues — exactly
+the two sources described above:
+
+```python
+# apps/ingestion/src/ingestion/cases_structure.py
+def _disposition(fn_status: str | None, body: str) -> str | None:
+    if fn_status:
+        return fn_status.replace("_", " ")
+    tail = body[-1500:].lower()
+    for cue, label in (
+        ("made absolute", "rule made absolute"),
+        # ...
+        ("dismissed", "dismissed"),
+        ("disposed of", "disposed of"),
+        ("is allowed", "allowed"),
+        # ...
+    ):
+        if cue in tail:
+            return label
+    return None
+```
+
 ### 3. Chunking — reuse the improved token-aware chunker
 - Reuse `improved_section_records` logic from `notebooks/ingest_qdrant.py`
   (token-aware, sized to the model window, contextual header per chunk).
 - Judgments are long prose, not sectioned like statutes → split on paragraphs /
   page boundaries into ~model-window chunks with overlap.
 - Prepend a **case header** to every chunk (`Case: <type> No N of YYYY | Court |
-  Parties`) — the cross-document analogue of the act/section header.
+  Parties`) — the cross-document analogue of the act/section header. As shipped:
+
+  ```python
+  # apps/ingestion/src/ingestion/cases_chunking.py
+  def case_header(rec: dict) -> str:
+      """One-line context header prepended to every chunk of a case."""
+      bits = [f"Case: {rec.get('full_case_ref') or rec.get('case_type') or 'Judgment'}"]
+      court = rec.get("division") or rec.get("court")
+      if court:
+          bits.append(court.title() if court.isupper() else court)
+      parties = _short_parties(rec)
+      if parties:
+          bits.append(parties)
+      return " | ".join(bits)
+  ```
+
 - Add a **synthetic summary chunk** per case (LLM 2–3 line holding summary) for
-  high-recall "what did this case decide" queries. `section_full` = the whole case
-  (or whole reasoning section) for parent-document retrieval.
+  high-recall "what did this case decide" queries. _(proposed — not yet
+  implemented.)_ `section_full` = the whole case (or whole reasoning section) for
+  parent-document retrieval. **Correction (built):** `section_full` was **dropped**
+  (it blew Qdrant's 32MB request limit — see [Update 2](#update-2--full-corpus-uncapped-with-bengali-ocr));
+  the chunk payload stores only `chunk_text` + `(case_uid, chunk_part)`, and the
+  full text lives in `data/cases_json/`:
+
+  ```python
+  # apps/ingestion/src/ingestion/cases_chunking.py  (case_records, per chunk)
+  records.append({
+      "embedding_text": f"{header}{cont}\n{chunk_text}",
+      "payload": {
+          **base_payload,
+          "chunk_part": i,
+          "n_parts": n_parts,
+          "chunk_text": chunk_text,
+      },
+  })
+  ```
 
 ### 4. Embedding + storage — separate collection
 - Same model as acts: **`intfloat/multilingual-e5-base`** (768-dim, 512-tok,
@@ -100,6 +205,37 @@ Two tiers, routed by a cheap probe (chars-per-page + Bengali-garble heuristic):
   `section_full`. Payload indexes on `case_type`, `case_year`, `court`,
   `disposition`, `case_uid`.
 
+The collection is created exactly with those indexes (`case_year` integer, the rest
+keyword) — note `section_full` is *not* part of the payload as built (see §3):
+
+```python
+# apps/ingestion/src/ingestion/cases_ingest.py
+qdrant.recreate_collection(
+    client,
+    COLLECTION_NAME,
+    vector_size,
+    integer_indexes=("case_year",),
+    keyword_indexes=("case_type", "court", "disposition", "case_uid"),
+)
+```
+
+The bulk embed reuses the shared `embed_passages` (same e5 `passage:` prefix as
+acts), and `EMBEDDING_DEVICE=cuda` sends it to the Fedora GPU:
+
+```python
+# apps/shared/src/shared/embedding.py
+def embed_passages(model, texts: list[str], e5: bool, batch_size: int = 32) -> list[list[float]]:
+    if not texts:
+        return []
+    vectors = model.encode(
+        [passage_prefix(t, e5) for t in texts],
+        batch_size=batch_size,
+        normalize_embeddings=True,
+        show_progress_bar=False,
+    )
+    return [vec.tolist() for vec in vectors]
+```
+
 ### 5. Retrieval integration — `apps/api/src/api/agents/legal_chat/retrieval.py`
 - Add a parallel `retrieve_cases()` querying `legal_cases` with the same
   parent-document dedupe as `_hits_to_sources`.
@@ -108,6 +244,65 @@ Two tiers, routed by a cheap probe (chars-per-page + Bengali-garble heuristic):
   that decides statute-only vs precedent vs both from the question.
 - Update `build_grounded_prompt` so the model distinguishes binding statute text
   from persuasive/precedent case holdings, and cites case numbers.
+
+**Built (option a, dual-retrieve).** `retrieve_cases()` shipped — it uses Qdrant
+*grouping* on `case_uid` (instead of `_hits_to_sources`-style flat dedupe) so one
+long judgment can't flood the candidate pool:
+
+```python
+# apps/api/src/api/agents/legal_chat/retrieval.py
+def _run():
+    return _qdrant_client.query_points_groups(
+        collection_name=config.CASES_COLLECTION,
+        query=vector,
+        group_by="case_uid",
+        limit=top_k,
+        group_size=2,
+        with_payload=True,
+    ).groups
+```
+
+`retrieve_dual` embeds the query once, queries both collections, and applies a
+per-collection score floor. The shipped policy differs from the plan: **only
+statutes are user-facing citable sources**; precedents are reasoning-only
+background (no citation ids):
+
+```python
+# apps/api/src/api/agents/legal_chat/retrieval.py
+def retrieve_dual(
+    question: str, *, statute_k: int, case_k: int
+) -> tuple[list[SourceItem], list[SourceItem]]:
+    # ...
+    traced = get_langsmith_client() is not None
+    vector = _embed(question, traced)
+
+    statutes = [
+        s
+        for s in retrieve_sources(question, statute_k, vector=vector)
+        if s.score >= config.STATUTE_SCORE_FLOOR
+    ]
+    precedents = [
+        c
+        for c in retrieve_cases(question, case_k, vector=vector)
+        if c.score >= config.CASE_SCORE_FLOOR
+    ]
+
+    for new_id, source in enumerate(statutes, start=1):
+        source.citation_id = new_id
+    return statutes, precedents
+```
+
+`SourceItem.source_type` is the `Literal` tag the plan called for:
+
+```python
+# apps/api/src/api/api/models.py
+source_type: Literal["statute", "precedent"] = "statute"
+```
+
+`build_grounded_prompt(question, statutes, precedents, history)` takes both lists
+and, contra the plan's "cites case numbers", instructs the model to fold precedent
+reasoning in **without** citing any case number/name/date (precedent is background
+only).
 
 ---
 
@@ -264,7 +459,19 @@ Three corrections after running at scale:
   case_no/year. EasyOCR runs on the Fedora 2070 (`torchvision==0.21.0+cu124`).
 - **Incremental append.** `cases-ingest` with `CASES_INGEST_FILES=<ids>` embeds and
   upserts only the listed cases (delete-by-`case_uid` then upsert, no recreate), so
-  the OCR'd hard tail joins `legal_cases` without re-embedding the 8k clean cases.
+  the OCR'd hard tail joins `legal_cases` without re-embedding the 8k clean cases:
+
+  ```python
+  # apps/ingestion/src/ingestion/cases_ingest.py  (ingest, append mode)
+  if append:
+      client.delete(
+          collection_name=COLLECTION_NAME,
+          points_selector=models.FilterSelector(filter=models.Filter(must=[
+              models.FieldCondition(key="case_uid",
+                                    match=models.MatchAny(any=sorted(only_ids)))
+          ])),
+      )
+  ```
 
 Run order on Fedora (chained, GPU): full embed → `cases-ocr` (444) →
 `cases-ingest` append. End state: all 8,493 judgments in `legal_cases`.
@@ -291,6 +498,29 @@ tier-1 PyMuPDF text per page  (cheap, CPU)        →  probe the page
   blank                    → drop
 ```
 
+That rule is the per-page dispatch inside `extract_document`'s page loop:
+
+```python
+# apps/ingestion/src/ingestion/cases_hybrid.py  (extract_document, per page)
+route = probe_page(t, has_image)
+
+if route == "ok":
+    parts.append(tidy_text(unicodedata.normalize("NFC", t)))
+    n_tier1 += 1
+elif route == "empty":
+    n_empty += 1
+    # nothing to append
+else:  # garbled | bengali | scanned -> OCR
+    if max_ocr_pages is not None and ocr_used >= max_ocr_pages:
+        capped = True
+        # ...
+    otext = _ocr_page(page, get_reader(), dpi)
+    ocr_used += 1
+    if otext.strip():
+        parts.append(tidy_text(unicodedata.normalize("NFC", otext)))
+        n_ocr += 1
+```
+
 Why OCR, not a font map: the corpus mixes **two** legacy failure modes — mojibake
 Latin (`q¡C−L¡VÑ`) *and* scrambled Bengali codepoints (`আমভ স` for `আমি সৌ…`,
 where pdftotext emits Bengali-block characters in the wrong order). A byte→Unicode
@@ -306,7 +536,15 @@ future PDF. Cost is paid only on the pages that need it.
   line leading. Result: **a linebreak marks a new paragraph, never a wrap.**
 - **OCR paragraphs.** EasyOCR `paragraph=True`; paragraphs joined with a blank line.
 - **`tidy_text`** collapses intra-paragraph wraps to spaces and blank-line runs to
-  one — no per-visual-line newlines.
+  one — no per-visual-line newlines:
+
+  ```python
+  # apps/ingestion/src/ingestion/cases_hybrid.py
+  def tidy_text(text: str) -> str:
+      paras = re.split(r"\n\s*\n+", text)            # blank line(s) = paragraph break
+      cleaned = [re.sub(r"\s+", " ", p).strip() for p in paras]   # wraps -> spaces
+      return "\n\n".join(p for p in cleaned if p)
+  ```
 - **Header metadata is parsed from line-structured text, not the reflowed body.**
   Reflow collapses the line anchors the header regexes need, so `extract_document`
   also returns `header_text` (raw line text of the head pages) and
@@ -315,7 +553,21 @@ future PDF. Cost is paid only on the pages that need it.
 - **Case ref is filename-authoritative.** `_case_ref` trusts a header
   `Type No. N of YYYY` only when its *number* matches the filename's; otherwise it
   synthesizes from the filename (the court's catalog id). This stops Bengali/OCR'd
-  judgments from picking up a *cited* lower-court reference as their own.
+  judgments from picking up a *cited* lower-court reference as their own:
+
+  ```python
+  # apps/ingestion/src/ingestion/cases_structure.py  (_case_ref)
+  if fn_no is not None:
+      # Number is the discriminator: a header ref whose NUMBER matches the
+      # filename is this case ... A number that doesn't match is a cited/garbage
+      # ref -> reject and let the caller synthesize from the filename.
+      for cand in matches:
+          if cand[1] == fn_no:
+              ctype, no, year = cand
+              return {"case_type": ctype, "case_no": no, "case_year": year,
+                      "full_case_ref": f"{ctype} No. {no} of {year}"}
+      return none
+  ```
 
 ### Modules (final)
 
@@ -323,30 +575,54 @@ future PDF. Cost is paid only on the pages that need it.
 |---|---|---|
 | `ingestion/cases_hybrid.py` | page-level extraction (`extract_document`, `_page_text` reflow, `tidy_text`, lazy `_make_reader`) | — |
 | `ingestion/cases_structure.py` | header parser → record (`parse_case`, filename-authoritative ref) | — |
-| `ingestion/cases_build_hybrid.py` | driver: `data/cases/*.pdf` → `data/cases_json/<stem>.json` | `uv run cases-build` |
+| `ingestion/cases_build.py` | driver: `data/cases/*.pdf` → `data/cases_json/<stem>.json` | `uv run cases-build` |
 | `ingestion/cases_chunking.py` | paragraph/token chunker, per-chunk case header, `source_type=precedent` | — |
 | `ingestion/cases_ingest.py` | embed (e5-base) → Qdrant `legal_cases` | `uv run cases-ingest` |
 
 `cases-build` env: `EMBEDDING_DEVICE=cuda` (GPU OCR), `CASES_HYBRID_RESUME=1`
 (skip already-written, crash-safe), `CASES_HYBRID_MAX_OCR_PAGES` (per-file OCR
 budget, default 400), `CASES_LIMIT`. Must run on the Fedora GPU box (OCR inline);
-English-only files never load EasyOCR (reader built lazily on the first OCR page).
+English-only files never load EasyOCR (reader built lazily on the first OCR page):
+
+```python
+# apps/ingestion/src/ingestion/cases_build.py  (build)
+_reader = {}
+def get_reader():
+    if "r" not in _reader:
+        from ingestion.cases_hybrid import _make_reader
+        print("[cases-build] building EasyOCR reader (first OCR page)", flush=True)
+        _reader["r"] = _make_reader(["en", "bn"], gpu)
+    return _reader["r"]
+```
+
+`_make_reader` imports `easyocr` lazily (it is not a declared dependency — it is
+only present on the GPU box), so a pure-English corpus slice never touches torch:
+
+```python
+# apps/ingestion/src/ingestion/cases_hybrid.py
+def _make_reader(langs: list[str], gpu: bool):
+    import easyocr
+    return easyocr.Reader(langs, gpu=gpu)
+```
 
 Per-record provenance: `extraction_tier="hybrid"`, `lang` (english/mixed/bengali),
 `route_counts` (per-page tally), `pages_tier1`, `pages_ocr`, `pages_empty`,
 `bengali_ratio`, `ocr_capped`.
 
-The old `cases_extract.py` (file-level routing), `cases_build.py` (tier-1 driver),
-and `cases_ocr.py` (whole-file OCR) are **removed**; their only still-needed piece,
-the EasyOCR reader factory, moved to `cases_hybrid._make_reader`. The ablation
-harness (`cases_ablation.py`, `cases_hybrid_ablation.py`, with saved results under
+The old file-level modules — `cases_extract.py` (file-level routing), the tier-1
+`cases_build.py`, and `cases_ocr.py` (whole-file OCR) — are **removed**; their only
+still-needed piece, the EasyOCR reader factory, moved to `cases_hybrid._make_reader`,
+and the page-level driver took the freed `cases_build.py` name. The ablation harness
+(`cases_ablation.py`, `cases_hybrid_ablation.py`, with saved results under
 `data/ablation/`) is preserved on the **`cases-ablation` branch**, out of the
 production package.
 
-### Status
+### Status (2026-06-23 — complete)
 
-- **7,076 English files** extracted (page-level tier-1) into `data/cases_json/`.
-- **~1,417 Bengali/garbled/scanned files** still need the OCR pass — currently
-  blocked: the shared RTX 2070 is occupied by another job, so EasyOCR OOMs. Rerun
-  `cases-build` with `CASES_HYBRID_RESUME=1` once the GPU frees (it reprocesses
-  exactly the missing files), then `cases-ingest` to (re)embed `legal_cases`.
+- **8,493 / 8,493 PDFs** extracted into `data/cases_json/` (page-level hybrid;
+  manifest `_build_manifest.json`): 1,417 used OCR (745 mixed + 375 bengali + 297
+  english pages), 9,091 OCR pages, 0 failures, 2 OCR-capped. 158 files synthesize
+  the case ref from the filename (no corroborating header ref).
+- **`legal_cases` fully re-ingested** from the complete corpus (full recreate, not
+  append) — the prior garbled-mojibake Bengali tail is gone, replaced by readable
+  OCR text. e5-base, 768-dim, `source_type=precedent`.

@@ -1,18 +1,16 @@
-"""Unified build: data/cases/*.pdf -> data/cases_json/<case_id>.json via page-level
+"""Build: data/cases/*.pdf -> data/cases_json/<case_id>.json via page-level
 hybrid extraction (``cases_hybrid``).
 
-Replaces the old tier-1/hard-tail split. Every PDF is read in one pass: each page
-goes to PyMuPDF text if it is clean English, or to EasyOCR if it is Bengali /
-legacy-font garbled / scanned. So a pure-English judgment never loads the GPU; a
-mixed file keeps its English pages pristine and OCRs only its Bengali pages; the
-old "hard tail" is no longer a separate stage. This also fixes the files that
-passed file-level routing as English but carried Bengali quote pages -- those pages
-now get OCR'd instead of being embedded as mojibake.
+Every PDF is read in one pass: each page goes to PyMuPDF text if it is clean
+English, or to EasyOCR if it is Bengali / legacy-font garbled / scanned. So a
+pure-English judgment never loads the GPU; a mixed file keeps its English pages
+pristine and OCRs only its Bengali pages, instead of embedding those pages as
+mojibake.
 
-    EMBEDDING_DEVICE=cuda .venv/bin/python -m ingestion.cases_build_hybrid   # whole corpus (GPU)
-    CASES_LIMIT=30 ...                                                       # smoke
-    CASES_HYBRID_RESUME=1 ...                                                # skip already-written
-    CASES_HYBRID_MAX_OCR_PAGES=400 ...                                       # per-file OCR budget
+    EMBEDDING_DEVICE=cuda .venv/bin/python -m ingestion.cases_build   # whole corpus (GPU)
+    CASES_LIMIT=30 ...                                                # smoke
+    CASES_HYBRID_RESUME=1 ...                                         # skip already-written
+    CASES_HYBRID_MAX_OCR_PAGES=400 ...                               # per-file OCR budget
 
 Must run on the Fedora GPU box (OCR is inline). Heavy deps imported lazily.
 """
@@ -61,11 +59,11 @@ def build(limit: int | None = None) -> dict:
     def get_reader():
         if "r" not in _reader:
             from ingestion.cases_hybrid import _make_reader
-            print("[hybrid-build] building EasyOCR reader (first OCR page)", flush=True)
+            print("[cases-build] building EasyOCR reader (first OCR page)", flush=True)
             _reader["r"] = _make_reader(["en", "bn"], gpu)
         return _reader["r"]
 
-    print(f"[hybrid-build] gpu={gpu} resume={resume} max_ocr={max_ocr} "
+    print(f"[cases-build] gpu={gpu} resume={resume} max_ocr={max_ocr} "
           f"page_cap={page_cap} files={len(pdfs)}", flush=True)
 
     stats = Counter()
@@ -122,7 +120,7 @@ def build(limit: int | None = None) -> dict:
             done = i - skipped
             rate = el / max(done, 1)
             eta = rate * (len(pdfs) - i) / 60
-            print(f"[hybrid-build] {i}/{len(pdfs)} written={written} skip={skipped} "
+            print(f"[cases-build] {i}/{len(pdfs)} written={written} skip={skipped} "
                   f"ocr_pages={total_ocr_pages} ({rate:.2f}s/file, ETA {eta:.0f}m)",
                   flush=True)
 
@@ -137,9 +135,9 @@ def build(limit: int | None = None) -> dict:
         "elapsed_min": round((time.time() - t0) / 60, 1),
         "failures": failed[:200],
     }
-    (OUT_DIR / "_hybrid_manifest.json").write_text(
+    (OUT_DIR / "_build_manifest.json").write_text(
         json.dumps(manifest, ensure_ascii=False, indent=2))
-    print(f"[hybrid-build] done: {json.dumps({k: v for k, v in manifest.items() if k != 'failures'})}",
+    print(f"[cases-build] done: {json.dumps({k: v for k, v in manifest.items() if k != 'failures'})}",
           flush=True)
     return manifest
 

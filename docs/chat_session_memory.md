@@ -59,6 +59,26 @@ threshold is irrelevant here — even a 2-turn conversation needs it.
 - **temperature = 0** — the rewrite is a deterministic transformation, not a
   creative one.
 
+The skip-on-turn-1 and never-block guarantees are the whole function —
+`contextualize.py::condense_question`:
+
+```python
+# apps/api/src/api/agents/legal_chat/contextualize.py
+def condense_question(question, history, *, provider=None):
+    if not history:
+        return question                       # turn 1: no-op
+    messages = build_condense_messages(question, history)
+    try:
+        rewritten = run_llm_text(
+            messages, provider=provider,
+            model=_condense_model(provider), temperature=0.0,
+        )
+    except Exception:
+        return question                       # rewrite can never block retrieval
+    rewritten = (rewritten or "").strip().strip('"').strip()
+    return rewritten or question
+```
+
 The rewritten query is used **only for vector search**. The answer prompt still
 receives the user's *original* wording, so the reply reads naturally.
 

@@ -85,7 +85,6 @@ def ingest() -> dict:
     # these cases first so a re-run is idempotent, then upsert (never recreate).
     collection_ready = append
     if append:
-        from qdrant_client.http import models
         client.delete(
             collection_name=COLLECTION_NAME,
             points_selector=models.FilterSelector(filter=models.Filter(must=[

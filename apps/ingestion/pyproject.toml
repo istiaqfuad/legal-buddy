@@ -15,7 +15,7 @@ dependencies = [
 
 [project.scripts]
 ingest = "ingestion.pipeline:main"
-cases-build = "ingestion.cases_build_hybrid:main"
+cases-build = "ingestion.cases_build:main"
 cases-ingest = "ingestion.cases_ingest:main"
 
 [build-system]

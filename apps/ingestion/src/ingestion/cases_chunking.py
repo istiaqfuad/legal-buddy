@@ -4,8 +4,10 @@ Judgments are long prose, not the numbered sections statutes have, so we split o
 paragraph boundaries and merge to the embedding model's token window with
 overlap -- the prose analogue of ``shared.chunking.chunk_section_tokens``. Every
 chunk carries a one-line **case header** (the cross-document analogue of the
-act/section header) so a mid-judgment chunk still says which case it is from, and
-``section_full`` carries the whole judgment for parent-document retrieval.
+act/section header) so a mid-judgment chunk still says which case it is from.
+Unlike the acts pipeline we do NOT store the whole judgment per chunk -- a single
+copy would blow Qdrant's 32MB request limit; neighbouring context is fetched on
+demand by (case_uid, chunk_part), with the full text in data/cases_json/.
 
 Token primitives are reused from ``shared.chunking`` so cases and acts measure
 length identically against the same model.
