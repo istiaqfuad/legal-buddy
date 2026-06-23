@@ -7,13 +7,9 @@ from api.core.config import config
 from api.core.observability import get_langsmith_client
 
 from api.agents.legal_chat.contextualize import condense_question
-from api.agents.legal_chat.generation import run_llm, run_llm_stream
-from api.agents.legal_chat.prompting import build_grounded_prompt
+from api.agents.legal_chat.generation import run_llm, run_llm_stream, run_llm_text
+from api.agents.legal_chat.prompting import build_clarify_prompt, build_grounded_prompt
 from api.agents.legal_chat.retrieval import retrieve_dual
-
-ABSTENTION_TEXT = (
-    "I could not find relevant legal sources in the vector store for this question."
-)
 
 
 def _trim_history(history: list[ChatMessage] | None) -> list[ChatMessage]:
@@ -21,6 +17,12 @@ def _trim_history(history: list[ChatMessage] | None) -> list[ChatMessage]:
     if not history:
         return []
     return history[-config.HISTORY_WINDOW_TURNS :]
+
+
+def _is_low_confidence(statutes: list) -> bool:
+    """Top-statute score below the clarify floor (or nothing retrieved) — used to
+    nudge the answer prompt toward asking instead of guessing."""
+    return not statutes or statutes[0].score < config.CLARIFY_SCORE_FLOOR
 
 
 def legal_chat_pipeline(
@@ -50,10 +52,18 @@ def legal_chat_pipeline(
         statutes, precedents = retrieve_dual(
             search_query, statute_k=resolved_top_k, case_k=config.CASES_TOP_K
         )
-        if not statutes and not precedents:
-            return LegalChatResponse(answer=ABSTENTION_TEXT, sources=[])
+        if _is_low_confidence(statutes):
+            # Nothing to ground an answer in — ask for specifics, don't dead-end.
+            clarify = run_llm_text(build_clarify_prompt(question, history), **llm_kwargs)
+            return LegalChatResponse(answer=clarify, sources=[])
 
-        messages = build_grounded_prompt(question, statutes, precedents, history)
+        messages = build_grounded_prompt(
+            question,
+            statutes,
+            precedents,
+            history,
+            low_confidence=_is_low_confidence(statutes),
+        )
         answer = run_llm(
             messages=messages,
             sources=statutes,
@@ -78,12 +88,19 @@ def legal_chat_pipeline(
         statutes, precedents = retrieve_dual(
             search_query, statute_k=resolved_top_k, case_k=config.CASES_TOP_K
         )
-        if not statutes and not precedents:
-            response = LegalChatResponse(answer=ABSTENTION_TEXT, sources=[])
+        if _is_low_confidence(statutes):
+            clarify = run_llm_text(build_clarify_prompt(question, history), **llm_kwargs)
+            response = LegalChatResponse(answer=clarify, sources=[])
             request_span.end(outputs=response.model_dump())
             return response
 
-        messages = build_grounded_prompt(question, statutes, precedents, history)
+        messages = build_grounded_prompt(
+            question,
+            statutes,
+            precedents,
+            history,
+            low_confidence=_is_low_confidence(statutes),
+        )
         answer = run_llm(
             messages=messages,
             sources=statutes,
@@ -132,12 +149,26 @@ def legal_chat_pipeline_stream(
 
     yield {"type": "sources", "sources": [s.model_dump() for s in statutes]}
 
-    if not statutes and not precedents:
-        yield {"type": "delta", "text": ABSTENTION_TEXT}
+    if _is_low_confidence(statutes):
+        # Nothing to ground an answer in — stream a clarifying question instead.
+        for chunk in run_llm_stream(
+            build_clarify_prompt(question, history),
+            provider=provider,
+            model=model,
+            temperature=temperature,
+            max_tokens=resolved_max_tokens,
+        ):
+            yield {"type": "delta", "text": chunk}
         yield {"type": "done"}
         return
 
-    messages = build_grounded_prompt(question, statutes, precedents, history)
+    messages = build_grounded_prompt(
+        question,
+        statutes,
+        precedents,
+        history,
+        low_confidence=_is_low_confidence(statutes),
+    )
     for chunk in run_llm_stream(
         messages,
         provider=provider,

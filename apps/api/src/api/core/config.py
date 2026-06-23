@@ -53,6 +53,12 @@ class Config(BaseSettings):
     STATUTE_SCORE_FLOOR: float = 0.0
     CASE_SCORE_FLOOR: float = 0.82
     ANSWER_MAX_TOKENS: int | None = None
+    # Top-statute cosine below this routes the turn to a clarifying question
+    # (with no sources) instead of answering from junk hits. Empirical for
+    # multilingual-e5-base: clear/answerable queries top out ~0.85+, while vague
+    # or off-topic ones plateau ~0.81-0.82 (e5 cosine has a high baseline). Thin
+    # margin — a cross-encoder reranker is the robust fix; tune against eval.
+    CLARIFY_SCORE_FLOOR: float = 0.83
 
 
 config = Config()

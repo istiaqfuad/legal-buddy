@@ -77,9 +77,9 @@ def _build_structured_messages(messages: list[dict]) -> list[dict]:
     user_message = messages[1]
     structured_instruction = (
         "\n\nReturn JSON for this schema:\n"
-        "- answer: string — a complete, well-structured answer that covers all the "
-        "relevant sources (main rule plus related provisions); use short paragraphs "
-        "or bullet points where it helps.\n"
+        "- answer: string — a concise, bullet-first answer grounded in the sources. "
+        "If the question is too vague or under-specified to answer reliably, "
+        "instead ask 1-2 short clarifying questions here and leave citations empty.\n"
         "- citations: int[] — every source id you relied on, not just one.\n"
         "- limitations: string | null\n"
         "Rules:\n"

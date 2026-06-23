@@ -38,6 +38,7 @@ def build_grounded_prompt(
     statutes: list[SourceItem],
     precedents: list[SourceItem] | None = None,
     history: list[ChatMessage] | None = None,
+    low_confidence: bool = False,
 ) -> list[dict]:
     precedents = precedents or []
     history = history or []
@@ -47,8 +48,8 @@ def build_grounded_prompt(
     system_prompt = (
         "You are an expert legal assistant for Bangladesh law. The user may ask a "
         "plain statutory question OR describe a real situation and ask what the law "
-        "says or what the likely outcome is. Write a clear, thorough, well-"
-        "structured answer.\n"
+        "says or what the likely outcome is. Answer concisely and bullet-first: "
+        "lead with the answer, no preamble, no repetition, omit empty sections.\n"
         "You are given two kinds of material, which you must treat very "
         "differently:\n"
         "1. STATUTE SOURCES — the BINDING law and your ONLY citable sources. "
@@ -63,9 +64,14 @@ def build_grounded_prompt(
         "your own analysis.\n"
         "Cite ONLY statute sources as [Source N]. Do not fabricate statutes, "
         "sections, facts, or outcomes. "
-        "If the statute sources are insufficient, say so and state what additional "
-        "legal text is needed. End with a brief note that this is general legal "
-        "information, not legal advice, and a lawyer should be consulted.\n"
+        "If the statute sources are insufficient, say so in one bullet and state "
+        "what additional legal text is needed. End with one short line: general "
+        "legal information, not legal advice; consult a lawyer.\n"
+        "If the question lacks key facts needed to identify the governing law, or "
+        "is too vague to answer reliably, do NOT guess — ask 1-2 short clarifying "
+        "questions instead of answering. When you can answer but one missing "
+        "detail would change it, you may end with a single short follow-up "
+        "question. Prefer answering whenever the sources are sufficient.\n"
         "When earlier conversation is provided, use it to interpret the current "
         "question (e.g. resolve references like 'it', 'that', or 'the punishment'), "
         "but ground every legal claim ONLY in the statute sources below."
@@ -77,6 +83,11 @@ def build_grounded_prompt(
         user_parts.append(_format_history(history))
         user_parts.append("")
     user_parts.append(f"Question / situation: {question}")
+    if low_confidence:
+        user_parts.append(
+            "(Retrieval confidence is low — if these sources do not clearly fit "
+            "the question, ask a brief clarifying question instead of answering.)"
+        )
     user_parts.append("")
     user_parts.append("Statute sources (citable):")
     user_parts.append(chr(10).join(statute_blocks) if statute_blocks else "(none)")
@@ -89,18 +100,53 @@ def build_grounded_prompt(
         user_parts.append(chr(10).join(precedent_blocks))
     user_parts.append("")
     user_parts.append(
-        "Write the answer so that it:\n"
-        "- Restates the situation in legal terms (when the user gave a scenario).\n"
-        "- States the governing statute rule and the specific section number(s), "
-        "citing them as [Source N].\n"
-        "- Explains the likely outcome and reasoning, informed by the precedent "
-        "background but WITHOUT referring to any case.\n"
-        "- Notes practical steps or relief where the sources support it.\n"
-        "- Uses short paragraphs or bullet points when that makes it clearer.\n"
-        "- Notes any limitations if the statute sources do not fully cover the "
-        "question."
+        "Answer as a short bulleted list — no preamble, do not restate the "
+        "question:\n"
+        "- First bullet: the direct answer (the offence, rule, or likely outcome).\n"
+        "- Cite the governing section number(s) as [Source N] on the relevant "
+        "bullet.\n"
+        "- One bullet for the penalty/consequence or likely outcome, with the "
+        "reasoning folded in from the precedent background but WITHOUT naming any "
+        "case.\n"
+        "- Add a practical-step or key-distinction bullet only if the sources "
+        "support it.\n"
+        "- If the statute sources are insufficient, say so in one bullet.\n"
+        "- End with one short line: general info, not legal advice.\n"
+        "Keep it concise — a simple question needs only 2-4 bullets."
     )
 
+    return [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": "\n".join(user_parts)},
+    ]
+
+
+def build_clarify_prompt(
+    question: str, history: list[ChatMessage] | None = None
+) -> list[dict]:
+    """Prompt for when retrieval found no usable sources.
+
+    There is nothing to ground an answer in, so instead of dead-ending, ask the
+    user for the specifics that would make the question searchable. Plain text,
+    no citations.
+    """
+    history = history or []
+    system_prompt = (
+        "You are a legal assistant for Bangladesh law. No matching statute was "
+        "found for the user's question — it is likely too vague, off-topic, or "
+        "missing key facts. Do NOT answer or guess at the law. Instead ask 1-2 "
+        "short clarifying questions that would let you find the right statute — "
+        "e.g. the area of law, the specific act, the key facts, or the "
+        "jurisdiction. Be brief and friendly; do not cite anything."
+    )
+    user_parts: list[str] = []
+    if history:
+        user_parts.append("Conversation so far:")
+        user_parts.append(_format_history(history))
+        user_parts.append("")
+    user_parts.append(f"Question / situation: {question}")
+    user_parts.append("")
+    user_parts.append("Ask 1-2 short clarifying questions:")
     return [
         {"role": "system", "content": system_prompt},
         {"role": "user", "content": "\n".join(user_parts)},

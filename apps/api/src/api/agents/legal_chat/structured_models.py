@@ -2,7 +2,10 @@ from pydantic import BaseModel, Field
 
 
 class StructuredLegalAnswer(BaseModel):
-    answer: str = Field(description="Final answer to the user")
+    answer: str = Field(
+        description="Final answer to the user — a short, bullet-first list, "
+        "concise, no preamble"
+    )
     citations: list[int] = Field(
         default_factory=list,
         description="List of supporting source ids, e.g. [1, 2]",
