@@ -1,14 +1,14 @@
 name: CI
 
 # Gate for the production deploy: runs on every push to main (and on PRs
-# targeting main/production). Dokploy auto-deploys on tag push (e.g. vX.Y.Z),
-# so the flow is: push to main -> CI must pass -> tag the green commit -> deploy.
-# Only tag commits whose CI has gone green, so a broken build never ships.
+# targeting main). Dokploy auto-deploys on tag push (e.g. vX.Y.Z), so the flow
+# is: push to main -> CI must pass -> tag the green commit -> deploy. Only tag
+# commits whose CI has gone green, so a broken build never ships.
 on:
   push:
     branches: [main]
   pull_request:
-    branches: [production, main]
+    branches: [main]
 
 concurrency:
   group: ci-${{ github.ref }}
