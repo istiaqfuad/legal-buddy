@@ -47,3 +47,9 @@ export interface Turn {
   sources?: Source[];
   error?: boolean;
 }
+
+// Prior turns sent to the backend for multi-turn memory (mirrors api ChatMessage).
+export interface ChatMessage {
+  role: Role;
+  content: string;
+}

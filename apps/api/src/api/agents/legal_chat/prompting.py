@@ -1,4 +1,11 @@
-from api.api.models import SourceItem
+from api.api.models import ChatMessage, SourceItem
+
+
+def _format_history(history: list[ChatMessage]) -> str:
+    labels = {"user": "User", "assistant": "Assistant"}
+    return "\n".join(
+        f"{labels.get(m.role, m.role.title())}: {m.content.strip()}" for m in history
+    )
 
 
 def _format_statute(source: SourceItem) -> str:
@@ -30,8 +37,10 @@ def build_grounded_prompt(
     question: str,
     statutes: list[SourceItem],
     precedents: list[SourceItem] | None = None,
+    history: list[ChatMessage] | None = None,
 ) -> list[dict]:
     precedents = precedents or []
+    history = history or []
     statute_blocks = [_format_statute(s) for s in statutes]
     precedent_blocks = [_format_precedent_background(p) for p in precedents]
 
@@ -56,10 +65,19 @@ def build_grounded_prompt(
         "sections, facts, or outcomes. "
         "If the statute sources are insufficient, say so and state what additional "
         "legal text is needed. End with a brief note that this is general legal "
-        "information, not legal advice, and a lawyer should be consulted."
+        "information, not legal advice, and a lawyer should be consulted.\n"
+        "When earlier conversation is provided, use it to interpret the current "
+        "question (e.g. resolve references like 'it', 'that', or 'the punishment'), "
+        "but ground every legal claim ONLY in the statute sources below."
     )
 
-    user_parts = [f"Question / situation: {question}", ""]
+    user_parts: list[str] = []
+    if history:
+        user_parts.append("Conversation so far:")
+        user_parts.append(_format_history(history))
+        user_parts.append("")
+    user_parts.append(f"Question / situation: {question}")
+    user_parts.append("")
     user_parts.append("Statute sources (citable):")
     user_parts.append(chr(10).join(statute_blocks) if statute_blocks else "(none)")
     if precedent_blocks:
@@ -86,4 +104,27 @@ def build_grounded_prompt(
     return [
         {"role": "system", "content": system_prompt},
         {"role": "user", "content": "\n".join(user_parts)},
+    ]
+
+
+def build_condense_messages(
+    question: str, history: list[ChatMessage]
+) -> list[dict]:
+    """Prompt that rewrites a follow-up into a standalone retrieval query."""
+    system_prompt = (
+        "You rewrite a user's follow-up into a standalone search query for a "
+        "Bangladesh legal statute database. Use the conversation only to resolve "
+        "references (pronouns, ellipsis, 'the punishment', 'that offence'). Keep the "
+        "user's intent and legal terms. If the follow-up is already self-contained, "
+        "return it unchanged. Output ONLY the rewritten query — no preamble, no "
+        "quotes, no explanation."
+    )
+    user_content = (
+        f"Conversation so far:\n{_format_history(history)}\n\n"
+        f"Follow-up question: {question}\n\n"
+        "Standalone search query:"
+    )
+    return [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": user_content},
     ]

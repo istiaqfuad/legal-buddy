@@ -1,3 +1,5 @@
+from collections.abc import Iterator
+
 import instructor
 from google import genai
 from google.genai import types
@@ -182,8 +184,115 @@ def _run_groq(
 
 
 # --------------------------------------------------------------------------- #
+# Plain-text + streaming runners (no instructor / structured output)
+# --------------------------------------------------------------------------- #
+
+def _run_groq_text(
+    messages: list[dict], model: str, temperature: float, max_tokens: int | None
+) -> str:
+    if not config.GROQ_API_KEY:
+        raise ValueError("GROQ_API_KEY is not configured")
+    from openai import OpenAI
+
+    base = OpenAI(api_key=config.GROQ_API_KEY, base_url=GROQ_BASE_URL)
+    extra: dict = {"max_tokens": max_tokens} if max_tokens is not None else {}
+    response = base.chat.completions.create(
+        model=model, messages=messages, temperature=temperature, **extra
+    )
+    return response.choices[0].message.content or "No response generated."
+
+
+def _stream_gemini(
+    messages: list[dict], model: str, temperature: float, max_tokens: int | None
+) -> Iterator[str]:
+    if not config.GEMINI_API_KEY:
+        raise ValueError("GEMINI_API_KEY is not configured")
+    client = genai.Client(api_key=config.GEMINI_API_KEY)
+    stream = client.models.generate_content_stream(
+        model=model,
+        contents=[message["content"] for message in messages],
+        config=_gemini_config(temperature, max_tokens),
+    )
+    for chunk in stream:
+        text = getattr(chunk, "text", None)
+        if text:
+            yield text
+
+
+def _stream_groq(
+    messages: list[dict], model: str, temperature: float, max_tokens: int | None
+) -> Iterator[str]:
+    if not config.GROQ_API_KEY:
+        raise ValueError("GROQ_API_KEY is not configured")
+    from openai import OpenAI
+
+    base = OpenAI(api_key=config.GROQ_API_KEY, base_url=GROQ_BASE_URL)
+    extra: dict = {"max_tokens": max_tokens} if max_tokens is not None else {}
+    stream = base.chat.completions.create(
+        model=model,
+        messages=messages,
+        temperature=temperature,
+        stream=True,
+        **extra,
+    )
+    for chunk in stream:
+        if not chunk.choices:
+            continue
+        delta = chunk.choices[0].delta.content
+        if delta:
+            yield delta
+
+
+# --------------------------------------------------------------------------- #
 # Dispatcher
 # --------------------------------------------------------------------------- #
+
+def _resolve_provider_model(
+    provider: str | None, model: str | None
+) -> tuple[str, str, str]:
+    """Resolve (provider, answer_model, langsmith_provider) from request knobs."""
+    provider = (provider or config.DEFAULT_LLM_PROVIDER or "gemini").lower()
+    if provider == "groq":
+        return "groq", (model or config.GROQ_MODEL), "groq"
+    return "gemini", (model or config.CHAT_MODEL), "google_genai"
+
+
+def run_llm_text(
+    messages: list[dict],
+    *,
+    provider: str | None = None,
+    model: str | None = None,
+    temperature: float | None = None,
+    max_tokens: int | None = None,
+) -> str:
+    """Plain-text completion (no structured output). Used by the query rewrite.
+
+    An explicit ``model`` (e.g. the fast condense model) overrides the provider
+    default via ``_resolve_provider_model``.
+    """
+    provider, resolved_model, _ = _resolve_provider_model(provider, model)
+    temperature = DEFAULT_TEMPERATURE if temperature is None else float(temperature)
+    if provider == "groq":
+        return _run_groq_text(messages, resolved_model, temperature, max_tokens)
+    return _run_gemini_text(messages, resolved_model, temperature, max_tokens)
+
+
+def run_llm_stream(
+    messages: list[dict],
+    *,
+    provider: str | None = None,
+    model: str | None = None,
+    temperature: float | None = None,
+    max_tokens: int | None = None,
+) -> Iterator[str]:
+    """Stream answer text token-by-token. Inline [Source N] citations only."""
+    provider, resolved_model, _ = _resolve_provider_model(provider, model)
+    temperature = DEFAULT_TEMPERATURE if temperature is None else float(temperature)
+    if provider == "groq":
+        yield from _stream_groq(messages, resolved_model, temperature, max_tokens)
+    else:
+        yield from _stream_gemini(messages, resolved_model, temperature, max_tokens)
+
 
 def run_llm(
     messages: list[dict],
@@ -194,18 +303,9 @@ def run_llm(
     model: str | None = None,
     temperature: float | None = None,
 ) -> str:
-    provider = (provider or config.DEFAULT_LLM_PROVIDER or "gemini").lower()
+    provider, model, ls_provider = _resolve_provider_model(provider, model)
     temperature = DEFAULT_TEMPERATURE if temperature is None else float(temperature)
-
-    if provider == "groq":
-        model = model or config.GROQ_MODEL
-        runner = _run_groq
-        ls_provider = "groq"
-    else:
-        provider = "gemini"
-        model = model or config.CHAT_MODEL
-        runner = _run_gemini
-        ls_provider = "google_genai"
+    runner = _run_groq if provider == "groq" else _run_gemini
 
     if get_langsmith_client() is None:
         return runner(messages, sources, model, temperature, max_tokens)

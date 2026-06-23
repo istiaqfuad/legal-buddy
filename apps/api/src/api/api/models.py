@@ -3,8 +3,17 @@ from typing import Literal
 from pydantic import BaseModel
 
 
+class ChatMessage(BaseModel):
+    role: Literal["user", "assistant"]
+    content: str
+
+
 class LegalChatRequest(BaseModel):
     question: str
+    # Prior turns (oldest->newest), excluding the current question. Powers
+    # multi-turn memory: history-aware retrieval + conversation context in the
+    # prompt. Empty for the first turn.
+    history: list[ChatMessage] = []
     max_tokens: int | None = None
     top_k: int | None = None
     # Testing knobs (remove in production). provider/model/temperature let the

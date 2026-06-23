@@ -3,11 +3,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Menu, Scale, X } from "lucide-react";
 import {
-  type ChatResponse,
   type ChatSettings,
+  type Source,
   type Turn,
   DEFAULT_SETTINGS,
 } from "@/lib/types";
+
+const HISTORY_WINDOW_TURNS = 6;
 import { Message } from "./Message";
 import { Composer } from "./Composer";
 import { SidebarContent } from "./Sidebar";
@@ -43,16 +45,63 @@ export function ChatApp() {
       const question = (raw ?? input).trim();
       if (!question || loading) return;
 
+      // Conversation memory: send prior turns (hard last-N-turn window) so the
+      // backend can resolve follow-ups. Built before appending the new user turn.
+      const history = turns
+        .filter((t) => !t.error)
+        .map((t) => ({ role: t.role, content: t.content }))
+        .slice(-HISTORY_WINDOW_TURNS);
+
       setTurns((t) => [...t, { id: uid(), role: "user", content: question }]);
       setInput("");
       setLoading(true);
 
+      // The assistant turn is created lazily on the first event so the "Thinking"
+      // indicator shows until tokens start arriving.
+      const assistantId = uid();
+      let assistantAdded = false;
+      const ensureAssistant = () => {
+        if (assistantAdded) return;
+        assistantAdded = true;
+        setTurns((t) => [
+          ...t,
+          { id: assistantId, role: "assistant", content: "", sources: [] },
+        ]);
+      };
+      const patch = (fn: (turn: Turn) => Turn) =>
+        setTurns((t) => t.map((x) => (x.id === assistantId ? fn(x) : x)));
+
+      const handleEvent = (event: string, data: string) => {
+        let payload: { text?: string; sources?: Source[]; error?: string };
+        try {
+          payload = JSON.parse(data);
+        } catch {
+          return;
+        }
+        if (event === "sources") {
+          ensureAssistant();
+          patch((x) => ({ ...x, sources: payload.sources ?? [] }));
+        } else if (event === "delta") {
+          ensureAssistant();
+          setLoading(false);
+          patch((x) => ({ ...x, content: x.content + (payload.text ?? "") }));
+        } else if (event === "error") {
+          ensureAssistant();
+          patch((x) => ({
+            ...x,
+            content: payload.error ?? "Something went wrong.",
+            error: true,
+          }));
+        }
+      };
+
       try {
-        const res = await fetch("/api/chat", {
+        const res = await fetch("/api/chat/stream", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             question,
+            history,
             top_k: settings.topK,
             provider: settings.provider,
             model: settings.model || undefined,
@@ -60,35 +109,52 @@ export function ChatApp() {
             max_tokens: settings.maxTokens ?? undefined,
           }),
         });
-        const data = await res.json();
 
-        if (!res.ok) {
-          setTurns((t) => [
-            ...t,
-            { id: uid(), role: "assistant", content: data.error ?? "Something went wrong.", error: true },
-          ]);
-        } else {
-          const payload = data as ChatResponse;
-          setTurns((t) => [
-            ...t,
-            {
-              id: uid(),
-              role: "assistant",
-              content: payload.answer || "No answer was returned.",
-              sources: payload.sources ?? [],
-            },
-          ]);
+        if (!res.ok || !res.body) {
+          const data = await res.json().catch(() => null);
+          ensureAssistant();
+          patch((x) => ({
+            ...x,
+            content: data?.error ?? "Something went wrong.",
+            error: true,
+          }));
+          return;
+        }
+
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
+
+        for (;;) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+
+          let sep: number;
+          while ((sep = buffer.indexOf("\n\n")) !== -1) {
+            const frame = buffer.slice(0, sep);
+            buffer = buffer.slice(sep + 2);
+            let event = "message";
+            const dataLines: string[] = [];
+            for (const line of frame.split("\n")) {
+              if (line.startsWith("event:")) event = line.slice(6).trim();
+              else if (line.startsWith("data:")) dataLines.push(line.slice(5).trim());
+            }
+            if (dataLines.length) handleEvent(event, dataLines.join("\n"));
+          }
         }
       } catch {
-        setTurns((t) => [
-          ...t,
-          { id: uid(), role: "assistant", content: "Network error — please try again.", error: true },
-        ]);
+        ensureAssistant();
+        patch((x) => ({
+          ...x,
+          content: x.content || "Network error — please try again.",
+          error: true,
+        }));
       } finally {
         setLoading(false);
       }
     },
-    [input, loading, settings],
+    [input, loading, settings, turns],
   );
 
   const isEmpty = turns.length === 0;
