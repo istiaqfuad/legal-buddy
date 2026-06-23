@@ -18,6 +18,24 @@ _qdrant_client = build_client(
 )
 
 
+def verify_qdrant() -> None:
+    """Boot-time readiness probe for the vector store.
+
+    Confirms Qdrant is reachable (a bad URL / down server / bad API key raises
+    here) and that the required statute collection exists. Called from the app
+    lifespan so a dead or misconfigured vector DB fails the container's
+    healthcheck at startup instead of surfacing as a 500 on the first chat
+    request. The cases collection is optional (precedents degrade gracefully),
+    so it is not required here.
+    """
+    names = {c.name for c in _qdrant_client.get_collections().collections}
+    if config.QDRANT_COLLECTION not in names:
+        raise RuntimeError(
+            f"Qdrant reachable but required collection "
+            f"{config.QDRANT_COLLECTION!r} not found (have: {sorted(names)})"
+        )
+
+
 def _embed(question: str, traced: bool) -> list[float]:
     return embed_text_query_with_trace(question, max_input_chars=2048, traced=traced)
 
