@@ -4,12 +4,20 @@ import { useRef, useState } from "react";
 import ReactMarkdown, { type Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { AlertCircle } from "lucide-react";
-import type { Turn, Source } from "@/lib/types";
+import type { Turn } from "@/lib/types";
 import { SourceList } from "./SourceList";
 
 export function Message({ turn }: { turn: Turn }) {
-  // Active citation drives the claim↔source highlight, scoped to this answer.
-  const [activeCite, setActiveCite] = useState<number | null>(null);
+  // Hover previews a citation↔source link; a click pins it. Hover wins while the
+  // mouse is over a mark, so you can preview other sources without losing the pin.
+  const [hoverCite, setHoverCite] = useState<number | null>(null);
+  const [pinnedCite, setPinnedCite] = useState<number | null>(null);
+  // The source panel's open/closed state lives here (not in SourceList) so it
+  // survives streaming re-renders and a citation click can force it open.
+  // Collapsed by default (like the earlier UI): show just the "N sources" button
+  // until the user expands it or clicks an inline citation.
+  const [sourcesOpen, setSourcesOpen] = useState(false);
+  const activeCite = hoverCite ?? pinnedCite;
   const rootRef = useRef<HTMLDivElement>(null);
 
   if (turn.role === "user") {
@@ -32,12 +40,19 @@ export function Message({ turn }: { turn: Turn }) {
   }
 
   const sources = turn.sources ?? [];
-  const linked = linkifyCitations(turn.content, sources);
+  const linked = linkifyCitations(turn.content);
 
-  const scrollToSource = (n: number) => {
-    rootRef.current
-      ?.querySelector(`[data-source="${n}"]`)
-      ?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  // Click an inline [N]: open the panel if collapsed, pin the highlight, and
+  // bring that source into view. The external link lives in the panel itself,
+  // so inline marks never navigate away.
+  const revealSource = (n: number) => {
+    setPinnedCite(n);
+    setSourcesOpen(true);
+    requestAnimationFrame(() => {
+      rootRef.current
+        ?.querySelector(`[data-source="${n}"]`)
+        ?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    });
   };
 
   const components: Components = {
@@ -45,6 +60,8 @@ export function Message({ turn }: { turn: Turn }) {
       const text = String(Array.isArray(children) ? children.join("") : children ?? "").trim();
       const n = /^\d+$/.test(text) ? Number(text) : null;
 
+      // Real links in the answer body still open out; only numeric citation
+      // marks become in-place pins.
       if (n === null) {
         return (
           <a
@@ -58,21 +75,18 @@ export function Message({ turn }: { turn: Turn }) {
         );
       }
 
-      const shared = {
-        className: "cite",
-        "data-active": activeCite === n ? "true" : undefined,
-        onMouseEnter: () => setActiveCite(n),
-        onMouseLeave: () => setActiveCite(null),
-        onFocus: () => setActiveCite(n),
-        onBlur: () => setActiveCite(null),
-      } as const;
-
-      return href ? (
-        <a href={href} target="_blank" rel="noopener noreferrer" aria-label={`Source ${n}, opens reference`} {...shared}>
-          {n}
-        </a>
-      ) : (
-        <button type="button" aria-label={`Source ${n}`} onClick={() => scrollToSource(n)} {...shared}>
+      return (
+        <button
+          type="button"
+          className="cite"
+          data-active={activeCite === n ? "true" : undefined}
+          aria-label={`Source ${n}`}
+          onMouseEnter={() => setHoverCite(n)}
+          onMouseLeave={() => setHoverCite(null)}
+          onFocus={() => setHoverCite(n)}
+          onBlur={() => setHoverCite(null)}
+          onClick={() => revealSource(n)}
+        >
           {n}
         </button>
       );
@@ -86,27 +100,28 @@ export function Message({ turn }: { turn: Turn }) {
           {linked}
         </ReactMarkdown>
       </div>
-      <SourceList sources={sources} activeCite={activeCite} onHover={setActiveCite} />
+      <SourceList
+        sources={sources}
+        activeCite={activeCite}
+        onHover={setHoverCite}
+        open={sourcesOpen}
+        onOpenChange={setSourcesOpen}
+      />
     </div>
   );
 }
 
-// Render the API's "[Source N]" citations as compact "[N]" reference marks. The
-// link text is the bare number; styling/superscript comes from CSS (.cite).
-// Citations that resolve to a source URL link out; the rest carry a "cite:" href
-// that React-Markdown strips, so they fall through to a scroll button. Handles
-// every shape the model emits — "[Source 2]", "[Source 2, 5]", "[Sources 2 and
-// 5]" — expanding each number to its own marker.
-function linkifyCitations(answer: string, sources: Source[]): string {
-  const byId = new Map(sources.map((s) => [s.citation_id, s]));
-  return answer.replace(/\[Sources?\b[^\]]*\]/gi, (block) => {
+// Render the API's "[Source N]" citations as compact "[N]" reference marks that
+// pin to the source panel — never an external link (the panel carries those).
+// The "cite:" href is stripped by React-Markdown, so each mark falls through to
+// the pin button in `components.a`. Eat any leading space so the mark hugs the
+// word it annotates (otherwise it can wrap onto its own line), and emit each
+// number as its own marker so "[Source 2]", "[Source 2, 5]", and "[Sources 2 and
+// 5]" all split into separate marks.
+function linkifyCitations(answer: string): string {
+  return answer.replace(/[ \t]*\[Sources?\b[^\]]*\]/gi, (block) => {
     const nums = block.match(/\d+/g);
     if (!nums) return block;
-    return nums
-      .map((n) => {
-        const src = byId.get(Number(n));
-        return src?.source_url ? `[${n}](${src.source_url})` : `[${n}](cite:${n})`;
-      })
-      .join(" ");
+    return nums.map((n) => `[${n}](cite:${n})`).join("");
   });
 }

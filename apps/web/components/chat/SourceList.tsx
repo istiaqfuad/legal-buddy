@@ -9,26 +9,34 @@ export function SourceList({
   sources,
   activeCite,
   onHover,
+  open,
+  onOpenChange,
 }: {
   sources: Source[];
   activeCite?: number | null;
   onHover?: (n: number | null) => void;
+  // Controlled open/closed state. When omitted, falls back to local state so the
+  // component still works standalone.
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }) {
-  const [open, setOpen] = useState(true);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isOpen = open ?? internalOpen;
+  const toggle = () => (onOpenChange ? onOpenChange(!isOpen) : setInternalOpen((v) => !v));
   if (!sources.length) return null;
 
   return (
     <div className="mt-4">
       <button
-        onClick={() => setOpen((v) => !v)}
+        onClick={toggle}
         className="inline-flex items-center gap-1.5 text-[13px] font-medium text-muted transition-colors hover:text-text"
-        aria-expanded={open}
+        aria-expanded={isOpen}
       >
         {sources.length} {sources.length === 1 ? "source" : "sources"}
-        <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", open && "rotate-180")} />
+        <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", isOpen && "rotate-180")} />
       </button>
 
-      {open && (
+      {isOpen && (
         <ol className="mt-2 space-y-1.5">
           {sources.map((s) => {
             const active = activeCite === s.citation_id;
