@@ -3,11 +3,10 @@ from collections.abc import Iterator
 import instructor
 from google import genai
 from google.genai import types
-from langsmith import trace
 
 from api.api.models import SourceItem
 from api.core.config import config
-from api.core.observability import get_langsmith_client
+from api.core.observability import traced
 
 from api.agents.legal_chat.structured_models import StructuredLegalAnswer
 
@@ -298,6 +297,38 @@ def run_llm_stream(
         yield from _stream_gemini(messages, resolved_model, temperature, max_tokens)
 
 
+@traced(
+    "answer-generation",
+    run_type="llm",
+    inputs_fn=lambda messages, **_: {"messages": _build_structured_messages(messages)},
+    metadata_fn=lambda *, ls_provider, model, temperature, max_tokens, **_: {
+        "ls_provider": ls_provider,
+        "ls_model_name": model,
+        "temperature": temperature,
+        "top_p": DEFAULT_TOP_P,
+        **({"max_output_tokens": max_tokens} if max_tokens is not None else {}),
+    },
+    outputs_fn=lambda answer_text: {"output": answer_text},
+)
+def _run_llm_resolved(
+    messages: list[dict],
+    sources: list[SourceItem],
+    *,
+    provider: str,
+    model: str,
+    ls_provider: str,
+    temperature: float,
+    max_tokens: int | None,
+) -> str:
+    """Generate an answer with provider/model already resolved.
+
+    The trace metadata (ls_provider/ls_model_name) is built from these resolved
+    kwargs, which is why resolution happens in `run_llm` before this is called.
+    """
+    runner = _run_groq if provider == "groq" else _run_gemini
+    return runner(messages, sources, model, temperature, max_tokens)
+
+
 def run_llm(
     messages: list[dict],
     sources: list[SourceItem],
@@ -309,23 +340,12 @@ def run_llm(
 ) -> str:
     provider, model, ls_provider = _resolve_provider_model(provider, model)
     temperature = DEFAULT_TEMPERATURE if temperature is None else float(temperature)
-    runner = _run_groq if provider == "groq" else _run_gemini
-
-    if get_langsmith_client() is None:
-        return runner(messages, sources, model, temperature, max_tokens)
-
-    with trace(
-        name="answer-generation",
-        run_type="llm",
-        inputs={"messages": _build_structured_messages(messages)},
-        metadata={
-            "ls_provider": ls_provider,
-            "ls_model_name": model,
-            "temperature": temperature,
-            "top_p": DEFAULT_TOP_P,
-            **({"max_output_tokens": max_tokens} if max_tokens is not None else {}),
-        },
-    ) as generation:
-        answer_text = runner(messages, sources, model, temperature, max_tokens)
-        generation.end(outputs={"output": answer_text})
-        return answer_text
+    return _run_llm_resolved(
+        messages,
+        sources,
+        provider=provider,
+        model=model,
+        ls_provider=ls_provider,
+        temperature=temperature,
+        max_tokens=max_tokens,
+    )

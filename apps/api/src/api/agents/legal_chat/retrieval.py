@@ -1,10 +1,8 @@
-from langsmith import trace
-
 from api.api.models import SourceItem
 from api.core.config import config
-from api.core.observability import get_langsmith_client
+from api.core.observability import traced
 
-from api.agents.legal_chat.embedding import embed_text_query_with_trace
+from api.agents.legal_chat.embedding import embed_text_query
 from shared.qdrant import build_client
 
 # Parent-document retrieval (#4): pull several chunks per query, then collapse to
@@ -36,33 +34,58 @@ def verify_qdrant() -> None:
         )
 
 
-def _embed(question: str, traced: bool) -> list[float]:
-    return embed_text_query_with_trace(question, max_input_chars=2048, traced=traced)
+def _embed(question: str) -> list[float]:
+    return embed_text_query(question, max_input_chars=2048)
 
 
-def _search(collection: str, vector: list[float], candidate_limit: int, traced: bool):
-    """Run one Qdrant query against `collection`; optionally trace it."""
-    if not traced:
-        return _qdrant_client.query_points(
-            collection_name=collection,
-            query=vector,
-            limit=candidate_limit,
-            with_payload=True,
-        ).points
-    with trace(
-        name="vector-search",
-        run_type="retriever",
-        inputs={"collection": collection, "candidate_limit": candidate_limit},
-        metadata={"provider": "qdrant"},
-    ) as search_span:
-        hits = _qdrant_client.query_points(
-            collection_name=collection,
-            query=vector,
-            limit=candidate_limit,
-            with_payload=True,
-        ).points
-        search_span.end(outputs={"hit_count": len(hits)})
-        return hits
+@traced(
+    "vector-search",
+    run_type="retriever",
+    inputs_fn=lambda collection, candidate_limit, **_: {
+        "collection": collection,
+        "candidate_limit": candidate_limit,
+    },
+    metadata_fn=lambda **_: {"provider": "qdrant"},
+    outputs_fn=lambda hits: {"hit_count": len(hits)},
+)
+def _search(collection: str, vector: list[float], candidate_limit: int):
+    """Run one Qdrant query against `collection`."""
+    return _qdrant_client.query_points(
+        collection_name=collection,
+        query=vector,
+        limit=candidate_limit,
+        with_payload=True,
+    ).points
+
+
+@traced(
+    "vector-search",
+    run_type="retriever",
+    inputs_fn=lambda collection, group_by, top_k, **_: {
+        "collection": collection,
+        "group_by": group_by,
+        "top_k": top_k,
+    },
+    metadata_fn=lambda **_: {"provider": "qdrant"},
+    outputs_fn=lambda groups: {"group_count": len(groups)},
+)
+def _search_groups(
+    collection: str,
+    vector: list[float],
+    *,
+    group_by: str,
+    top_k: int,
+    group_size: int,
+):
+    """Run one Qdrant grouping query: top_k DISTINCT groups by `group_by`."""
+    return _qdrant_client.query_points_groups(
+        collection_name=collection,
+        query=vector,
+        group_by=group_by,
+        limit=top_k,
+        group_size=group_size,
+        with_payload=True,
+    ).groups
 
 
 def _hits_to_sources(hits, top_k: int) -> list[SourceItem]:
@@ -159,10 +182,9 @@ def retrieve_sources(
 ) -> list[SourceItem]:
     """Retrieve statute sections from the acts collection."""
     candidate_limit = max(top_k * CANDIDATE_MULTIPLIER, MIN_CANDIDATES)
-    traced = get_langsmith_client() is not None
     if vector is None:
-        vector = _embed(question, traced)
-    hits = _search(config.QDRANT_COLLECTION, vector, candidate_limit, traced)
+        vector = _embed(question)
+    hits = _search(config.QDRANT_COLLECTION, vector, candidate_limit)
     return _hits_to_sources(hits, top_k)
 
 
@@ -174,31 +196,16 @@ def retrieve_cases(
     Uses Qdrant grouping on `case_uid` (a keyword-indexed field) so each result is
     a different case; `group_size` chunks per case feed the excerpt.
     """
-    traced = get_langsmith_client() is not None
     if vector is None:
-        vector = _embed(question, traced)
-
-    def _run():
-        return _qdrant_client.query_points_groups(
-            collection_name=config.CASES_COLLECTION,
-            query=vector,
-            group_by="case_uid",
-            limit=top_k,
-            group_size=2,
-            with_payload=True,
-        ).groups
-
-    if not traced:
-        return _case_groups_to_sources(_run(), top_k)
-    with trace(
-        name="vector-search",
-        run_type="retriever",
-        inputs={"collection": config.CASES_COLLECTION, "group_by": "case_uid", "top_k": top_k},
-        metadata={"provider": "qdrant"},
-    ) as span:
-        groups = _run()
-        span.end(outputs={"group_count": len(groups)})
-        return _case_groups_to_sources(groups, top_k)
+        vector = _embed(question)
+    groups = _search_groups(
+        config.CASES_COLLECTION,
+        vector,
+        group_by="case_uid",
+        top_k=top_k,
+        group_size=2,
+    )
+    return _case_groups_to_sources(groups, top_k)
 
 
 def retrieve_dual(
@@ -212,8 +219,7 @@ def retrieve_dual(
     the user, never cited), so they keep their raw ids and are passed to the prompt
     as an unnumbered context block.
     """
-    traced = get_langsmith_client() is not None
-    vector = _embed(question, traced)
+    vector = _embed(question)
 
     statutes = [
         s

@@ -1,7 +1,9 @@
+import functools
+import inspect
 import logging
 import os
 
-from langsmith import Client
+from langsmith import Client, trace
 from langsmith.utils import tracing_is_enabled
 
 from api.core.config import config
@@ -43,6 +45,38 @@ def get_langsmith_client() -> Client | None:
     if _langsmith_client is None:
         _langsmith_client = Client()
     return _langsmith_client
+
+
+def traced(name, *, run_type, inputs_fn=None, outputs_fn=None, metadata_fn=None):
+    """Wrap a function in a LangSmith span — a no-op when tracing is disabled.
+
+    The single place the traced/untraced decision lives. When disabled, the
+    wrapped function runs untouched and the inputs/outputs extractors are never
+    called (they only matter for the span).
+    """
+
+    def deco(fn):
+        @functools.wraps(fn)
+        def wrapper(*args, **kwargs):
+            if get_langsmith_client() is None:
+                return fn(*args, **kwargs)
+            bound = inspect.signature(fn).bind(*args, **kwargs)
+            bound.apply_defaults()
+            call_args = bound.arguments
+            with trace(
+                name=name,
+                run_type=run_type,
+                inputs=inputs_fn(**call_args) if inputs_fn else None,
+                metadata=metadata_fn(**call_args) if metadata_fn else None,
+            ) as span:
+                result = fn(*args, **kwargs)
+                if outputs_fn is not None:
+                    span.end(outputs=outputs_fn(result))
+                return result
+
+        return wrapper
+
+    return deco
 
 
 def validate_langsmith_auth() -> None:

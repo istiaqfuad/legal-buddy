@@ -1,10 +1,9 @@
 from collections.abc import Iterator
+from dataclasses import dataclass
 
-from langsmith import trace
-
-from api.api.models import ChatMessage, LegalChatResponse
+from api.api.models import ChatMessage, LegalChatResponse, SourceItem
 from api.core.config import config
-from api.core.observability import get_langsmith_client
+from api.core.observability import traced
 
 from api.agents.legal_chat.contextualize import condense_question
 from api.agents.legal_chat.generation import run_llm, run_llm_stream, run_llm_text
@@ -32,6 +31,79 @@ def _is_low_confidence(statutes: list, floor: float) -> bool:
     answer prompt as a soft hint so the model leans toward clarifying when the
     sources may not fit, without forcing a hard branch."""
     return not statutes or statutes[0].score < floor
+
+
+@dataclass
+class _ChatResult:
+    """Outcome of one chat request: the user-facing response plus the internal
+    precedents (reasoning-only, never returned) the chain span reports on."""
+
+    response: LegalChatResponse
+    precedents: list[SourceItem]
+    branch: str  # "answer" | "clarify"
+
+    def span_outputs(self) -> dict:
+        if self.branch == "clarify":
+            return self.response.model_dump()
+        return {
+            "answer_preview": self.response.answer[:200],
+            "source_count": len(self.response.sources),
+            "precedent_count": len(self.precedents),
+        }
+
+
+@traced(
+    "legal-chat-request",
+    run_type="chain",
+    inputs_fn=lambda *, question, search_query, history, top_k, max_tokens, **_: {
+        "question": question,
+        "standalone_query": search_query,
+        "history_turns": len(history),
+        "top_k": top_k,
+        "max_tokens": max_tokens,
+    },
+    metadata_fn=lambda **_: {"endpoint": "/rag/legal/chat"},
+    outputs_fn=lambda result: result.span_outputs(),
+)
+def _chat_request(
+    question: str,
+    *,
+    search_query: str,
+    history: list[ChatMessage],
+    top_k: int,
+    max_tokens: int | None,
+    clarify_floor: float,
+    low_conf_floor: float,
+    llm_kwargs: dict,
+) -> _ChatResult:
+    """One grounded chat turn: dual-retrieve, then either a no-source clarify or a
+    grounded answer. Precedents are reasoning-only; only statutes are user-facing."""
+    statutes, precedents = retrieve_dual(
+        search_query, statute_k=top_k, case_k=config.CASES_TOP_K
+    )
+    if _is_no_match(statutes, clarify_floor):
+        # Nothing to ground an answer in — ask for specifics, don't dead-end.
+        clarify = run_llm_text(build_clarify_prompt(question, history), **llm_kwargs)
+        return _ChatResult(
+            LegalChatResponse(answer=clarify, sources=[]), precedents, branch="clarify"
+        )
+
+    messages = build_grounded_prompt(
+        question,
+        statutes,
+        precedents,
+        history,
+        low_confidence=_is_low_confidence(statutes, low_conf_floor),
+    )
+    answer = run_llm(
+        messages=messages,
+        sources=statutes,
+        max_tokens=max_tokens,
+        **llm_kwargs,
+    )
+    return _ChatResult(
+        LegalChatResponse(answer=answer, sources=statutes), precedents, branch="answer"
+    )
 
 
 def legal_chat_pipeline(
@@ -65,79 +137,20 @@ def legal_chat_pipeline(
 
     # History-aware retrieval: rewrite a follow-up into a standalone search query
     # (no-op on the first turn). The answer prompt still gets the original question
-    # plus the conversation so the reply reads naturally.
+    # plus the conversation so the reply reads naturally. Runs outside the request
+    # span (it is its own concern), matching the original trace scope.
     search_query = condense_question(question, history, provider=provider)
 
-    client = get_langsmith_client()
-    if client is None:
-        statutes, precedents = retrieve_dual(
-            search_query, statute_k=resolved_top_k, case_k=config.CASES_TOP_K
-        )
-        if _is_no_match(statutes, clarify_floor):
-            # Nothing to ground an answer in — ask for specifics, don't dead-end.
-            clarify = run_llm_text(build_clarify_prompt(question, history), **llm_kwargs)
-            return LegalChatResponse(answer=clarify, sources=[])
-
-        messages = build_grounded_prompt(
-            question,
-            statutes,
-            precedents,
-            history,
-            low_confidence=_is_low_confidence(statutes, low_conf_floor),
-        )
-        answer = run_llm(
-            messages=messages,
-            sources=statutes,
-            max_tokens=resolved_max_tokens,
-            **llm_kwargs,
-        )
-        # Precedents are reasoning-only context; only statutes are user-facing sources.
-        return LegalChatResponse(answer=answer, sources=statutes)
-
-    with trace(
-        name="legal-chat-request",
-        run_type="chain",
-        inputs={
-            "question": question,
-            "standalone_query": search_query,
-            "history_turns": len(history),
-            "top_k": resolved_top_k,
-            "max_tokens": resolved_max_tokens,
-        },
-        metadata={"endpoint": "/rag/legal/chat"},
-    ) as request_span:
-        statutes, precedents = retrieve_dual(
-            search_query, statute_k=resolved_top_k, case_k=config.CASES_TOP_K
-        )
-        if _is_no_match(statutes, clarify_floor):
-            clarify = run_llm_text(build_clarify_prompt(question, history), **llm_kwargs)
-            response = LegalChatResponse(answer=clarify, sources=[])
-            request_span.end(outputs=response.model_dump())
-            return response
-
-        messages = build_grounded_prompt(
-            question,
-            statutes,
-            precedents,
-            history,
-            low_confidence=_is_low_confidence(statutes, low_conf_floor),
-        )
-        answer = run_llm(
-            messages=messages,
-            sources=statutes,
-            max_tokens=resolved_max_tokens,
-            **llm_kwargs,
-        )
-        # Precedents are reasoning-only context; only statutes are user-facing sources.
-        response = LegalChatResponse(answer=answer, sources=statutes)
-        request_span.end(
-            outputs={
-                "answer_preview": answer[:200],
-                "source_count": len(statutes),
-                "precedent_count": len(precedents),
-            }
-        )
-        return response
+    return _chat_request(
+        question,
+        search_query=search_query,
+        history=history,
+        top_k=resolved_top_k,
+        max_tokens=resolved_max_tokens,
+        clarify_floor=clarify_floor,
+        low_conf_floor=low_conf_floor,
+        llm_kwargs=llm_kwargs,
+    ).response
 
 
 def legal_chat_pipeline_stream(
