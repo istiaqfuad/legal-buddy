@@ -155,7 +155,7 @@ Notes:
 - `question` is required
 - `top_k` is optional and falls back to `RETRIEVAL_TOP_K`
 - `max_tokens` is optional. If omitted/null and `ANSWER_MAX_TOKENS` is also unset, the model default token limit behavior is used.
-- `provider` (`gemini`|`groq`), `model`, and `temperature` are optional per-request
+- `provider` (`gemini`|`groq`|`openai`), `model`, and `temperature` are optional per-request
   testing knobs; the web UI exposes them (plus `top_k`/`max_tokens`) in a dev settings panel.
 
 ## Observability
@@ -190,3 +190,4 @@ make run-docker-compose  # sync + docker compose up --build
 - Ingestion: `apps/ingestion/README.md`
 - Chunking & retrieval strategy: `docs/chunking_and_retrieval.md`
 - Eval harness: `eval/README.md`
+- Azure Hosting & Custom Model deployment: `infra/azure/azure_hosting_guide.md`

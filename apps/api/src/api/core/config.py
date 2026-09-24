@@ -13,12 +13,17 @@ class Config(BaseSettings):
     # Groq (OpenAI-compatible). Useful for testing without the Gemini free-tier cap.
     GROQ_API_KEY: str | None = None
     GROQ_MODEL: str = "llama-3.3-70b-versatile"
+    # OpenAI compatible provider (e.g. for Azure ML vLLM endpoints or llama.cpp)
+    OPENAI_API_KEY: str | None = None
+    OPENAI_BASE_URL: str | None = None
+    OPENAI_MODEL: str = "lawbuddy-gemma4"
 
     # Fast/cheap models for the multi-turn query rewrite (history-aware retrieval).
     # Independent of the answer model above — the rewrite is a tiny, latency-
     # sensitive call, so it uses the smallest model per provider.
     GEMINI_CONDENSE_MODEL: str = "gemini-2.5-flash-lite"
     GROQ_CONDENSE_MODEL: str = "llama-3.1-8b-instant"
+    OPENAI_CONDENSE_MODEL: str = "lawbuddy-gemma4"
     # Turns of conversation history kept for the rewrite and answer prompt.
     HISTORY_WINDOW_TURNS: int = 6
 

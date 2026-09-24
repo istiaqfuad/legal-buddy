@@ -247,6 +247,73 @@ def _stream_groq(
             yield delta
 
 
+
+# --------------------------------------------------------------------------- #
+# Generic OpenAI (e.g. vLLM / llama-server)
+# --------------------------------------------------------------------------- #
+
+def _run_openai(
+    messages: list[dict],
+    sources: list[SourceItem],
+    model: str,
+    temperature: float,
+    max_tokens: int | None,
+) -> str:
+    from openai import OpenAI
+
+    base = OpenAI(api_key=config.OPENAI_API_KEY or "none", base_url=config.OPENAI_BASE_URL)
+    structured_client = instructor.from_openai(base)
+    structured_messages = _build_structured_messages(messages)
+    max_source_id = len(sources)
+    extra: dict = {"max_tokens": max_tokens} if max_tokens is not None else {}
+    try:
+        structured_answer = structured_client.chat.completions.create(
+            model=model,
+            response_model=StructuredLegalAnswer,
+            messages=structured_messages,
+            temperature=temperature,
+            **extra,
+        )
+        return _render_structured_answer(structured_answer, max_source_id)
+    except Exception:
+        response = base.chat.completions.create(
+            model=model, messages=messages, temperature=temperature, **extra
+        )
+        return response.choices[0].message.content or "No response generated."
+
+def _run_openai_text(
+    messages: list[dict], model: str, temperature: float, max_tokens: int | None
+) -> str:
+    from openai import OpenAI
+
+    base = OpenAI(api_key=config.OPENAI_API_KEY or "none", base_url=config.OPENAI_BASE_URL)
+    extra: dict = {"max_tokens": max_tokens} if max_tokens is not None else {}
+    response = base.chat.completions.create(
+        model=model, messages=messages, temperature=temperature, **extra
+    )
+    return response.choices[0].message.content or "No response generated."
+
+def _stream_openai(
+    messages: list[dict], model: str, temperature: float, max_tokens: int | None
+) -> Iterator[str]:
+    from openai import OpenAI
+
+    base = OpenAI(api_key=config.OPENAI_API_KEY or "none", base_url=config.OPENAI_BASE_URL)
+    extra: dict = {"max_tokens": max_tokens} if max_tokens is not None else {}
+    stream = base.chat.completions.create(
+        model=model,
+        messages=messages,
+        temperature=temperature,
+        stream=True,
+        **extra,
+    )
+    for chunk in stream:
+        if not chunk.choices:
+            continue
+        delta = chunk.choices[0].delta.content
+        if delta:
+            yield delta
+
 # --------------------------------------------------------------------------- #
 # Dispatcher
 # --------------------------------------------------------------------------- #
@@ -258,6 +325,8 @@ def _resolve_provider_model(
     provider = (provider or config.DEFAULT_LLM_PROVIDER or "gemini").lower()
     if provider == "groq":
         return "groq", (model or config.GROQ_MODEL), "groq"
+    if provider == "openai":
+        return "openai", (model or config.OPENAI_MODEL), "openai"
     return "gemini", (model or config.CHAT_MODEL), "google_genai"
 
 
@@ -278,6 +347,8 @@ def run_llm_text(
     temperature = DEFAULT_TEMPERATURE if temperature is None else float(temperature)
     if provider == "groq":
         return _run_groq_text(messages, resolved_model, temperature, max_tokens)
+    if provider == "openai":
+        return _run_openai_text(messages, resolved_model, temperature, max_tokens)
     return _run_gemini_text(messages, resolved_model, temperature, max_tokens)
 
 
@@ -294,6 +365,8 @@ def run_llm_stream(
     temperature = DEFAULT_TEMPERATURE if temperature is None else float(temperature)
     if provider == "groq":
         yield from _stream_groq(messages, resolved_model, temperature, max_tokens)
+    elif provider == "openai":
+        yield from _stream_openai(messages, resolved_model, temperature, max_tokens)
     else:
         yield from _stream_gemini(messages, resolved_model, temperature, max_tokens)
 
@@ -309,7 +382,12 @@ def run_llm(
 ) -> str:
     provider, model, ls_provider = _resolve_provider_model(provider, model)
     temperature = DEFAULT_TEMPERATURE if temperature is None else float(temperature)
-    runner = _run_groq if provider == "groq" else _run_gemini
+    if provider == "groq":
+        runner = _run_groq
+    elif provider == "openai":
+        runner = _run_openai
+    else:
+        runner = _run_gemini
 
     if get_langsmith_client() is None:
         return runner(messages, sources, model, temperature, max_tokens)

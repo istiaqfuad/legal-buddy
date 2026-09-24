@@ -15,7 +15,7 @@ export interface ChatResponse {
 }
 
 // --- Testing knobs (dev-only; remove with the UI controls before production) ---
-export type Provider = "gemini" | "groq";
+export type Provider = "gemini" | "groq" | "openai";
 
 export interface ChatSettings {
   provider: Provider;
@@ -33,6 +33,7 @@ export interface ChatSettings {
 export const PROVIDER_MODELS: Record<Provider, string[]> = {
   gemini: ["gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-2.0-flash"],
   groq: ["llama-3.3-70b-versatile", "llama-3.1-8b-instant", "openai/gpt-oss-120b"],
+  openai: ["lawbuddy-gemma4"],
 };
 
 export const DEFAULT_SETTINGS: ChatSettings = {

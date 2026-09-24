@@ -18,3 +18,7 @@ main.rs
 data/
 # graphify generated knowledge graph
 graphify-out/
+
+lessons/
+.claude/
+.agents/

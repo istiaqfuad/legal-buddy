@@ -9,7 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-const PROVIDERS: Provider[] = ["gemini", "groq"];
+const PROVIDERS: Provider[] = ["gemini", "groq", "openai"];
 
 export function SidebarContent({
   settings,

@@ -18,7 +18,7 @@ class LegalChatRequest(BaseModel):
     top_k: int | None = None
     # Testing knobs (remove in production). provider/model/temperature let the
     # frontend switch LLM backend and tune generation per request.
-    provider: Literal["gemini", "groq"] | None = None
+    provider: Literal["gemini", "groq", "openai"] | None = None
     model: str | None = None
     temperature: float | None = None
     # Per-request overrides for the two clarify thresholds (sidebar sliders).

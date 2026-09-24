@@ -9,6 +9,8 @@ def _condense_model(provider: str | None) -> str:
     resolved = (provider or config.DEFAULT_LLM_PROVIDER or "gemini").lower()
     if resolved == "groq":
         return config.GROQ_CONDENSE_MODEL
+    elif resolved == "openai":
+        return config.OPENAI_CONDENSE_MODEL
     return config.GEMINI_CONDENSE_MODEL
 
 
