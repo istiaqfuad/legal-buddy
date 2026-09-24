@@ -83,6 +83,11 @@ GEMINI_API_KEY=your_gemini_key
 # Optional; defaults to gemini-2.5-flash
 CHAT_MODEL=gemini-2.5-flash
 
+# Custom Azure/Local vLLM Model (OpenAI-compatible)
+OPENAI_API_KEY=your_openai_or_azure_key_if_any
+OPENAI_BASE_URL=http://your-azure-vm-ip:8000/v1
+OPENAI_MODEL=lawbuddy-gemma4
+
 # HuggingFace embedding model (run locally via sentence-transformers, CPU)
 EMBEDDING_MODEL=org/your-embedding-model
 HF_TOKEN=
