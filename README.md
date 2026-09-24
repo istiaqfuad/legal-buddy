@@ -1,5 +1,7 @@
 # Legal Acts RAG Monorepo
 
+> **Note**: This branch is specifically for using a custom finetuned model with this codebase. It includes additional `training/` and `infra/` directories.
+
 Production-style Retrieval Augmented Generation (RAG) project for Bangladesh legal acts.
 
 This workspace contains:
@@ -34,6 +36,8 @@ law_buddy/
 ├── data/acts/              # legal act JSON corpus (gitignored)
 ├── eval/                   # chunking/retrieval A/B harness (see eval/README.md)
 ├── docs/                   # chunking_and_retrieval.md, …
+├── infra/                  # Infrastructure deployment for custom model
+├── training/               # Training code and datasets for finetuning
 ├── notebooks/              # exploratory notebooks only
 ├── docker-compose.yml
 ├── Makefile
