@@ -12,6 +12,18 @@ This workspace contains:
 - An `ingestion` package that builds the Qdrant index from `data/acts/`
 - Workspace tooling via `uv`, Docker, and Docker Compose
 
+## 🚀 MLOps & Azure DevOps Showcase
+
+This branch highlights end-to-end MLOps capabilities, extending the core RAG application with custom model finetuning and automated cloud infrastructure provisioning. It is tailored for DevOps and MLOps engineering workflows:
+
+- **Custom LLM Finetuning (`training/`)**: Instruction-tuning pipelines (LoRA) applied to large models (e.g., Gemma-2-27B) using custom legal dataset curation.
+- **Automated Model Processing Pipeline**: Shell scripts to handle downloading checkpoints, merging LoRA adapters, and quantizing to GGUF (Q4_K_M) to optimize VRAM footprint from 54GB down to 16GB.
+- **Azure Infrastructure as Code (`infra/azure/`)**: Automated bash scripts for provisioning Azure GPU Virtual Machines (like `Standard_NC24ads_A100_v4` and `Standard_NC4as_T4_v3`), environment setup, and fetching artifacts from Azure Blob Storage.
+- **Containerized Inference Serving**: Deployment of the custom model using industry-standard, high-throughput inference engines (`vLLM` and `llama.cpp`) encapsulated in Docker.
+- **OpenAI-Compatible Integration**: The backend API (`apps/api`) and Next.js frontend are explicitly extended with a dynamic `openai` provider, allowing seamless hot-swapping between managed APIs (Gemini/Groq) and the self-hosted Azure API endpoint.
+
+See the complete [Azure Hosting Guide](infra/azure/azure_hosting_guide.md) for deployment specifications.
+
 ## What This Project Does
 
 For each user question:
