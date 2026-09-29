@@ -12,7 +12,7 @@ class Config(BaseSettings):
     CHAT_MODEL: str = "gemini-2.5-flash"
     # Groq (OpenAI-compatible). Useful for testing without the Gemini free-tier cap.
     GROQ_API_KEY: str | None = None
-    GROQ_MODEL: str = "llama-3.3-70b-versatile"
+    GROQ_MODEL: str = "openai/gpt-oss-120b"
     # OpenAI compatible provider (e.g. for Azure ML vLLM endpoints or llama.cpp)
     OPENAI_API_KEY: str | None = None
     OPENAI_BASE_URL: str | None = None
