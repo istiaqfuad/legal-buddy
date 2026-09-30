@@ -32,7 +32,8 @@ export interface ChatSettings {
 
 export const PROVIDER_MODELS: Record<Provider, string[]> = {
   gemini: ["gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-2.0-flash"],
-  groq: ["llama-3.3-70b-versatile", "llama-3.1-8b-instant", "openai/gpt-oss-120b"],
+  // llama-3.3-70b-versatile was removed from Groq's API (returns 404).
+  groq: ["openai/gpt-oss-120b", "llama-3.1-8b-instant"],
   openai: ["lawbuddy-gemma4"],
 };
 
