@@ -44,6 +44,8 @@ class Config(BaseSettings):
     CASES_COLLECTION: str = "legal_cases"
 
     POSTGRES_CONNECTION_STRING: str | None = None
+    # Neon Auth JWKS for optional JWT validation (see middlewares.py)
+    JWKS_URL: str | None = None
 
     RETRIEVAL_TOP_K: int = 8
     # Precedents to include alongside the statute top-k.

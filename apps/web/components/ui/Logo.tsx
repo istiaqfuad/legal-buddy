@@ -1,6 +1,5 @@
-// Brand mark: an emerald tile with an open-book silhouette — "the law, read and
-// cited". Kept to simple filled shapes so it stays crisp from masthead down to a
-// 16px favicon. Mirror any change here in app/icon.svg.
+// Brand mark: deep-emerald tile, open-book pages, gold section-paragraph
+// spine — "the law, read and cited". Crisp from 16px favicon to hero.
 export function Logo({ className }: { className?: string }) {
   return (
     <svg
@@ -11,16 +10,24 @@ export function Logo({ className }: { className?: string }) {
       xmlns="http://www.w3.org/2000/svg"
     >
       <defs>
-        <linearGradient id="lbLogo" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#288A6C" />
-          <stop offset="1" stopColor="#185A45" />
+        <linearGradient id="lbTile" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#1E9A70" />
+          <stop offset="0.55" stopColor="#147153" />
+          <stop offset="1" stopColor="#0B3D2C" />
+        </linearGradient>
+        <linearGradient id="lbGold" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#F0D49A" />
+          <stop offset="1" stopColor="#C9A45C" />
         </linearGradient>
       </defs>
-      <rect width="32" height="32" rx="7.5" fill="url(#lbLogo)" />
+      <rect width="32" height="32" rx="8" fill="url(#lbTile)" />
+      <rect x="1" y="1" width="30" height="30" rx="7" fill="none" stroke="#ffffff" strokeOpacity="0.18" />
       <g fill="#ffffff">
-        <path d="M15 11C11.7 9.9 8.3 9.9 6 10.5L6 21C8.3 20.4 11.7 20.4 15 21.9Z" />
-        <path d="M17 11C20.3 9.9 23.7 9.9 26 10.5L26 21C23.7 20.4 20.3 20.4 17 21.9Z" />
+        <path d="M14.6 10.6C11.6 9.6 8.6 9.6 6.4 10.1v10.2c2.2-.5 5.2-.5 8.2 1.1Z" opacity="0.96" />
+        <path d="M17.4 10.6c3 1 6 1 8.2.5v10.2c-2.2.5-5.2.5-8.2-1.1Z" opacity="0.96" />
       </g>
+      <rect x="15.35" y="9.4" width="1.3" height="13" rx="0.65" fill="url(#lbGold)" />
+      <circle cx="16" cy="22.6" r="0.9" fill="#F0D49A" />
     </svg>
   );
 }

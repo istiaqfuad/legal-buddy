@@ -1,6 +1,6 @@
 "use client";
 
-import { Trash2 } from "lucide-react";
+import { Trash2, SlidersHorizontal, FlaskConical } from "lucide-react";
 import {
   type ChatSettings,
   type Provider,
@@ -28,12 +28,15 @@ export function SidebarContent({
 
   return (
     <div className="flex h-full flex-col bg-surface">
-      <div className="px-6 pb-4 pt-6">
-        <h2 className="text-lg font-semibold tracking-tight text-text">Settings</h2>
-        <p className="mt-0.5 text-[13px] text-muted">Tune retrieval and the model.</p>
+      <div className="border-b border-line bg-gradient-to-br from-accent-soft via-surface to-gold-soft px-6 pb-5 pt-6">
+        <p className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.2em] text-accent-strong">
+          <SlidersHorizontal className="h-3.5 w-3.5" /> Control room
+        </p>
+        <h2 className="font-display mt-1.5 text-2xl font-semibold tracking-tight text-text">Settings</h2>
+        <p className="mt-1 text-[13px] text-muted">Tune retrieval and the model. Changes apply to your next question.</p>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-6">
+      <div className="slim-scroll flex-1 overflow-y-auto px-6">
         {/* Retrieval */}
         <Section title="Retrieval">
           <Row label="Sources to retrieve" value={settings.topK} />
@@ -99,10 +102,10 @@ export function SidebarContent({
         </Section>
 
         {/* Model */}
-        <Section title="Model" tag="dev only" divider>
+        <Section title="Model" tag="dev only" divider icon={<FlaskConical className="h-3.5 w-3.5" />}>
           <div className="space-y-2">
             <Label>Provider</Label>
-            <div role="radiogroup" aria-label="LLM provider" className="flex rounded-lg border border-line p-1">
+            <div role="radiogroup" aria-label="LLM provider" className="flex rounded-xl border border-line bg-bg p-1">
               {PROVIDERS.map((p) => (
                 <button
                   key={p}
@@ -110,9 +113,9 @@ export function SidebarContent({
                   aria-checked={settings.provider === p}
                   onClick={() => pickProvider(p)}
                   className={cn(
-                    "flex-1 rounded-md px-3 py-1.5 text-sm font-medium capitalize transition-colors",
+                    "flex-1 rounded-lg px-3 py-2 text-sm font-semibold capitalize transition-all",
                     settings.provider === p
-                      ? "bg-accent text-white"
+                      ? "bg-gradient-to-b from-[#1d8a66] to-[#0e5a42] text-white shadow"
                       : "text-muted hover:text-text",
                   )}
                 >
@@ -129,7 +132,7 @@ export function SidebarContent({
               value={settings.model}
               onChange={(e) => set({ model: e.target.value })}
               placeholder="provider default"
-              className="h-10 w-full rounded-lg border border-line bg-bg px-3 text-sm text-text outline-none focus:border-accent/50"
+              className="h-11 w-full rounded-xl border border-line bg-bg px-3.5 text-sm text-text outline-none transition-colors focus:border-accent/60 focus:ring-4 focus:ring-accent/10"
             />
             <datalist id="sidebar-model-options">
               {PROVIDER_MODELS[settings.provider].map((m) => (
@@ -161,7 +164,7 @@ export function SidebarContent({
               value={settings.maxTokens ?? ""}
               onChange={(e) => set({ maxTokens: e.target.value ? Number(e.target.value) : null })}
               placeholder="auto"
-              className="h-10 w-full rounded-lg border border-line bg-bg px-3 text-sm text-text outline-none focus:border-accent/50"
+              className="h-11 w-full rounded-xl border border-line bg-bg px-3.5 text-sm text-text outline-none transition-colors focus:border-accent/60 focus:ring-4 focus:ring-accent/10"
             />
             <Hint>Caps answer length. Blank = model default.</Hint>
           </label>
@@ -182,19 +185,22 @@ function Section({
   title,
   tag,
   divider,
+  icon,
   children,
 }: {
   title: string;
   tag?: string;
   divider?: boolean;
+  icon?: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (
     <section className={cn("py-5", divider && "border-t border-line")}>
-      <h3 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-faint">
+      <h3 className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-faint">
+        {icon}
         {title}
         {tag && (
-          <span className="rounded bg-accent-soft px-1.5 py-0.5 text-[10px] font-medium normal-case tracking-normal text-accent">
+          <span className="rounded-full bg-gold-soft px-2 py-0.5 text-[10px] font-bold normal-case tracking-normal text-[#8a6d2b]">
             {tag}
           </span>
         )}
@@ -207,8 +213,8 @@ function Section({
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="flex items-center justify-between">
-      <span className="text-sm font-medium text-text">{label}</span>
-      <span className="rounded-md bg-accent-soft px-2 py-0.5 text-xs font-medium tabular-nums text-accent">
+      <span className="text-sm font-semibold text-text">{label}</span>
+      <span className="rounded-lg bg-accent-soft px-2.5 py-1 text-xs font-bold tabular-nums text-accent-strong ring-1 ring-accent/20">
         {value}
       </span>
     </div>
@@ -216,7 +222,7 @@ function Row({ label, value }: { label: string; value: React.ReactNode }) {
 }
 
 function Label({ children }: { children: React.ReactNode }) {
-  return <span className="text-sm font-medium text-text">{children}</span>;
+  return <span className="text-sm font-semibold text-text">{children}</span>;
 }
 
 function Hint({ children }: { children: React.ReactNode }) {

@@ -62,3 +62,41 @@ export interface ChatMessage {
   role: Role;
   content: string;
 }
+
+export interface ChatSession {
+  id: string;
+  title: string;
+  status: 'active' | 'archived';
+  created_at: string;
+  updated_at: string;
+  message_count?: number;
+}
+
+export interface UserProfile {
+  id: string;
+  auth_user_id: string;
+  role: 'user' | 'lawyer' | 'admin';
+  subscription_tier: 'free' | 'starter' | 'professional' | 'enterprise';
+  display_name?: string;
+}
+
+export interface SessionUser {
+  id: string;
+  email: string;
+  name?: string;
+  image?: string;
+}
+
+export const TIER_LABELS: Record<string, string> = {
+  free: 'Free',
+  starter: 'Starter',
+  professional: 'Professional',
+  enterprise: 'Enterprise',
+};
+
+export const TIER_LIMITS: Record<string, number> = {
+  free: 5,
+  starter: 30,
+  professional: -1, // unlimited
+  enterprise: -1,
+};
