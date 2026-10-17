@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LegalBuddy — Animated Demo Pipeline</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #060d0b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    overflow: hidden;
+  }
+
+  .canvas {
+    position: relative;
+    width: 900px;
+    height: 520px;
+    border-radius: 16px;
+    overflow: hidden;
+    background:
+      radial-gradient(400px 300px at 20% 20%, rgba(20,113,83,0.25), transparent),
+      radial-gradient(300px 250px at 80% 80%, rgba(201,164,92,0.08), transparent),
+      #0a1512;
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+
+  /* ── Progress bar (top) ─────────────────────────── */
+  .progress-track {
+    position: absolute;
+    top: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 600px;
+    height: 3px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 2px;
+  }
+  .progress-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #147153, #4fbe8f, #c9a45c);
+    border-radius: 2px;
+    animation: fill-progress 9s ease-in-out infinite;
+  }
+  @keyframes fill-progress {
+    0%   { width: 0%; }
+    33%  { width: 33%; }
+    66%  { width: 66%; }
+    100% { width: 100%; }
+  }
+
+  .step-labels {
+    position: absolute;
+    top: 36px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 120px;
+    width: 600px;
+    justify-content: space-between;
+  }
+  .step-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.25);
+    transition: color 0.5s;
+  }
+  .step-label.active { color: #4fbe8f; }
+
+  /* ── Step 1: Upload ──────────────────────────────── */
+  .step-upload {
+    position: absolute;
+    top: 80px;
+    left: 60px;
+    right: 60px;
+    display: flex;
+    align-items: flex-start;
+    gap: 40px;
+    opacity: 1;
+  }
+
+  .phone-mock {
+    width: 160px;
+    height: 300px;
+    border-radius: 24px;
+    border: 2px solid rgba(255,255,255,0.12);
+    background: linear-gradient(180deg, #0f1f1a, #0a1512);
+    position: relative;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+  .phone-mock::before {
+    content: '';
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 50px;
+    height: 4px;
+    border-radius: 2px;
+    background: rgba(255,255,255,0.15);
+  }
+  .phone-notch {
+    position: absolute;
+    bottom: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    color: rgba(255,255,255,0.3);
+    text-transform: uppercase;
+  }
+
+  .doc-card {
+    position: absolute;
+    top: 60px;
+    left: 20px;
+    right: 20px;
+    background: #fff;
+    border-radius: 8px;
+    padding: 10px;
+    animation: doc-appear 0.6s ease-out 0.8s both;
+  }
+  @keyframes doc-appear {
+    from { opacity: 0; transform: translateY(-30px) scale(0.9); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .doc-line {
+    height: 6px;
+    border-radius: 3px;
+    background: #e0e0e0;
+    margin-bottom: 6px;
+  }
+  .doc-line:nth-child(1) { width: 80%; }
+  .doc-line:nth-child(2) { width: 95%; }
+  .doc-line:nth-child(3) { width: 60%; }
+  .doc-line:nth-child(4) { width: 85%; }
+  .doc-line:nth-child(5) { width: 40%; }
+
+  .doc-stamp {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%) rotate(-8deg);
+    padding: 4px 10px;
+    border: 2px solid #c9a45c;
+    border-radius: 4px;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    color: #c9a45c;
+    text-transform: uppercase;
+    animation: stamp 0.4s ease-out 1.4s both;
+  }
+  @keyframes stamp {
+    from { opacity: 0; transform: translateX(-50%) rotate(-8deg) scale(2); }
+    to   { opacity: 1; transform: translateX(-50%) rotate(-8deg) scale(1); }
+  }
+
+  .upload-arrow {
+    position: absolute;
+    top: 140px;
+    left: 220px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    animation: arrow-pulse 1.5s ease-in-out infinite;
+  }
+  @keyframes arrow-pulse {
+    0%, 100% { opacity: 0.4; transform: translateX(0); }
+    50%      { opacity: 1;   transform: translateX(8px); }
+  }
+  .upload-arrow svg { width: 32px; height: 32px; }
+
+  .upload-text {
+    padding-top: 40px;
+  }
+  .upload-text .tag {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: rgba(201,164,92,0.15);
+    color: #c9a45c;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .upload-text h3 {
+    font-family: Georgia, serif;
+    font-size: 26px;
+    color: #fff;
+    margin-bottom: 8px;
+  }
+  .upload-text p {
+    font-size: 14px;
+    color: rgba(255,255,255,0.5);
+    line-height: 1.6;
+  }
+
+  /* ── Step 2: Statute Check ───────────────────────── */
+  .step-check {
+    position: absolute;
+    top: 80px;
+    left: 60px;
+    right: 60px;
+    display: flex;
+    align-items: flex-start;
+    gap: 40px;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .step-check.show {
+    animation: step-in 0.6s ease-out forwards;
+  pointer-events: auto;
+  }
+  @keyframes step-in {
+    from { opacity: 0; transform: translateX(40px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+
+  .statute-panel {
+    flex: 1;
+    background: rgba(20,113,83,0.08);
+    border: 1px solid rgba(79,190,143,0.2);
+    border-radius: 12px;
+    padding: 24px;
+  }
+  .statute-panel .panel-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .statute-panel .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #4fbe8f;
+    animation: blink 1s ease-in-out infinite;
+  }
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0.3; }
+  }
+  .statute-panel .panel-header span {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: #4fbe8f;
+    text-transform: uppercase;
+  }
+
+  .clause-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    margin-bottom: 6px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid transparent;
+    transition: all 0.3s;
+  }
+  .clause-row:hover, .clause-row.active {
+    background: rgba(79,190,143,0.08);
+    border-color: rgba(79,190,143,0.2);
+  }
+  .clause-row .icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .clause-row .icon.ok { background: rgba(79,190,143,0.15); }
+  .clause-row .icon.warn { background: rgba(224,121,111,0.15); }
+  .clause-row .clause-text {
+    flex: 1;
+  }
+  .clause-row .clause-text .title {
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.85);
+  }
+  .clause-row .clause-text .ref {
+    font-size: 10px;
+    color: rgba(255,255,255,0.35);
+    margin-top: 2px;
+  }
+  .clause-row .score {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 10px;
+  }
+  .score.high { background: rgba(79,190,143,0.15); color: #4fbe8f; }
+  .score.low  { background: rgba(224,121,111,0.15); color: #e0796f; }
+
+  .scan-line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #4fbe8f, transparent);
+    animation: scan 2s ease-in-out infinite;
+    opacity: 0.6;
+  }
+  @keyframes scan {
+    0%   { top: 0; }
+    100% { top: 100%; }
+  }
+
+  /* ── Step 3: Plain-Bangla Result ─────────────────── */
+  .step-result {
+    position: absolute;
+    top: 80px;
+    left: 60px;
+    right: 60px;
+    display: flex;
+    align-items: flex-start;
+    gap: 40px;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .step-result.show {
+    animation: step-in 0.6s ease-out forwards;
+    pointer-events: auto;
+  }
+
+  .result-card {
+    flex: 1;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .result-header {
+    padding: 14px 18px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .result-header .file-name {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: rgba(255,255,255,0.5);
+    text-transform: uppercase;
+  }
+  .result-header .badge {
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .badge.risk { background: rgba(224,121,111,0.15); color: #e0796f; }
+  .badge.safe { background: rgba(79,190,143,0.15); color: #4fbe8f; }
+
+  .result-body {
+    padding: 18px;
+  }
+  .bangla-quote {
+    font-size: 14px;
+    line-height: 1.8;
+    color: rgba(255,255,255,0.75);
+    font-style: italic;
+    padding: 14px;
+    border-left: 3px solid #4fbe8f;
+    background: rgba(79,190,143,0.06);
+    border-radius: 0 8px 8px 0;
+    margin-bottom: 14px;
+  }
+  .flag-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    margin-bottom: 6px;
+    background: rgba(224,121,111,0.06);
+    border: 1px solid rgba(224,121,111,0.15);
+  }
+  .flag-row .flag-icon {
+    font-size: 16px;
+  }
+  .flag-row .flag-text {
+    flex: 1;
+  }
+  .flag-row .flag-text .title {
+    font-size: 12px;
+    font-weight: 600;
+    color: #e0796f;
+  }
+  .flag-row .flag-text .desc {
+    font-size: 11px;
+    color: rgba(255,255,255,0.4);
+    margin-top: 2px;
+  }
+  .flag-row .action {
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 700;
+    background: rgba(201,164,92,0.15);
+    color: #c9a45c;
+  }
+
+  /* ── Connector arrows between steps ──────────────── */
+  .connector {
+    position: absolute;
+    top: 220px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    opacity: 0;
+  }
+  .connector.show { opacity: 1; transition: opacity 0.5s; }
+  .connector .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #4fbe8f;
+    animation: dot-travel 1.5s ease-in-out infinite;
+  }
+  .connector .dot:nth-child(2) { animation-delay: 0.2s; }
+  .connector .dot:nth-child(3) { animation-delay: 0.4s; }
+  .connector .dot:nth-child(4) { animation-delay: 0.6s; }
+  .connector .dot:nth-child(5) { animation-delay: 0.8s; }
+  @keyframes dot-travel {
+    0%   { opacity: 0; transform: scale(0.5); }
+    50%  { opacity: 1; transform: scale(1.2); }
+    100% { opacity: 0; transform: scale(0.5); }
+  }
+
+  /* ── Timing classes (JS toggles) ─────────────────── */
+  .phase-1 .step-upload { opacity: 1; }
+  .phase-1 .step-check,
+  .phase-1 .step-result { opacity: 0; }
+
+  .phase-2 .step-upload { opacity: 0; }
+  .phase-2 .step-check { opacity: 1; }
+  .phase-2 .step-result { opacity: 0; }
+
+  .phase-3 .step-upload,
+  .phase-3 .step-check { opacity: 0; }
+  .phase-3 .step-result { opacity: 1; }
+
+  /* ── Floating particles ──────────────────────────── */
+  .particle {
+    position: absolute;
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: rgba(79,190,143,0.3);
+    animation: float 6s ease-in-out infinite;
+  }
+  .particle:nth-child(1) { top: 10%; left: 10%; animation-delay: 0s; }
+  .particle:nth-child(2) { top: 20%; left: 80%; animation-delay: 1s; }
+  .particle:nth-child(3) { top: 70%; left: 15%; animation-delay: 2s; }
+  .particle:nth-child(4) { top: 80%; left: 70%; animation-delay: 3s; }
+  .particle:nth-child(5) { top: 50%; left: 90%; animation-delay: 4s; }
+  @keyframes float {
+    0%, 100% { transform: translateY(0) scale(1); opacity: 0.3; }
+    50%      { transform: translateY(-20px) scale(1.5); opacity: 0.6; }
+  }
+</style>
+</head>
+<body>
+
+<div class="canvas" id="canvas">
+  <!-- Particles -->
+  <div class="particle"></div>
+  <div class="particle"></div>
+  <div class="particle"></div>
+  <div class="particle"></div>
+  <div class="particle"></div>
+
+  <!-- Progress -->
+  <div class="progress-track"><div class="progress-fill"></div></div>
+  <div class="step-labels">
+    <div class="step-label" id="label-1">1 · Upload</div>
+    <div class="step-label" id="label-2">2 · Statute Check</div>
+    <div class="step-label" id="label-3">3 · Bangla Result</div>
+  </div>
+
+  <!-- ══ STEP 1: UPLOAD ══ -->
+  <div class="step-upload" id="step-upload">
+    <div class="phone-mock">
+      <div class="doc-card">
+        <div class="doc-line"></div>
+        <div class="doc-line"></div>
+        <div class="doc-line"></div>
+        <div class="doc-line"></div>
+        <div class="doc-line"></div>
+      </div>
+      <div class="doc-stamp">Uploaded</div>
+      <div class="phone-notch">Supplier Agreement.pdf</div>
+    </div>
+
+    <div class="upload-arrow">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#4fbe8f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M5 12h14M12 5l7 7-7 7"/>
+      </svg>
+    </div>
+
+    <div class="upload-text">
+      <span class="tag">Step 1 · Upload</span>
+      <h3>SME owner uploads<br>a supplier contract</h3>
+      <p>Photo or PDF from a phone.<br>No legal knowledge needed.</p>
+    </div>
+  </div>
+
+  <!-- ══ STEP 2: STATUTE CHECK ══ -->
+  <div class="step-check" id="step-check">
+    <div class="statute-panel" style="position:relative; overflow:hidden;">
+      <div class="scan-line"></div>
+      <div class="panel-header">
+        <div class="dot"></div>
+        <span>Scanning against Bangladeshi statutes</span>
+      </div>
+
+      <div class="clause-row">
+        <div class="icon ok">✓</div>
+        <div class="clause-text">
+          <div class="title">Payment terms clause</div>
+          <div class="ref">The Contract Act, 1872 — Section 74</div>
+        </div>
+        <div class="score high">0.91</div>
+      </div>
+
+      <div class="clause-row active">
+        <div class="icon warn">!</div>
+        <div class="clause-text">
+          <div class="title">Missing payment protection</div>
+          <div class="ref">NI Act Section 138 — Not found</div>
+        </div>
+        <div class="score low">0.42</div>
+      </div>
+
+      <div class="clause-row">
+        <div class="icon ok">✓</div>
+        <div class="clause-text">
+          <div class="title">Delivery & penalty terms</div>
+          <div class="ref">The Contract Act, 1872 — Section 73</div>
+        </div>
+        <div class="score high">0.87</div>
+      </div>
+
+      <div class="clause-row">
+        <div class="icon ok">✓</div>
+        <div class="clause-text">
+          <div class="title">Dispute resolution clause</div>
+          <div class="ref">Arbitration Act, 2001 — Section 12</div>
+        </div>
+        <div class="score high">0.78</div>
+      </div>
+    </div>
+
+    <div class="upload-text">
+      <span class="tag" style="background:rgba(79,190,143,0.15);color:#4fbe8f;">Step 2 · Statute Check</span>
+      <h3>AI checks clauses<br>against real law</h3>
+      <p>Every clause matched to<br>Bangladeshi statutes with<br>confidence scores.</p>
+    </div>
+  </div>
+
+  <!-- ══ STEP 3: PLAIN-BANGLA RESULT ══ -->
+  <div class="step-result" id="step-result">
+    <div class="result-card">
+      <div class="result-header">
+        <span class="file-name">Supplier Agreement.pdf</span>
+        <span class="badge risk">1 Risk Flagged</span>
+      </div>
+      <div class="result-body">
+        <div class="bangla-quote">
+          "ধারা ১৩৮—এ অত্রফলা জামিনাব শর্ত আছে। ঠিক আইন ১৮৭২—এর ৭৪ ধারা অনুযায়ী ক্ষতিপূরণ দাবি করা যাবে।"
+        </div>
+        <div class="flag-row">
+          <span class="flag-icon">⚠</span>
+          <div class="flag-text">
+            <div class="title">Missing payment protection</div>
+            <div class="desc">NI Act Section 138</div>
+          </div>
+          <span class="action">Add Clause →</span>
+        </div>
+        <div class="flag-row" style="background:rgba(79,190,143,0.06);border-color:rgba(79,190,143,0.15);">
+          <span class="flag-icon">✓</span>
+          <div class="flag-text">
+            <div class="title" style="color:#4fbe8f;">Payment terms valid</div>
+            <div class="desc">Contract Act Section 74 — compliant</div>
+          </div>
+          <span class="action" style="background:rgba(79,190,143,0.15);color:#4fbe8f;">OK</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="upload-text">
+      <span class="tag" style="background:rgba(201,164,92,0.15);color:#c9a45c;">Step 3 · Bangla Result</span>
+      <h3>Risks flagged<br>in plain Bangla</h3>
+      <p>Simple language, renewal<br>reminders, advocate<br>suggestions.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  const canvas = document.getElementById('canvas');
+  const labels = [document.getElementById('label-1'), document.getElementById('label-2'), document.getElementById('label-3')];
+  const steps = [document.getElementById('step-upload'), document.getElementById('step-check'), document.getElementById('step-result')];
+
+  let phase = 0;
+  const timings = [0, 3000, 6000]; // ms per phase
+
+  function setPhase(idx) {
+    canvas.className = 'canvas phase-' + (idx + 1);
+    labels.forEach((l, i) => l.classList.toggle('active', i === idx));
+    steps.forEach((s, i) => {
+      if (i === idx) s.classList.add('show');
+      else s.classList.remove('show');
+    });
+    phase = idx;
+  }
+
+  function loop() {
+    setPhase(0);
+    setTimeout(() => setPhase(1), 3000);
+    setTimeout(() => setPhase(2), 6000);
+    setTimeout(loop, 9000);
+  }
+
+  loop();
+</script>
+
+</body>
+</html>
