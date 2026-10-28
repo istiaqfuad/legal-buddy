@@ -68,19 +68,49 @@ export const TIERS: Tier[] = [
   },
 ];
 
-export function Pricing({ compact = false }: { compact?: boolean }) {
+export function Pricing({
+  compact = false,
+  hideHeading = false,
+}: {
+  compact?: boolean;
+  hideHeading?: boolean;
+}) {
   const [yearly, setYearly] = useState(true);
 
   return (
     <section id="pricing" className="scroll-mt-24 bg-bg py-24 sm:py-32">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <SectionHeading
-          eyebrow="Pricing"
-          title={<>Start free. <em className="font-display italic text-accent">Upgrade</em> when you need more.</>}
-          copy="One answer can save a trip through the library. Start with five answers a day, then move up when you need deeper search or a shared workspace."
-        >
-          <Reveal delay={2}>
-            <div className="mt-7 inline-flex items-center rounded-full border border-line bg-surface p-1.5 shadow-sm">
+        {!hideHeading && (
+          <SectionHeading
+            eyebrow="Pricing"
+            title={<>Start free. <em className="font-display italic text-accent">Upgrade</em> when you need more.</>}
+            copy="One answer can save a trip through the library. Start with five answers a day, then move up when you need deeper search or a shared workspace."
+          >
+            <Reveal delay={2}>
+              <div className="mt-7 inline-flex items-center rounded-full border border-line bg-surface p-1.5 shadow-sm">
+                {[
+                  { label: "Monthly", value: false },
+                  { label: "Yearly · save 20%", value: true },
+                ].map((o) => (
+                  <button
+                    key={o.label}
+                    onClick={() => setYearly(o.value)}
+                    className={cn(
+                      "rounded-full px-5 py-2.5 text-sm font-semibold transition-all",
+                      yearly === o.value ? "bg-accent text-white shadow-md" : "text-muted hover:text-text"
+                    )}
+                  >
+                    {o.label}
+                  </button>
+                ))}
+              </div>
+            </Reveal>
+          </SectionHeading>
+        )}
+
+        {hideHeading && (
+          <div className="flex justify-center pb-8">
+            <div className="inline-flex items-center rounded-full border border-line bg-surface p-1.5 shadow-sm">
               {[
                 { label: "Monthly", value: false },
                 { label: "Yearly · save 20%", value: true },
@@ -97,8 +127,8 @@ export function Pricing({ compact = false }: { compact?: boolean }) {
                 </button>
               ))}
             </div>
-          </Reveal>
-        </SectionHeading>
+          </div>
+        )}
 
         <div className="mt-12 grid items-stretch gap-5 lg:grid-cols-3">
           {TIERS.map((t, i) => (

@@ -53,7 +53,7 @@ export function Footer() {
           <div className="grid grid-cols-2 gap-8 sm:grid-cols-3">
             {COLS.map((c) => (
               <div key={c.title}>
-                <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-white/40">{c.title}</p>
+                <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-white/60">{c.title}</p>
                 <ul className="mt-4 space-y-2.5">
                   {c.links.map((l) => (
                     <li key={l.label}>
@@ -67,14 +67,14 @@ export function Footer() {
             ))}
           </div>
         </div>
-        <div className="mt-12 rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-[13px] leading-relaxed text-white/45">
-          <span className="font-semibold text-white/70">Disclaimer: </span>
+        <div className="mt-12 rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-[13px] leading-relaxed text-white/60">
+          <span className="font-semibold text-white/80">Disclaimer: </span>
           LegalBuddy provides general legal information for education and
           research. It is not legal advice, creates no lawyer-client relationship
           and must be checked against official sources. Always consult a licensed
           advocate for your matter.
         </div>
-        <div className="mt-8 flex flex-col items-center justify-between gap-3 border-t border-white/10 pt-6 text-[13px] text-white/40 sm:flex-row">
+        <div className="mt-8 flex flex-col items-center justify-between gap-3 border-t border-white/10 pt-6 text-[13px] text-white/60 sm:flex-row">
           <p>© 2026 LegalBuddy. All rights reserved.</p>
           <p>Built for Bangladesh&rsquo;s legal community.</p>
         </div>

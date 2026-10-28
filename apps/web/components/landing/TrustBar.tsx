@@ -17,7 +17,7 @@ export function TrustBar() {
   const row = [...ACTS, ...ACTS];
   return (
     <section className="border-b border-line bg-bg py-8">
-      <p className="text-center text-[11px] font-bold uppercase tracking-[0.28em] text-faint">
+      <p className="text-center text-[11px] font-bold uppercase tracking-[0.28em] text-muted">
         Built on Bangladeshi statutes
       </p>
       <div className="relative mt-5 overflow-hidden [mask-image:linear-gradient(90deg,transparent,black_12%,black_88%,transparent)]">

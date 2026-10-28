@@ -52,7 +52,7 @@ export default function PricingPage() {
         <div className="relative mt-14 h-10 bg-[#f6f6f3] [clip-path:ellipse(75%_100%_at_50%_100%)] dark:bg-[#0c100e]" />
       </main>
       <div className="-mt-2">
-        <Pricing compact />
+        <Pricing compact hideHeading />
       </div>
       <FAQ />
       <FinalCTA />
