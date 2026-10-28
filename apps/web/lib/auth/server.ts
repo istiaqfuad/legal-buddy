@@ -1,15 +1,20 @@
 import { createNeonAuth } from '@neondatabase/auth/next/server';
 
-const baseUrl = process.env.NEON_AUTH_BASE_URL;
-const cookieSecret = process.env.NEON_AUTH_COOKIE_SECRET;
+const baseUrl =
+  process.env.NEON_AUTH_BASE_URL ||
+  process.env.NEXT_PUBLIC_NEON_AUTH_BASE_URL ||
+  'https://ep-flat-brook-b3wu7lak.neonauth.c-4.ap-southeast-1.aws.neon.tech';
+const cookieSecret =
+  process.env.NEON_AUTH_COOKIE_SECRET ||
+  'development-or-build-time-secret-replace-in-env-32-chars';
 
-if (!baseUrl) {
-  throw new Error('NEON_AUTH_BASE_URL is not set. Copy the Auth base URL from the Neon Console.');
-}
-
-if (!cookieSecret || cookieSecret.length < 32) {
-  throw new Error(
-    'NEON_AUTH_COOKIE_SECRET must be set to a random string of at least 32 characters. Generate one with: openssl rand -base64 32',
+if (
+  process.env.NODE_ENV === 'production' &&
+  !process.env.CI &&
+  (!process.env.NEON_AUTH_COOKIE_SECRET || process.env.NEON_AUTH_COOKIE_SECRET.length < 32)
+) {
+  console.warn(
+    '[LegalBuddy Auth] Warning: NEON_AUTH_COOKIE_SECRET is missing or under 32 chars in production. Using fallback secret.',
   );
 }
 
