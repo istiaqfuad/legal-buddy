@@ -4,9 +4,9 @@ import { Logo } from "@/components/ui/Logo";
 
 const STATS = [
   { value: "2,400+", label: "Statute sections indexed" },
-  { value: "40+", label: "Acts & ordinances covered" },
-  { value: "§-level", label: "Citation granularity" },
-  { value: "< 8s", label: "Median cited answer" },
+  { value: "40+", label: "Acts and ordinances" },
+  { value: "Section", label: "Citation level" },
+  { value: "< 8s", label: "Typical answer time" },
 ];
 
 export function Hero() {
@@ -27,26 +27,25 @@ export function Hero() {
           <div className="max-w-2xl">
             <div className="hero-rise hero-d1 inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/6 py-1.5 pl-1.5 pr-4 backdrop-blur">
               <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-300 to-amber-500 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-[#1a1405]">
-                <Sparkles className="h-3 w-3" /> New
+                <Sparkles className="h-3 w-3" /> Free
               </span>
               <span className="whitespace-nowrap text-[12px] font-medium text-white/75 sm:text-[13px]">
-                GPT-OSS 120B + Gemini retrieval — now live
+                5 sourced answers a day · no card required
               </span>
             </div>
 
             <h1 className="hero-rise hero-d2 font-display mt-7 text-balance text-[2.9rem] font-semibold leading-[1.02] tracking-tight text-white sm:text-6xl lg:text-[4.4rem]">
               Bangladesh law,
               <br />
-              answered with{" "}
-              <em className="text-gradient-gold not-italic sm:italic">receipts.</em>
+              and the{" "}
+              <em className="text-gradient-gold not-italic sm:italic">section</em> behind it.
             </h1>
 
             <p className="hero-rise hero-d3 mt-6 max-w-xl text-pretty text-lg leading-relaxed text-white/60">
-              Ask in plain Bangla or English. Law Buddy retrieves the exact
-              sections from the Penal Code, CrPC, Evidence Act & more — then
-              answers with{" "}
-              <span className="font-semibold text-white/90">clickable §-level citations</span>{" "}
-              you can verify in one tap.
+              Ask in Bangla or English. LegalBuddy finds the relevant sections in
+              the Penal Code, CrPC, Evidence Act and other Bangladeshi statutes,
+              then explains them in plain language. Every point links back to the
+              text, so you can check it yourself.
             </p>
 
             <div className="hero-rise hero-d4 mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -54,7 +53,7 @@ export function Hero() {
                 href="/chat"
                 className="btn-shine btn-primary-gold group inline-flex items-center justify-center gap-2 rounded-2xl px-7 py-4 text-[15px] font-bold"
               >
-                Ask your first question
+                Ask a question
                 <ArrowRight className="h-4.5 w-4.5 transition-transform group-hover:translate-x-1" />
               </Link>
               <a
@@ -64,16 +63,16 @@ export function Hero() {
                 <span className="pulse-ring flex h-8 w-8 items-center justify-center rounded-full bg-white/10">
                   <Play className="h-3.5 w-3.5 fill-white text-white" />
                 </span>
-                Watch it reason
+                See a sample answer
               </a>
             </div>
 
             <div className="hero-rise hero-d5 mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 text-[13px] text-white/50">
               <span className="inline-flex items-center gap-1.5">
-                <ShieldCheck className="h-4 w-4 text-emerald-300" /> Grounded — never hallucinates sections
+                <ShieldCheck className="h-4 w-4 text-emerald-300" /> Every answer links to the act and section
               </span>
               <span className="inline-flex items-center gap-1.5">
-                <Zap className="h-4 w-4 text-amber-300" /> Free 5 queries/day, no card
+                <Zap className="h-4 w-4 text-amber-300" /> Bangla and English questions welcome
               </span>
             </div>
           </div>
@@ -94,7 +93,7 @@ export function Hero() {
                     <span className="absolute h-full w-full animate-ping rounded-full bg-emerald-300 opacity-75" />
                     <span className="h-1.5 w-1.5 rounded-full bg-emerald-300" />
                   </span>
-                  GROUNDED · 6 SOURCES
+                  6 SOURCES FOUND
                 </div>
               </div>
 
@@ -110,7 +109,7 @@ export function Hero() {
                 <div className="flex items-center gap-2">
                   <Logo className="h-6 w-6" />
                   <span className="text-[12px] font-semibold uppercase tracking-wider text-white/50">
-                    Law Buddy · answered in 6.2s
+                    LegalBuddy · 6 sources
                   </span>
                 </div>
                 <p className="mt-2.5 text-[14.5px] leading-relaxed text-white/85">
@@ -141,13 +140,13 @@ export function Hero() {
             </div>
 
             {/* floating chips */}
-            <div className="float-y-slow absolute -left-4 top-16 hidden rounded-2xl border border-white/12 bg-[#0c1714]/95 px-4 py-3 shadow-xl backdrop-blur sm:block lg:-left-10">
-              <p className="text-[11px] font-semibold uppercase tracking-widest text-amber-200/80">Citation match</p>
-              <p className="font-display text-2xl font-semibold text-white">0.912</p>
+            <div className="float-y-slow absolute -left-4 -top-14 hidden rounded-2xl border border-white/12 bg-[#0c1714]/95 px-4 py-3 shadow-xl backdrop-blur sm:block lg:-left-10">
+              <p className="text-[11px] font-semibold uppercase tracking-widest text-amber-200/80">Source found</p>
+              <p className="font-display text-xl font-semibold text-white">Penal Code, s. 379</p>
             </div>
-            <div className="float-y absolute -right-3 bottom-28 hidden rounded-2xl border border-white/12 bg-[#0c1714]/95 px-4 py-3 shadow-xl backdrop-blur sm:block lg:-right-8" style={{ animationDelay: "1.4s" }}>
-              <p className="text-[11px] font-semibold uppercase tracking-widest text-emerald-200/80">Zero hallucinations</p>
-              <p className="text-sm font-semibold text-white">Every claim → a section</p>
+            <div className="float-y absolute -bottom-12 -right-3 hidden rounded-2xl border border-white/12 bg-[#0c1714]/95 px-4 py-3 shadow-xl backdrop-blur sm:block lg:-right-8" style={{ animationDelay: "1.4s" }}>
+              <p className="text-[11px] font-semibold uppercase tracking-widest text-emerald-200/80">Check it yourself</p>
+              <p className="text-sm font-semibold text-white">Link to the full text</p>
             </div>
           </div>
         </div>

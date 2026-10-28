@@ -7,16 +7,16 @@ import { FinalCTA } from "@/components/landing/FinalCTA";
 import { Footer } from "@/components/landing/Footer";
 
 export const metadata = {
-  title: "Pricing — Law Buddy",
+  title: "Pricing | LegalBuddy",
   description:
-    "Start free with 5 cited answers a day. Upgrade to Professional (৳499/mo) or Chamber (৳2,499/mo). Stripe checkout coming soon — founding-member pricing locked for life.",
+    "Start free with five sourced answers a day. Upgrade to Professional or Chamber when you need deeper search, more answers or a shared workspace.",
 };
 
 const ASSURANCES = [
-  "No credit card required to start",
-  "Stripe-secured checkout coming soon",
-  "Cancel anytime, keep free plan",
-  "Founding-member pricing locked for life",
+  "No card required to start",
+  "Free plan stays free",
+  "Cancel anytime",
+  "Founding-member prices for early users",
 ];
 
 export default function PricingPage() {
@@ -34,11 +34,11 @@ export default function PricingPage() {
             <ArrowLeft className="h-3.5 w-3.5" /> Back home
           </Link>
           <h1 className="font-display mt-6 text-balance text-5xl font-semibold leading-[1.04] tracking-tight text-white sm:text-6xl">
-            Pricing that pays for itself in <span className="text-gradient-gold">one answer</span>
+            Simple pricing for <span className="text-gradient-gold">everyday legal research</span>
           </h1>
           <p className="mx-auto mt-5 max-w-xl text-lg leading-relaxed text-white/60">
-            Hours of library research, compressed into seconds — with citations
-            your senior can verify.
+            Start free. Upgrade when you need more answers, deeper search or a
+            workspace for your team.
           </p>
           <div className="mt-7 flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
             {ASSURANCES.map((a) => (

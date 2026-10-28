@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ArrowRight, Settings2, X, PanelLeft, Sparkles, Gavel, BookOpenText, Landmark } from "lucide-react";
+import Link from "next/link";
+import { ArrowRight, Settings2, X, PanelLeft, Sparkles, Gavel, BookOpenText, Landmark, FileText } from "lucide-react";
 import {
   type ChatSettings,
   type Source,
@@ -35,26 +36,43 @@ export function ChatApp({ sessionId: initialSessionId }: { sessionId?: string })
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [queryUsage, setQueryUsage] = useState<{ remaining: number; limit: number } | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+  // Creating a session inside send() changes currentSessionId; loading it then
+  // would wipe the optimistic user turn and the answer that is still streaming.
+  const skipSessionLoadRef = useRef(false);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [turns, loading]);
 
   useEffect(() => {
-    if (currentSessionId) {
-      setLoading(true);
-      fetch(`/api/chat/sessions/${currentSessionId}`)
-        .then(r => r.json())
-        .then(data => {
-          if (data.session) {
-            setTurns(data.session.messages ?? []);
-          }
-          setLoading(false);
-        })
-        .catch(() => setLoading(false));
-    } else {
-      setTurns([]);
+    if (!currentSessionId) return;
+    if (skipSessionLoadRef.current) {
+      skipSessionLoadRef.current = false;
+      return;
     }
+
+    let cancelled = false;
+    setLoading(true);
+    fetch(`/api/chat/sessions/${currentSessionId}`)
+      .then((response) => {
+        if (!response.ok) throw new Error("Could not load conversation");
+        return response.json();
+      })
+      .then((data) => {
+        if (cancelled) return;
+        setTurns(data.session?.messages ?? []);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setTurns([]);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, [currentSessionId]);
 
   // Close the settings panel on Escape.
@@ -64,6 +82,12 @@ export function ChatApp({ sessionId: initialSessionId }: { sessionId?: string })
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [drawerOpen]);
+
+  const startNewSession = useCallback(() => {
+    setCurrentSessionId(null);
+    setTurns([]);
+    setLoading(false);
+  }, []);
 
   const send = useCallback(
     async (raw?: string) => {
@@ -92,9 +116,10 @@ export function ChatApp({ sessionId: initialSessionId }: { sessionId?: string })
           if (res.ok) {
             const data = await res.json();
             activeSessionId = data.session?.id ?? null;
+            skipSessionLoadRef.current = Boolean(activeSessionId);
             setCurrentSessionId(activeSessionId);
           }
-        } catch (e) {
+        } catch {
           console.error("Failed to create session");
         }
       }
@@ -224,7 +249,7 @@ export function ChatApp({ sessionId: initialSessionId }: { sessionId?: string })
           <SessionSidebar
             currentSessionId={currentSessionId}
             onSelectSession={setCurrentSessionId}
-            onNewSession={() => setCurrentSessionId(null)}
+            onNewSession={startNewSession}
           />
         </div>
       </div>
@@ -244,7 +269,7 @@ export function ChatApp({ sessionId: initialSessionId }: { sessionId?: string })
               <Logo className="h-7 w-7 md:hidden" />
               <span className="hidden items-center gap-2 rounded-full border border-line bg-surface px-3 py-1 text-[12px] font-semibold text-muted shadow-sm sm:inline-flex">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                {settings.provider} · {settings.model || "default"}
+                Bangladesh law &middot; with sources
               </span>
             </div>
             <div className="flex items-center gap-1.5">
@@ -270,6 +295,13 @@ export function ChatApp({ sessionId: initialSessionId }: { sessionId?: string })
                 <Settings2 className="h-4 w-4" />
                 <span className="hidden sm:inline">Tune</span>
               </button>
+              <Link
+                href="/documents"
+                className="hidden items-center gap-1.5 rounded-xl px-3 py-2 text-[13px] font-semibold text-muted transition-colors hover:bg-accent-soft hover:text-accent-strong sm:flex"
+              >
+                <FileText className="h-4 w-4" />
+                Documents
+              </Link>
               <UserMenu />
             </div>
           </div>
@@ -353,8 +385,8 @@ function EmptyState({ onPick }: { onPick: (q: string) => void }) {
           What does the law <em className="italic text-accent">say?</em>
         </h1>
         <p className="mx-auto mt-3 max-w-md text-pretty text-[15.5px] leading-relaxed text-muted">
-          Ask about Bangladesh statutes & precedent. Every answer arrives
-          grounded in the acts — with sources you can check in one tap.
+          Describe the situation in Bangla or English. You&rsquo;ll get a plain
+          explanation and the act and section behind it.
         </p>
 
         <div className="mt-8 text-left">
@@ -396,7 +428,7 @@ function Thinking() {
       <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-accent-soft">
         <Logo className="h-5 w-5" />
       </span>
-      <span className="text-sm font-medium text-muted">Searching 2,400+ sections…</span>
+      <span className="text-sm font-medium text-muted">Looking through the statutes…</span>
       <span className="flex items-center gap-1">
         {[0, 1, 2].map((i) => (
           <span

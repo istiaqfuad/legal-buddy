@@ -1,4 +1,4 @@
-# Legal Acts RAG Monorepo
+# LegalBuddy — Bangladesh Legal RAG Monorepo
 
 > **Note**: This branch is specifically for using a custom finetuned model with this codebase. It includes additional `training/` and `infra/` directories.
 

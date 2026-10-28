@@ -1,4 +1,4 @@
-# Chunking & Retrieval Strategy — Law Buddy RAG
+# Chunking & Retrieval Strategy — LegalBuddy RAG
 
 How Bangladesh statutory law in `data/acts/*.json` becomes a searchable vector
 index, and how a question is answered from it. This documents the pipeline as it

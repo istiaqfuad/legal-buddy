@@ -4,8 +4,9 @@ export default auth.middleware({ loginUrl: '/auth/sign-in' });
 
 export const config = {
   matcher: [
-    // Protect /chat and /dashboard routes, leave public pages and API open
+    // Signed-in areas. Public marketing pages and auth pages stay open.
     '/chat/:path*',
+    '/documents/:path*',
     '/dashboard/:path*',
     '/lawyer/:path*',
   ],

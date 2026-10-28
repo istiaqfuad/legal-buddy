@@ -35,9 +35,9 @@ export function SessionSidebar({
       <div className="flex items-center gap-2.5 px-4 pb-3 pt-5">
         <Logo className="h-8 w-8" />
         <span className="flex flex-col leading-none">
-          <span className="font-display text-[17px] font-semibold tracking-tight">Law Buddy</span>
+          <span className="font-display text-[17px] font-semibold tracking-tight">LegalBuddy</span>
           <span className="mt-1 text-[9px] font-bold uppercase tracking-[0.24em] text-amber-200/70">
-            Bangladesh Law AI
+            Bangladesh law, explained
           </span>
         </span>
       </div>

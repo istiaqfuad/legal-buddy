@@ -18,7 +18,7 @@ export function TrustBar() {
   return (
     <section className="border-b border-line bg-bg py-8">
       <p className="text-center text-[11px] font-bold uppercase tracking-[0.28em] text-faint">
-        Grounded in the acts that matter
+        Built on Bangladeshi statutes
       </p>
       <div className="relative mt-5 overflow-hidden [mask-image:linear-gradient(90deg,transparent,black_12%,black_88%,transparent)]">
         <div className="marquee-track flex w-max items-center gap-3 pr-3">

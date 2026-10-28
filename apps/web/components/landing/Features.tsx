@@ -5,43 +5,43 @@ import { Reveal } from "./Reveal";
 const CARDS = [
   {
     icon: FileCheck2,
-    title: "Section-level citations",
-    copy: "Every sentence that matters carries a [1][2] mark. Click it and the exact act, section number and similarity score glide into view.",
+    title: "Every answer points to a section",
+    copy: "The explanation is tied to the act and section it comes from. Open the source and read the exact wording for yourself.",
     span: "lg:col-span-2",
     accent: true,
   },
   {
     icon: BrainCircuit,
-    title: "Grounded RAG, not vibes",
-    copy: "Top-K statute retrieval feeds the model. Low-confidence questions trigger a clarifying question instead of a confident fiction.",
+    title: "Search that starts with the law",
+    copy: "Your question is matched against a library of Bangladeshi statutes before an answer is written. If the match is weak, you get a follow-up question instead of a guess.",
     span: "",
     accent: false,
   },
   {
     icon: Link2,
-    title: "Verify in one tap",
-    copy: "Each source links out to the original text. Check the section yourself — trust, but verify.",
+    title: "Check the original text",
+    copy: "Each source opens the act itself, so you can confirm the wording before you rely on it.",
     span: "",
     accent: false,
   },
   {
     icon: Languages,
-    title: "Bangla + English",
-    copy: "Ask the way you think. Colloquial Bangla, formal English, or a mix — retrieval understands both.",
+    title: "Ask in Bangla or English",
+    copy: "Write the way you normally would. LegalBuddy understands both, including a mix of the two.",
     span: "",
     accent: false,
   },
   {
     icon: SlidersHorizontal,
-    title: "Tunable retrieval",
-    copy: "Dial sources from 3–12, set clarify floors, swap Gemini / Groq / self-hosted models. Power users welcome.",
+    title: "Choose how wide to search",
+    copy: "Use more sources when a question is broad, or fewer when you need a quick answer. The search settings are yours to adjust.",
     span: "",
     accent: false,
   },
   {
     icon: ShieldCheck,
-    title: "Honest by design",
-    copy: "General information with a clear not-legal-advice boundary. Rate-limited, abuse-guarded, and private.",
+    title: "Private, with a clear boundary",
+    copy: "Your conversations and documents stay in your account. Answers are general legal information, not legal advice.",
     span: "lg:col-span-2",
     accent: true,
   },
@@ -52,9 +52,9 @@ export function Features() {
     <section id="features" className="scroll-mt-24 bg-bg py-24 sm:py-32">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <SectionHeading
-          eyebrow="Why Law Buddy"
-          title={<>Built for answers you can <em className="font-display italic text-accent">defend</em>.</>}
-          copy="Most chatbots sound confident and cite nothing. Law Buddy inverts that: retrieval first, generation second, verification always."
+          eyebrow="Why LegalBuddy"
+          title={<>Answers you can <em className="font-display italic text-accent">check</em>, not just trust.</>}
+          copy="LegalBuddy starts with the statute, then explains it. You get a short answer, the sections behind it and a link to the original text."
         />
         <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {CARDS.map((c, i) => (

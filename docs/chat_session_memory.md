@@ -1,13 +1,13 @@
-# Chat Session Memory
+# Chat Session Memory — LegalBuddy
 
-How Law Buddy keeps a conversation coherent across turns — so a follow-up like
+How LegalBuddy keeps a conversation coherent across turns — so a follow-up like
 *"what if a servant does it?"* is understood and retrieves the right statute,
 instead of being treated as a brand-new, context-free question.
 
-> Scope note: memory here is **in-session only**. The conversation lives in the
-> browser tab. There is no database persistence and no chat-history sidebar — a
-> refresh starts a fresh conversation. This was a deliberate decision for the
-> current stage, not an oversight (see [Limitations](#limitations--what-to-add-next)).
+> Scope note: answer generation still uses a **last-6-turn window** supplied by
+> the browser. Conversations are now stored in Postgres per user, so the history
+> sidebar and a refresh keep their context. The model window itself remains
+> intentionally bounded — see [Limitations](#limitations--what-to-add-next).
 
 ---
 
@@ -169,9 +169,9 @@ RAG chatbots do. The key correct decisions already made here:
 
 Where it is intentionally simpler than a mature product:
 
-- **No persistence.** Mature chat apps store threads in a DB (Postgres is already
-  wired into config) keyed by a conversation id. This is the biggest gap vs. a
-  "real" product, and a deliberate scope choice here.
+- **Client-supplied history.** Messages are persisted, but the generation path
+  still trusts the browser to send the last six turns instead of reading them
+  back from storage. Server-side replay would remove that trust boundary.
 - **Hard window, no summarization.** Long conversations silently lose their
   oldest context. Mature systems summarize-and-compress or use a token-budgeted
   window.
@@ -186,10 +186,11 @@ right, and it's right.
 
 Roughly in priority order for making it more robust:
 
-1. **Persistence (thread store).** Persist turns to Postgres (already in config)
-   keyed by a `conversation_id`; load history server-side instead of trusting the
-   client to send it. Unlocks: survive refresh, a real history sidebar, auditing,
-   and not trusting client-supplied history (see #7).
+1. **Server-side history replay.** Turns are persisted in Postgres per user, and
+   the sidebar reloads them. The generation path still accepts the browser's
+   `history` array. Load the last six turns from `chat_messages` inside the
+   stream route and treat the request body as a hint only. This closes the
+   forgery gap below and keeps context consistent across devices.
 2. **Token-budgeted window + rolling summary.** Replace the fixed 6-turn cut with
    a token budget, and when older turns fall off, fold them into a running summary
    instead of dropping them. This is the "History condense" that was deliberately
@@ -206,10 +207,10 @@ Roughly in priority order for making it more robust:
 6. **Stream resilience.** Add a heartbeat/keepalive comment frame and client
    reconnect with last-event-id, so long generations survive flaky proxies. Today
    a dropped connection loses the in-flight turn.
-7. **Don't trust client history.** Today the browser sends the conversation, so a
-   client could forge or poison it. With server-side persistence (#1), derive
-   history from the store and treat the client copy as a hint only. Important once
-   accounts/persistence exist.
+7. **Stop trusting client history.** Today the browser sends the conversation, so
+   a client could forge or poison it. Messages are now persisted, so the stream
+   route can derive history from the database and treat the client copy as a
+   hint only. This is the remaining half of #1.
 8. **Rewrite quality guardrails.** The rewrite can occasionally over-specify or
    drop intent. Worth an eval set of follow-up→standalone pairs, and possibly
    keeping the original query as a fallback retrieval alongside the rewritten one

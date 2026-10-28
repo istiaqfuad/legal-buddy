@@ -13,21 +13,21 @@ export function FinalCTA() {
             <div className="orb orb-b right-[10%] bottom-[-60px] h-[300px] w-[300px] bg-amber-400/18" />
             <div className="relative">
               <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-amber-200/80">
-                Free forever plan · no card required
+                Free plan · no card required
               </p>
               <h2 className="font-display mx-auto mt-4 max-w-2xl text-balance text-4xl font-semibold leading-[1.05] tracking-tight text-white sm:text-5xl">
-                Your next legal question is <span className="text-gradient-gold">one sentence</span> away.
+                Ask your next legal question <span className="text-gradient-gold">with the source in view.</span>
               </h2>
               <p className="mx-auto mt-4 max-w-xl text-lg text-white/60">
-                Join Law Buddy free. Get 5 cited answers a day, verify every section,
-                and never guess at the law again.
+                Start free. Get five sourced answers a day, read the explanation,
+                then open the act and section behind it.
               </p>
               <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
                 <Link
                   href="/chat"
                   className="btn-shine btn-primary-gold group inline-flex items-center gap-2 rounded-2xl px-8 py-4 text-[15px] font-bold"
                 >
-                  Start asking — it&rsquo;s free
+                  Start free
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </Link>
                 <Link

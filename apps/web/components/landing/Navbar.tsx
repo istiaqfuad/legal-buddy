@@ -9,7 +9,8 @@ import { cn } from "@/lib/utils";
 const LINKS = [
   { label: "Features", href: "#features" },
   { label: "How it works", href: "#how-it-works" },
-  { label: "Live demo", href: "#demo" },
+  { label: "Who it's for", href: "#who-its-for" },
+  { label: "Sample answer", href: "#demo" },
   { label: "Pricing", href: "#pricing" },
   { label: "FAQ", href: "#faq" },
 ];
@@ -45,10 +46,10 @@ export function Navbar() {
           <Logo className="h-9 w-9 drop-shadow-[0_4px_16px_rgba(201,164,92,0.4)]" />
           <span className="flex flex-col leading-none">
             <span className="font-display text-[19px] font-semibold tracking-tight text-white">
-              Law Buddy
+              LegalBuddy
             </span>
             <span className="text-[10px] font-medium uppercase tracking-[0.24em] text-amber-200/70">
-              Bangladesh Law AI
+              Bangladesh law, explained
             </span>
           </span>
         </Link>

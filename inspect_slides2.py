@@ -1,0 +1,8 @@
+import pptx
+prs = pptx.Presentation('/home/istiaqfuad/Desktop/gigalogy_project/backend_architecture_presentation.pptx')
+for i in range(1, 4):
+    slide = prs.slides[i]
+    print(f"\n--- Slide {i} ---")
+    for shape in slide.shapes:
+        if shape.has_text_frame:
+            print(f"{shape.name} Text: {shape.text.replace(chr(10), ' ')[:40]}")

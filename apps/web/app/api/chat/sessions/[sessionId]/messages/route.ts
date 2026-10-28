@@ -1,79 +1,60 @@
 import { NextResponse } from 'next/server';
-import { auth } from '@/lib/auth/server';
-import { neon } from '@neondatabase/serverless';
+import { getSessionUser } from '@/lib/auth/session';
+import { appendMessage, findSession, listMessages, touchSession } from '@/lib/db/queries';
+import type { Source } from '@/lib/types';
 
-const sql = neon(process.env.DATABASE_URL || 'postgresql://dummy:dummy@ep-dummy.aws.neon.tech/neondb');
+export const dynamic = 'force-dynamic';
 
 export async function GET(
-  _req: Request,
-  { params }: { params: Promise<{ sessionId: string }> }
+  _request: Request,
+  { params }: { params: Promise<{ sessionId: string }> },
 ) {
-  const { data: session } = await auth.getSession();
-  if (!session?.user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const user = await getSessionUser();
+  if (!user) {
+    return NextResponse.json({ error: 'Please sign in to view this conversation.' }, { status: 401 });
   }
+
   const { sessionId } = await params;
-  const userId = session.user.id;
-
-  // Verify ownership
-  const owns = await sql`
-    SELECT id FROM chat_sessions WHERE id = ${sessionId} AND user_id = ${userId}
-  `;
-  if (!owns.length) {
-    return NextResponse.json({ error: 'Not found' }, { status: 404 });
+  const session = await findSession(user.id, sessionId);
+  if (!session) {
+    return NextResponse.json({ error: 'Conversation not found.' }, { status: 404 });
   }
 
-  const messages = await sql`
-    SELECT id, role, content, sources, created_at
-    FROM chat_messages
-    WHERE session_id = ${sessionId}
-    ORDER BY created_at ASC
-  `;
-
+  const messages = await listMessages(sessionId);
   return NextResponse.json({ messages });
 }
 
 export async function POST(
   request: Request,
-  { params }: { params: Promise<{ sessionId: string }> }
+  { params }: { params: Promise<{ sessionId: string }> },
 ) {
-  const { data: session } = await auth.getSession();
-  if (!session?.user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const user = await getSessionUser();
+  if (!user) {
+    return NextResponse.json({ error: 'Please sign in to add a message.' }, { status: 401 });
   }
+
   const { sessionId } = await params;
-  const userId = session.user.id;
-
-  const owns = await sql`
-    SELECT id FROM chat_sessions WHERE id = ${sessionId} AND user_id = ${userId}
-  `;
-  if (!owns.length) {
-    return NextResponse.json({ error: 'Not found' }, { status: 404 });
+  const session = await findSession(user.id, sessionId);
+  if (!session) {
+    return NextResponse.json({ error: 'Conversation not found.' }, { status: 404 });
   }
 
-  const body = await request.json();
-  const { role, content, sources } = body;
+  const body = await request.json().catch(() => null);
+  if (!body || typeof body !== 'object') {
+    return NextResponse.json({ error: 'Invalid request body.' }, { status: 400 });
+  }
+
+  const record = body as Record<string, unknown>;
+  const role = record.role === 'assistant' ? 'assistant' : record.role === 'user' ? 'user' : null;
+  const content = typeof record.content === 'string' ? record.content.trim() : '';
 
   if (!role || !content) {
-    return NextResponse.json({ error: 'role and content required' }, { status: 400 });
+    return NextResponse.json({ error: 'role and content are required.' }, { status: 400 });
   }
 
-  const rows = await sql`
-    INSERT INTO chat_messages (session_id, role, content, sources)
-    VALUES (${sessionId}, ${role}, ${content}, ${sources ? JSON.stringify(sources) : null})
-    RETURNING id, role, content, sources, created_at
-  `;
+  const sources = Array.isArray(record.sources) ? (record.sources as Source[]) : null;
+  const message = await appendMessage({ sessionId, role, content, sources });
+  await touchSession(sessionId);
 
-  // Update session timestamp and title if first user message
-  if (role === 'user') {
-    const count = await sql`SELECT COUNT(*) as c FROM chat_messages WHERE session_id = ${sessionId} AND role = 'user'`;
-    if (Number(count[0]?.c) === 1) {
-      const title = content.slice(0, 80);
-      await sql`UPDATE chat_sessions SET title = ${title}, updated_at = NOW() WHERE id = ${sessionId}`;
-    } else {
-      await sql`UPDATE chat_sessions SET updated_at = NOW() WHERE id = ${sessionId}`;
-    }
-  }
-
-  return NextResponse.json({ message: rows[0] }, { status: 201 });
+  return NextResponse.json({ message }, { status: 201 });
 }

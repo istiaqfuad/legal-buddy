@@ -46,9 +46,9 @@ export function LiveDemo() {
     <section id="demo" className="scroll-mt-24 bg-bg py-24 sm:py-32">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <SectionHeading
-          eyebrow="Live demo"
-          title={<>Watch it think, <em className="font-display italic text-accent">cite</em>, verify.</>}
-          copy="A looping preview of the real chat experience. The answers below are illustrative — sign in to query the live index."
+          eyebrow="Sample answer"
+          title={<>See how an answer is <em className="font-display italic text-accent">put together</em>.</>}
+          copy="This is a shortened example. Sign in to ask about your own situation."
         />
 
         <div className="mx-auto mt-12 grid max-w-5xl gap-4 lg:grid-cols-[1fr_280px]">
@@ -57,7 +57,7 @@ export function LiveDemo() {
               <div className="flex items-center justify-between border-b border-line bg-surface-2/60 px-5 py-3">
                 <div className="flex items-center gap-2">
                   <Logo className="h-6 w-6" />
-                  <span className="text-sm font-semibold text-text">Law Buddy · live</span>
+                  <span className="text-sm font-semibold text-text">LegalBuddy · sample</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="flex gap-1.5">
@@ -88,7 +88,7 @@ export function LiveDemo() {
 
               <div className="border-t border-line px-5 py-4">
                 <Link href="/chat" className="btn-emerald btn-shine group flex items-center justify-center gap-2 rounded-2xl px-6 py-3.5 text-[15px] font-bold text-white">
-                  Try it on your own question
+                  Ask your own question
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </Link>
               </div>
@@ -98,9 +98,9 @@ export function LiveDemo() {
           <Reveal delay={1}>
             <div className="flex h-full flex-col gap-4">
               {[
-                { k: "Confidence gate", v: "Low-match queries get a clarifying question, not a fabrication." },
-                { k: "History-aware", v: "Follow-ups resolve against the last 6 turns of context." },
-                { k: "Tunable", v: "Top-K 3–12, clarify floors, model swap — in Settings." },
+                { k: "Weak match? It asks.", v: "If a question is too broad, LegalBuddy asks for detail instead of filling the gap." },
+                { k: "Keeps context", v: "Follow-up questions use the last few turns, so you can refine without starting over." },
+                { k: "You set the depth", v: "Use more sources for a broad question, fewer for a quick lookup." },
               ].map((f) => (
                 <div key={f.k} className="flex-1 rounded-3xl border border-line bg-surface p-5">
                   <p className="text-sm font-bold uppercase tracking-wider text-accent">{f.k}</p>

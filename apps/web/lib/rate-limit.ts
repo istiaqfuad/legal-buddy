@@ -1,39 +1,37 @@
-import { neon } from '@neondatabase/serverless';
+import {
+  getCurrentUsage,
+  incrementUsageWithinLimit,
+} from './db/queries';
 
-const sql = neon(process.env.DATABASE_URL || 'postgresql://dummy:dummy@ep-dummy.aws.neon.tech/neondb');
-
-const TIER_LIMITS: Record<string, number> = {
+export const TIER_LIMITS: Record<string, number> = {
   free: 5,
   starter: 30,
-  professional: 999999, // unlimited
-  enterprise: 999999,
+  professional: 1_000_000,
+  enterprise: 1_000_000,
 };
 
-export async function checkAndIncrementLimit(userId: string, tier: string): Promise<{ allowed: boolean; remaining: number; limit: number }> {
-  const today = new Date().toISOString().slice(0, 10);
-  const limit = TIER_LIMITS[tier] ?? TIER_LIMITS.free;
+export function limitForTier(tier: string): number {
+  return TIER_LIMITS[tier] ?? TIER_LIMITS.free;
+}
 
-  const rows = await sql`
-    INSERT INTO query_limits (user_id, date, count)
-    VALUES (${userId}, ${today}, 1)
-    ON CONFLICT (user_id, date) DO UPDATE
-    SET count = query_limits.count + 1
-    RETURNING count
-  `;
+export async function checkAndIncrementLimit(
+  userId: string,
+  tier: string,
+): Promise<{ allowed: boolean; remaining: number; limit: number; used: number }> {
+  const limit = limitForTier(tier);
+  const used = await incrementUsageWithinLimit(userId, limit);
 
-  const count = rows[0]?.count ?? 1;
+  if (used === null) {
+    const current = await getCurrentUsage(userId);
+    return { allowed: false, remaining: 0, limit, used: current.count };
+  }
+
   return {
-    allowed: count <= limit,
-    remaining: Math.max(0, limit - count),
+    allowed: true,
+    remaining: Math.max(0, limit - used),
     limit,
+    used,
   };
 }
 
-export async function getCurrentUsage(userId: string): Promise<{ count: number; date: string }> {
-  const today = new Date().toISOString().slice(0, 10);
-  const rows = await sql`
-    SELECT count FROM query_limits
-    WHERE user_id = ${userId} AND date = ${today}
-  `;
-  return { count: rows[0]?.count ?? 0, date: today };
-}
+export { getCurrentUsage };

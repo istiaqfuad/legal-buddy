@@ -36,7 +36,7 @@ export function Message({ turn }: { turn: Turn }) {
 
   const sources = turn.sources ?? [];
   const linked = linkifyCitations(turn.content);
-  const streaming = turn.content.length === 0 && sources.length === 0;
+  const streaming = turn.content.length === 0;
 
   const revealSource = (n: number) => {
     setPinnedCite(n);
@@ -93,7 +93,7 @@ export function Message({ turn }: { turn: Turn }) {
       </div>
       <div className="min-w-0 flex-1 rounded-3xl rounded-tl-lg border border-line bg-surface px-5 py-4 shadow-[0_10px_36px_-20px_rgba(6,13,11,0.35)]">
         <div className="mb-2 flex items-center gap-2">
-          <span className="text-[12px] font-bold uppercase tracking-[0.14em] text-faint">Law Buddy</span>
+          <span className="text-[12px] font-bold uppercase tracking-[0.14em] text-faint">LegalBuddy</span>
           {sources.length > 0 && (
             <span className="rounded-full bg-accent-soft px-2 py-0.5 text-[11px] font-bold text-accent-strong">
               {sources.length} sources

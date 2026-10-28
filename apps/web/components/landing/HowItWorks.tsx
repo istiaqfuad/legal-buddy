@@ -6,20 +6,20 @@ const STEPS = [
   {
     n: "01",
     icon: MessageSquareText,
-    title: "Ask in plain words",
-    copy: "“Can police arrest without a warrant?” No section numbers needed. Follow-ups work too — Law Buddy remembers the last 6 turns.",
+    title: "Describe the situation",
+    copy: "Ask in plain Bangla or English. You do not need to know the act or section number. Follow-up questions keep the conversation going.",
   },
   {
     n: "02",
     icon: DatabaseZap,
-    title: "We retrieve the law",
-    copy: "Your question is embedded and matched against thousands of indexed sections. Top matches above the confidence floor survive.",
+    title: "LegalBuddy finds the law",
+    copy: "Your question is compared with thousands of indexed sections. Only the closest matches are used to write the answer.",
   },
   {
     n: "03",
     icon: BadgeCheck,
-    title: "You get cited answers",
-    copy: "The model answers only from retrieved sections. Hover any [N] to preview the source, click to pin it, verify externally.",
+    title: "Read, check, decide",
+    copy: "You get a plain-language explanation and the sections behind it. Open any source to read the original wording before you act.",
   },
 ];
 
@@ -35,8 +35,8 @@ export function HowItWorks() {
         <SectionHeading
           dark
           eyebrow="How it works"
-          title={<>Three steps. <span className="text-gradient-gold">Zero guesswork.</span></>}
-          copy="A production RAG pipeline — embeddings on CPU, Qdrant vector search, grounded generation — wrapped in an interface anyone can use."
+          title={<>From question to source in <span className="text-gradient-gold">three steps.</span></>}
+          copy="No query syntax. Describe the situation, read the answer, then open the law behind it."
         />
 
         <div className="relative mt-14 grid gap-5 lg:grid-cols-3">

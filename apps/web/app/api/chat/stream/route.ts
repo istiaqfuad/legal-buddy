@@ -1,18 +1,13 @@
 import { NextResponse } from 'next/server';
-import { auth } from '@/lib/auth/server';
-import { neon } from '@neondatabase/serverless';
+import { getSessionUser } from '@/lib/auth/session';
+import { appendTurn, findSession, getOrCreateProfile } from '@/lib/db/queries';
+import { checkAndIncrementLimit } from '@/lib/rate-limit';
+import type { Source } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
 
 const API_URL = process.env.API_URL ?? 'http://api:8000';
 const CONNECT_TIMEOUT_MS = 120_000;
-
-const TIER_LIMITS: Record<string, number> = {
-  free: 5,
-  starter: 30,
-  professional: 999999,
-  enterprise: 999999,
-};
 
 type Msg = { role: 'user' | 'assistant'; content: string };
 
@@ -45,42 +40,13 @@ function extractDetail(payload: unknown): string | null {
 }
 
 export async function POST(request: Request) {
-  const sql = neon(process.env.DATABASE_URL || 'postgresql://dummy:dummy@ep-dummy.aws.neon.tech/neondb');
-
   // 1. Auth check
-  const { data: session } = await auth.getSession();
-  if (!session?.user) {
-    return NextResponse.json({ error: 'Please sign in to use Law Buddy.' }, { status: 401 });
-  }
-  const userId = session.user.id;
-
-  // 2. Get or create user profile to determine tier
-  await sql`
-    INSERT INTO user_profiles (auth_user_id)
-    VALUES (${userId})
-    ON CONFLICT (auth_user_id) DO NOTHING
-  `;
-  const tierRows = await sql`SELECT subscription_tier FROM user_profiles WHERE auth_user_id = ${userId}`;
-  const tier = (tierRows[0]?.subscription_tier as string) ?? 'free';
-
-  // 3. Rate limit check (atomic increment)
-  const today = new Date().toISOString().slice(0, 10);
-  const limitRows = await sql`
-    INSERT INTO query_limits (user_id, date, count)
-    VALUES (${userId}, ${today}, 1)
-    ON CONFLICT (user_id, date) DO UPDATE SET count = query_limits.count + 1
-    RETURNING count
-  `;
-  const count = (limitRows[0]?.count as number) ?? 1;
-  const limit = TIER_LIMITS[tier] ?? TIER_LIMITS.free;
-  if (count > limit) {
-    return NextResponse.json(
-      { error: `Daily limit of ${limit} queries reached. Upgrade your plan for more.` },
-      { status: 429 }
-    );
+  const user = await getSessionUser();
+  if (!user) {
+    return NextResponse.json({ error: 'Please sign in to use LegalBuddy.' }, { status: 401 });
   }
 
-  // 4. Parse request body
+  // 2. Parse and validate the request before consuming a daily query.
   let body: Record<string, unknown>;
   try {
     body = await request.json();
@@ -93,10 +59,38 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Question is required.' }, { status: 400 });
   }
 
-  const num = (v: unknown) => typeof v === 'number' && Number.isFinite(v) ? v : undefined;
+  const rawSessionId =
+    typeof body.session_id === 'string'
+      ? body.session_id
+      : typeof body.sessionId === 'string'
+        ? body.sessionId
+        : null;
+
+  // A supplied session must belong to the caller. This prevents one user from
+  // appending messages to another user's conversation.
+  if (rawSessionId) {
+    const ownedSession = await findSession(user.id, rawSessionId);
+    if (!ownedSession) {
+      return NextResponse.json({ error: 'Conversation not found.' }, { status: 404 });
+    }
+  }
+  const sessionId = rawSessionId;
+
+  // 3. Rate limit (atomic increment, capped at the tier limit).
+  const profile = await getOrCreateProfile(user.id);
+  const tier = profile?.subscriptionTier ?? 'free';
+  const usage = await checkAndIncrementLimit(user.id, tier);
+  if (!usage.allowed) {
+    return NextResponse.json(
+      {
+        error: `You have used all ${usage.limit} answers available today. Try again tomorrow or upgrade for more.`,
+      },
+      { status: 429 },
+    );
+  }
+
+  const num = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? v : undefined);
   const history = parseHistory(body.history);
-  // sessionId is passed from the client to associate messages with a DB session
-  const sessionId = typeof body.sessionId === 'string' ? body.sessionId : null;
 
   const provider =
     body.provider === 'gemini' || body.provider === 'groq' || body.provider === 'openai'
@@ -105,7 +99,7 @@ export async function POST(request: Request) {
   const model =
     typeof body.model === 'string' && body.model.trim() ? body.model.trim() : undefined;
 
-  // 5. Forward to FastAPI with abort timeout
+  // 4. Forward to FastAPI with an abort timeout.
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), CONNECT_TIMEOUT_MS);
 
@@ -133,13 +127,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: detail }, { status: upstream.status || 502 });
     }
 
-    // 6. Tee the stream: one copy for the client, one to capture for DB persistence
+    // 5. Tee the stream: one copy for the client, one to capture for persistence.
     let fullAnswer = '';
-    let sources: unknown[] = [];
+    let sources: Source[] = [];
 
     const [streamForClient, streamForCapture] = upstream.body.tee();
 
-    // Non-blocking: parse the capture stream and save to DB when complete
+    // Non-blocking: parse the capture copy and save the turn when complete.
     (async () => {
       try {
         const reader = streamForCapture.getReader();
@@ -162,37 +156,36 @@ export async function POST(request: Request) {
             if (dataLines.length) {
               try {
                 const data = JSON.parse(dataLines.join('\n'));
-                if (event === 'sources') sources = data.sources ?? [];
-                else if (event === 'delta') fullAnswer += data.text ?? '';
-              } catch { /* ignore malformed events */ }
+                if (event === 'sources' && Array.isArray(data.sources)) {
+                  sources = data.sources as Source[];
+                } else if (event === 'delta' && typeof data.text === 'string') {
+                  fullAnswer += data.text;
+                }
+              } catch {
+                // Ignore malformed events; the client copy is unaffected.
+              }
             }
           }
         }
-        // Save both turns to DB if we have a session ID and a full answer
+
         if (sessionId && fullAnswer) {
-          await sql`
-            INSERT INTO chat_messages (session_id, role, content)
-            VALUES (${sessionId}, 'user', ${question})
-          `;
-          await sql`
-            INSERT INTO chat_messages (session_id, role, content, sources)
-            VALUES (${sessionId}, 'assistant', ${fullAnswer}, ${JSON.stringify(sources)})
-          `;
-          await sql`UPDATE chat_sessions SET updated_at = NOW() WHERE id = ${sessionId}`;
+          await appendTurn({ sessionId, question, answer: fullAnswer, sources });
         }
-      } catch { /* non-critical: DB save failure shouldn't affect the stream */ }
+      } catch (error) {
+        // Persistence is best-effort; never break the response the user is reading.
+        console.error('Failed to persist streamed answer', error);
+      }
     })();
 
-    // Stream the client copy immediately
     return new Response(streamForClient, {
       status: 200,
       headers: {
         'Content-Type': 'text/event-stream',
         'Cache-Control': 'no-cache, no-transform',
-        'Connection': 'keep-alive',
+        Connection: 'keep-alive',
         'X-User-Tier': tier,
-        'X-Queries-Used': String(count),
-        'X-Queries-Limit': String(limit),
+        'X-Queries-Used': String(usage.used),
+        'X-Queries-Limit': String(usage.limit),
       },
     });
   } catch (err) {
@@ -203,7 +196,7 @@ export async function POST(request: Request) {
           ? 'The request timed out. Please try again.'
           : 'Could not reach the legal assistant service.',
       },
-      { status: 502 }
+      { status: 502 },
     );
   } finally {
     clearTimeout(timeout);

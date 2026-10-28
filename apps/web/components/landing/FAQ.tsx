@@ -8,28 +8,32 @@ import { cn } from "@/lib/utils";
 
 const FAQS = [
   {
-    q: "Is Law Buddy a lawyer? Can I rely on it in court?",
-    a: "No — Law Buddy provides general legal information, not legal advice, and is not a law firm. Always verify the cited section in the official gazette or bare act and consult a licensed advocate before acting. Every answer says this, and every claim carries a citation so verification is fast.",
+    q: "Is LegalBuddy legal advice?",
+    a: "No. LegalBuddy gives general legal information for research and education. It is not a law firm, does not create a lawyer-client relationship and cannot replace advice from a licensed advocate. Check the cited section before you rely on anything you read here.",
   },
   {
     q: "Where do the answers come from?",
-    a: "A RAG pipeline: your question is embedded locally, matched against a Qdrant index of Bangladeshi statute sections, and answered only from the top retrieved passages. If nothing matches confidently, the app asks a clarifying question instead of inventing an answer.",
+    a: "From Bangladeshi statutes. Your question is matched against an index of act sections, and the answer is written only from the closest matches. If the match is weak, LegalBuddy asks a follow-up question instead of inventing an answer.",
   },
   {
-    q: "Which laws are covered?",
-    a: "The Penal Code 1860, CrPC 1898, Evidence Act 1872, the Constitution, Contract Act, Nari-O-Shishu Nirjatan Daman Ain, Labour Act 2006 and 30+ more acts and ordinances — over 2,400 indexed sections and growing.",
+    q: "Which laws can I ask about?",
+    a: "The Penal Code 1860, CrPC 1898, Evidence Act 1872, the Constitution, Contract Act 1872, Nari-O-Shishu Nirjatan Daman Ain, Labour Act 2006 and more than 30 other acts and ordinances. The index currently covers over 2,400 sections and is still growing.",
   },
   {
     q: "Can I ask in Bangla?",
-    a: "Yes. Ask in Bangla, English, or Banglish. Retrieval is multilingual, and answers follow the language of your question unless you ask otherwise.",
+    a: "Yes. Ask in Bangla, English or a mix of the two. The answer follows the language of your question unless you ask for something different.",
   },
   {
-    q: "What does the free plan include?",
-    a: "5 cited answers per day with top-6 retrieval, full citation panel, and conversation history. No credit card required — sign in and ask.",
+    q: "Do I need to know the section number?",
+    a: "No. Describe the situation in your own words. LegalBuddy will find the relevant provisions and show you where they come from.",
   },
   {
-    q: "When will paid plans and Stripe launch?",
-    a: "Paid tiers (Professional ৳499/mo, Chamber ৳2,499/mo) are priced and ready; Stripe checkout is being integrated now. Join free today and you'll be offered founding-member pricing locked for life when billing opens.",
+    q: "What do I get on the free plan?",
+    a: "Five sourced answers a day, the full citation panel, saved conversation history and the document library. No credit card is needed to start.",
+  },
+  {
+    q: "Can I save my own documents?",
+    a: "Yes. You can upload PDFs, Word documents, text files and images to a private library, then download or delete them at any time. Files are stored per account and are not shared with other users.",
   },
 ];
 

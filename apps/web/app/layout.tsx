@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Fraunces } from "next/font/google";
 import "./globals.css";
-import { AuthProvider } from "./provider";
 
 const geistSans = Geist({
   subsets: ["latin"],
@@ -17,16 +16,42 @@ const fraunces = Fraunces({
   weight: ["400", "500", "600", "700"],
 });
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://legalbuddy.irflab.tech";
+
 export const metadata: Metadata = {
-  title: "Law Buddy — Bangladesh Legal Answers, Cited to the Section",
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: "LegalBuddy | Bangladesh law, explained with sources",
+    template: "%s | LegalBuddy",
+  },
   description:
-    "Ask questions about Bangladesh statutory law and case-law precedent. Law Buddy retrieves the exact sections and answers with clickable citations you can verify.",
-  keywords: ["Bangladesh law", "legal AI", "Penal Code", "statute search", "legal research", "writ petition", "case law"],
+    "Ask a question about Bangladesh law in Bangla or English. LegalBuddy explains the rule in plain language and links every point to the act and section it came from.",
+  keywords: [
+    "Bangladesh law",
+    "legal research",
+    "Penal Code",
+    "CrPC",
+    "Evidence Act",
+    "statute search",
+    "legal AI",
+    "Bangla legal assistant",
+  ],
   openGraph: {
-    title: "Law Buddy — Legal answers, cited to the section",
+    title: "LegalBuddy | Bangladesh law, explained with sources",
     description:
-      "Bangladesh's AI legal companion. Grounded answers with section-level citations, not hallucinations.",
+      "Clear answers to Bangladesh legal questions, with links to the act and section behind every point.",
     type: "website",
+    siteName: "LegalBuddy",
+    url: siteUrl,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "LegalBuddy | Bangladesh law, explained with sources",
+    description:
+      "Clear answers to Bangladesh legal questions, with links to the act and section behind every point.",
+  },
+  icons: {
+    icon: "/icon.svg",
   },
 };
 
@@ -37,11 +62,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${geistSans.variable} ${fraunces.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col">
-        <AuthProvider>
-          {children}
-        </AuthProvider>
-      </body>
+      <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );
 }

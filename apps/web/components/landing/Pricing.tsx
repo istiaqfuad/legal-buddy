@@ -21,39 +21,39 @@ export interface Tier {
 export const TIERS: Tier[] = [
   {
     name: "Free",
-    tagline: "For the curious — feel the magic.",
+    tagline: "For trying it out.",
     monthly: 0,
     yearly: 0,
     cta: "Start free",
     features: [
-      "5 cited answers / day",
-      "Top-6 statute retrieval",
+      "5 sourced answers / day",
+      "Up to 6 statute sources per answer",
       "Section-level citations",
-      "Conversation history",
-      "Bangla + English queries",
+      "Saved conversation history",
+      "Bangla + English questions",
     ],
   },
   {
     name: "Professional",
-    tagline: "For students, advocates & researchers.",
+    tagline: "For students, advocates and researchers.",
     monthly: 499,
     yearly: 399,
     cta: "Go Professional",
     featured: true,
     badge: "Most popular",
     features: [
-      "Unlimited cited answers",
-      "Top-12 deep retrieval",
-      "Priority models (GPT-OSS 120B + Gemini)",
-      "Follow-up memory (12 turns)",
-      "Export answers + sources",
-      "Early access to new acts",
+      "Unlimited answers",
+      "Up to 12 sources per answer",
+      "Longer follow-up memory",
+      "Export answers and sources",
+      "Priority processing",
+      "Early access to new statutes",
       "Priority support",
     ],
   },
   {
     name: "Chamber",
-    tagline: "For firms, chambers & legal teams.",
+    tagline: "For firms, chambers and legal teams.",
     monthly: 2499,
     yearly: 1999,
     cta: "Talk to us",
@@ -61,9 +61,9 @@ export const TIERS: Tier[] = [
       "Everything in Professional",
       "5 seats included, add more anytime",
       "Shared chamber workspace",
-      "API access + SSO",
-      "Custom act ingestion",
-      "Onboarding & SLA",
+      "API access and SSO",
+      "Custom statute ingestion",
+      "Onboarding and SLA",
     ],
   },
 ];
@@ -76,8 +76,8 @@ export function Pricing({ compact = false }: { compact?: boolean }) {
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <SectionHeading
           eyebrow="Pricing"
-          title={<>Start free. <em className="font-display italic text-accent">Upgrade</em> when it pays for itself.</>}
-          copy="One cited answer can save hours of library work. Payments via Stripe are coming soon — lock in founding-member pricing today."
+          title={<>Start free. <em className="font-display italic text-accent">Upgrade</em> when you need more.</>}
+          copy="One answer can save a trip through the library. Start with five answers a day, then move up when you need deeper search or a shared workspace."
         >
           <Reveal delay={2}>
             <div className="mt-7 inline-flex items-center rounded-full border border-line bg-surface p-1.5 shadow-sm">
@@ -139,7 +139,7 @@ export function Pricing({ compact = false }: { compact?: boolean }) {
                   ))}
                 </ul>
                 <Link
-                  href={t.name === "Chamber" ? "mailto:hello@lawbuddy.example?subject=Chamber%20plan" : "/chat"}
+                  href={t.name === "Chamber" ? "mailto:hello@legalbuddy.app?subject=Chamber%20plan" : "/chat"}
                   className={cn(
                     "group mt-8 inline-flex items-center justify-center gap-2 rounded-2xl px-6 py-3.5 text-[15px] font-bold transition-all",
                     t.featured
@@ -158,9 +158,9 @@ export function Pricing({ compact = false }: { compact?: boolean }) {
         {!compact && (
           <Reveal delay={2}>
             <p className="mx-auto mt-8 max-w-2xl text-center text-sm leading-relaxed text-faint">
-              Founding-member prices locked for life. Stripe checkout is being wired up —
-              no card required today. General information only; Law Buddy is not a law firm
-              and not a substitute for counsel.
+              Prices are shown for planning; checkout is not open yet. General
+              information only. LegalBuddy is not a law firm and is not a
+              substitute for advice from a licensed advocate.
             </p>
           </Reveal>
         )}

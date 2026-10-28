@@ -1,28 +1,43 @@
 import { NextResponse } from 'next/server';
-import { auth } from '@/lib/auth/server';
-import { neon } from '@neondatabase/serverless';
+import { getSessionUser } from '@/lib/auth/session';
+import { getOrCreateProfile } from '@/lib/db/queries';
+import { getCurrentUsage, limitForTier } from '@/lib/rate-limit';
 
-const sql = neon(process.env.DATABASE_URL || 'postgresql://dummy:dummy@ep-dummy.aws.neon.tech/neondb');
+export const dynamic = 'force-dynamic';
 
 export async function GET() {
-  const { data: session } = await auth.getSession();
-  if (!session?.user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const user = await getSessionUser();
+  if (!user) {
+    return NextResponse.json({ error: 'Please sign in to view your profile.' }, { status: 401 });
   }
-  const userId = session.user.id;
 
-  // Upsert profile on first access
-  const rows = await sql`
-    INSERT INTO user_profiles (auth_user_id)
-    VALUES (${userId})
-    ON CONFLICT (auth_user_id) DO NOTHING
-    RETURNING *
-  `;
+  const profile = await getOrCreateProfile(user.id);
+  const usage = await getCurrentUsage(user.id);
+  const tier = profile?.subscriptionTier ?? 'free';
+  const limit = limitForTier(tier);
 
-  const profile = rows[0] ?? (await sql`SELECT * FROM user_profiles WHERE auth_user_id = ${userId}`)[0];
-
+  // Keep the JSON contract in one naming style (snake_case) instead of
+  // leaking Drizzle's camelCase column names to the client.
   return NextResponse.json({
-    user: session.user,
-    profile,
+    user,
+    profile: profile
+      ? {
+          id: profile.id,
+          auth_user_id: profile.authUserId,
+          role: profile.role,
+          subscription_tier: profile.subscriptionTier,
+          display_name: profile.displayName,
+          phone: profile.phone,
+          location: profile.location,
+          created_at: profile.createdAt.toISOString(),
+          updated_at: profile.updatedAt.toISOString(),
+        }
+      : null,
+    usage: {
+      used: usage.count,
+      date: usage.date,
+      limit,
+      remaining: Math.max(0, limit - usage.count),
+    },
   });
 }

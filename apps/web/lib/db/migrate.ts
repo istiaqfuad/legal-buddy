@@ -5,9 +5,9 @@ const sql = neon(process.env.DATABASE_URL || 'postgresql://dummy:dummy@ep-dummy.
 async function migrate() {
   console.log('Running migrations...');
   
-  try { await sql`CREATE TYPE user_role AS ENUM ('user', 'lawyer', 'admin')`; } catch (e) {}
-  try { await sql`CREATE TYPE subscription_tier AS ENUM ('free', 'starter', 'professional', 'enterprise')`; } catch (e) {}
-  try { await sql`CREATE TYPE chat_session_status AS ENUM ('active', 'archived')`; } catch (e) {}
+  try { await sql`CREATE TYPE user_role AS ENUM ('user', 'lawyer', 'admin')`; } catch {}
+  try { await sql`CREATE TYPE subscription_tier AS ENUM ('free', 'starter', 'professional', 'enterprise')`; } catch {}
+  try { await sql`CREATE TYPE chat_session_status AS ENUM ('active', 'archived')`; } catch {}
 
   await sql`
     CREATE TABLE IF NOT EXISTS user_profiles (
