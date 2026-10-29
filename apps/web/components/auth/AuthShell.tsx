@@ -19,7 +19,7 @@ const COPY: Record<
     eyebrow: 'Welcome back',
     title: (
       <>
-        Keep your research
+        Keep your legal research
         <br />
         <span className="text-gradient-gold">in one place.</span>
       </>
