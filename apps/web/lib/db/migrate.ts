@@ -1,6 +1,17 @@
 import { neon } from '@neondatabase/serverless';
 
-const sql = neon(process.env.DATABASE_URL || 'postgresql://dummy:dummy@ep-dummy.aws.neon.tech/neondb');
+function connectionString(): string {
+  const raw = process.env.DATABASE_URL ?? process.env.POSTGRES_CONNECTION_STRING ?? '';
+  const value = raw.trim().replace(/^['"]|['"]$/g, '');
+  if (!value) {
+    throw new Error(
+      'Set DATABASE_URL (or POSTGRES_CONNECTION_STRING) before running migrations.',
+    );
+  }
+  return value;
+}
+
+const sql = neon(connectionString());
 
 async function migrate() {
   console.log('Running migrations...');

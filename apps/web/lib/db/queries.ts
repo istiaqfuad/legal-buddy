@@ -1,5 +1,5 @@
 import { and, desc, eq, sql } from 'drizzle-orm';
-import { db, sql as neonSql } from './index';
+import { getDb } from './index';
 import {
   chatMessages,
   chatSessions,
@@ -26,6 +26,7 @@ export function isUuid(value: string): boolean {
 // ---------------------------------------------------------------------------
 
 export async function getOrCreateProfile(userId: string) {
+  const { db } = getDb();
   const [inserted] = await db
     .insert(userProfiles)
     .values({ authUserId: userId })
@@ -44,6 +45,7 @@ export async function getOrCreateProfile(userId: string) {
 }
 
 export async function getProfile(userId: string) {
+  const { db } = getDb();
   const [profile] = await db
     .select()
     .from(userProfiles)
@@ -66,6 +68,7 @@ export interface SessionSummary {
 }
 
 export async function listSessions(userId: string): Promise<SessionSummary[]> {
+  const { db } = getDb();
   const rows = await db
     .select({
       id: chatSessions.id,
@@ -92,6 +95,7 @@ export async function listSessions(userId: string): Promise<SessionSummary[]> {
 }
 
 export async function createSession(userId: string, title: string) {
+  const { db } = getDb();
   const [row] = await db
     .insert(chatSessions)
     .values({ userId, title: title.slice(0, 100) || 'New conversation' })
@@ -112,6 +116,7 @@ export async function createSession(userId: string, title: string) {
 
 export async function findSession(userId: string, sessionId: string) {
   if (!isUuid(sessionId)) return null;
+  const { db } = getDb();
   const [row] = await db
     .select()
     .from(chatSessions)
@@ -129,6 +134,7 @@ export interface StoredMessage {
 }
 
 export async function listMessages(sessionId: string): Promise<StoredMessage[]> {
+  const { db } = getDb();
   const rows = await db
     .select({
       id: chatMessages.id,
@@ -172,6 +178,7 @@ export async function appendMessage(input: {
   content: string;
   sources?: Source[] | null;
 }) {
+  const { db } = getDb();
   const [row] = await db
     .insert(chatMessages)
     .values({
@@ -215,6 +222,7 @@ export async function appendTurn(input: {
     sources: input.sources,
   });
 
+  const { db } = getDb();
   const [{ count }] = await db
     .select({ count: sql<number>`count(*)::int` })
     .from(chatMessages)
@@ -233,6 +241,7 @@ export async function appendTurn(input: {
 }
 
 export async function touchSession(sessionId: string) {
+  const { db } = getDb();
   await db
     .update(chatSessions)
     .set({ updatedAt: new Date() })
@@ -242,6 +251,7 @@ export async function touchSession(sessionId: string) {
 export async function deleteSession(userId: string, sessionId: string) {
   const session = await findSession(userId, sessionId);
   if (!session) return false;
+  const { db } = getDb();
   await db.delete(chatSessions).where(eq(chatSessions.id, sessionId));
   return true;
 }
@@ -257,6 +267,7 @@ export interface Usage {
 
 export async function getCurrentUsage(userId: string): Promise<Usage> {
   const today = new Date().toISOString().slice(0, 10);
+  const { db } = getDb();
   const [row] = await db
     .select({ count: queryLimits.count })
     .from(queryLimits)
@@ -271,6 +282,7 @@ export async function getCurrentUsage(userId: string): Promise<Usage> {
  */
 export async function incrementUsageWithinLimit(userId: string, limit: number) {
   const today = new Date().toISOString().slice(0, 10);
+  const { sql: neonSql } = getDb();
   const rows = await neonSql`
     INSERT INTO query_limits (user_id, date, count)
     VALUES (${userId}, ${today}, 1)
@@ -296,6 +308,7 @@ export interface StoredDocument {
 }
 
 export async function listDocuments(userId: string): Promise<StoredDocument[]> {
+  const { db } = getDb();
   const rows = await db
     .select({
       id: documents.id,
@@ -326,6 +339,7 @@ export async function createDocument(input: {
   sizeBytes: number;
   storageKey: string;
 }) {
+  const { db } = getDb();
   const [row] = await db
     .insert(documents)
     .values(input)
@@ -350,6 +364,7 @@ export async function createDocument(input: {
 
 export async function findDocument(userId: string, documentId: string) {
   if (!isUuid(documentId)) return null;
+  const { db } = getDb();
   const [row] = await db
     .select()
     .from(documents)
@@ -361,6 +376,7 @@ export async function findDocument(userId: string, documentId: string) {
 export async function deleteDocumentRecord(userId: string, documentId: string) {
   const document = await findDocument(userId, documentId);
   if (!document) return null;
+  const { db } = getDb();
   await db.delete(documents).where(eq(documents.id, documentId));
   return document;
 }

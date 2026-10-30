@@ -68,6 +68,17 @@ Required:
 
 Optional / defaulted: `QDRANT_COLLECTION` (`legal_acts_event_rag_full`), `CASES_COLLECTION` (`legal_cases`), `HF_TOKEN`, `LANGSMITH_API_KEY`/`LANGSMITH_TRACING`/`LANGSMITH_PROJECT`, `CHAT_MODEL`, `RETRIEVAL_TOP_K`, `CASE_SCORE_FLOOR`, etc.
 
+Web service (`apps/web`) also needs:
+
+- `DATABASE_URL` — the **pooled** Neon connection string. `POSTGRES_CONNECTION_STRING` is accepted as a fallback.
+- `NEON_AUTH_BASE_URL` — full URL, including `/neondb/auth`.
+- `NEON_AUTH_COOKIE_SECRET` — at least 32 random characters. The build-time fallback is insecure; set a real value.
+- `NEXT_PUBLIC_NEON_AUTH_BASE_URL` — same value as `NEON_AUTH_BASE_URL`.
+- `NEXT_PUBLIC_SITE_URL` — the public origin.
+- `AWS_ENDPOINT_URL_S3`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`, `NEON_STORAGE_BUCKET` — document uploads.
+
+After deploying, `GET /api/health/db` should return `{"ok":true}`. A `database_not_configured` response means `DATABASE_URL` did not reach the web container.
+
 ## CPU-only torch
 
 The VM has no GPU; torch must stay CPU-only. This is locked, not best-effort:
