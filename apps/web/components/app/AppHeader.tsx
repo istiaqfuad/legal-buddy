@@ -13,26 +13,26 @@ export function AppHeader({ active }: { active: 'chat' | 'documents' }) {
   ];
 
   return (
-    <header className="sticky top-0 z-40 border-b border-white/10 bg-[#0a1512]/95 text-white backdrop-blur-xl">
+    <header className="sticky top-0 z-40 border-b border-line bg-bg/90 backdrop-blur-sm">
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
         <div className="flex min-w-0 items-center gap-5">
-          <Link href="/" className="flex shrink-0 items-center gap-2.5">
-            <Logo className="h-8 w-8" />
-            <span className="font-display hidden text-[17px] font-semibold tracking-tight sm:block">
+          <Link href="/" className="flex shrink-0 items-center gap-2">
+            <Logo className="h-7 w-7" />
+            <span className="font-display hidden text-[16px] font-semibold tracking-tight text-text sm:block">
               LegalBuddy
             </span>
           </Link>
 
-          <nav className="flex items-center gap-1">
+          <nav className="flex items-center gap-0.5">
             {links.map((link) => (
               <Link
                 key={link.key}
                 href={link.href}
                 className={cn(
-                  'inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-[13px] font-semibold transition-colors',
+                  'inline-flex items-center gap-1.5 rounded-md px-2.5 py-2 text-[13px] font-medium transition-colors',
                   active === link.key
-                    ? 'bg-white/10 text-white'
-                    : 'text-white/55 hover:bg-white/6 hover:text-white',
+                    ? 'bg-surface-2 text-text'
+                    : 'text-muted hover:bg-surface-2/60 hover:text-text',
                 )}
               >
                 <link.icon className="h-4 w-4" />
@@ -42,12 +42,12 @@ export function AppHeader({ active }: { active: 'chat' | 'documents' }) {
           </nav>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2">
           <Link
             href="/pricing"
-            className="hidden rounded-full border border-amber-200/25 bg-amber-300/10 px-3 py-1.5 text-[12px] font-bold text-amber-200 transition-colors hover:bg-amber-300/15 sm:inline-flex"
+            className="hidden text-[12px] font-medium text-muted transition-colors hover:text-text sm:inline"
           >
-            Free plan
+            Free plan · Upgrade
           </Link>
           <UserMenu />
         </div>

@@ -2,7 +2,16 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Settings2, X, PanelLeft, Sparkles, Gavel, BookOpenText, Landmark, FileText } from "lucide-react";
+import {
+  ArrowRight,
+  BookOpenText,
+  FileText,
+  Gavel,
+  Landmark,
+  PanelLeft,
+  Settings2,
+  X,
+} from "lucide-react";
 import {
   type ChatSettings,
   type Source,
@@ -12,7 +21,7 @@ import {
 
 const HISTORY_WINDOW_TURNS = 6;
 import { Message } from "./Message";
-import { Composer } from "./Composer";
+import { Composer, type ChatAttachment } from "./Composer";
 import { SidebarContent } from "./Sidebar";
 import { Logo } from "@/components/ui/Logo";
 import { cn } from "@/lib/utils";
@@ -31,10 +40,14 @@ export function ChatApp({ sessionId: initialSessionId }: { sessionId?: string })
   const [input, setInput] = useState("");
   const [settings, setSettings] = useState<ChatSettings>(DEFAULT_SETTINGS);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(initialSessionId ?? null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [queryUsage, setQueryUsage] = useState<{ remaining: number; limit: number } | null>(null);
+  const [attachments, setAttachments] = useState<ChatAttachment[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
   // Creating a session inside send() changes currentSessionId; loading it then
   // would wipe the optimistic user turn and the answer that is still streaming.
@@ -77,22 +90,57 @@ export function ChatApp({ sessionId: initialSessionId }: { sessionId?: string })
 
   // Close the settings panel on Escape.
   useEffect(() => {
-    if (!drawerOpen) return;
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setDrawerOpen(false);
+    if (!drawerOpen && !mobileNavOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      setDrawerOpen(false);
+      setMobileNavOpen(false);
+    };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [drawerOpen]);
+  }, [drawerOpen, mobileNavOpen]);
 
   const startNewSession = useCallback(() => {
     setCurrentSessionId(null);
     setTurns([]);
     setLoading(false);
+    setMobileNavOpen(false);
+  }, []);
+
+  const uploadDocuments = useCallback(async (files: FileList | File[]) => {
+    const list = Array.from(files);
+    if (list.length === 0) return;
+
+    setUploadError("");
+    setUploading(true);
+
+    for (const file of list.slice(0, 5)) {
+      const form = new FormData();
+      form.append("file", file);
+
+      try {
+        const response = await fetch("/api/documents", { method: "POST", body: form });
+        const payload = await response.json().catch(() => null);
+        if (!response.ok) {
+          setUploadError(payload?.error ?? `Could not upload ${file.name}.`);
+          continue;
+        }
+        setAttachments((current) => [
+          ...current,
+          { id: payload.document.id as string, name: payload.document.name as string },
+        ]);
+      } catch {
+        setUploadError(`Could not upload ${file.name}. Check your connection and try again.`);
+      }
+    }
+
+    setUploading(false);
   }, []);
 
   const send = useCallback(
     async (raw?: string) => {
       const question = (raw ?? input).trim();
-      if (!question || loading) return;
+      if (!question || loading || uploading) return;
 
       // Conversation memory: send prior turns (hard last-N-turn window) so the
       // backend can resolve follow-ups. Built before appending the new user turn.
@@ -103,6 +151,7 @@ export function ChatApp({ sessionId: initialSessionId }: { sessionId?: string })
 
       setTurns((t) => [...t, { id: uid(), role: "user", content: question }]);
       setInput("");
+      setAttachments([]);
       setLoading(true);
 
       let activeSessionId = currentSessionId;
@@ -233,19 +282,21 @@ export function ChatApp({ sessionId: initialSessionId }: { sessionId?: string })
         setLoading(false);
       }
     },
-    [input, loading, settings, turns, currentSessionId],
+    [input, loading, uploading, settings, turns, currentSessionId],
   );
 
   const isEmpty = turns.length === 0;
 
   return (
-    <div className="relative flex h-dvh overflow-hidden bg-bg">
-      {/* ambient glow */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-64 bg-[radial-gradient(600px_200px_at_50%_-60px,rgba(20,113,83,0.14),transparent)]" />
-
-      {/* Session Sidebar */}
-      <div className={cn("hidden shrink-0 overflow-hidden transition-all duration-300 md:block", sidebarOpen ? "w-72" : "w-0")}>
-        <div className="h-full w-72 border-r border-white/10">
+    <div className="flex h-dvh overflow-hidden bg-bg">
+      {/* Session sidebar — desktop */}
+      <div
+        className={cn(
+          "hidden shrink-0 overflow-hidden border-r border-line transition-[width] duration-200 md:block",
+          sidebarOpen ? "w-64" : "w-0",
+        )}
+      >
+        <div className="h-full w-64">
           <SessionSidebar
             currentSessionId={currentSessionId}
             onSelectSession={setCurrentSessionId}
@@ -254,50 +305,62 @@ export function ChatApp({ sessionId: initialSessionId }: { sessionId?: string })
         </div>
       </div>
 
-      <div className="relative flex min-w-0 flex-1 flex-col overflow-hidden">
+      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         {/* Top bar */}
-        <header className="shrink-0 border-b border-line bg-bg/80 backdrop-blur-xl">
-          <div className="mx-auto flex max-w-3xl items-center justify-between gap-2 px-4 py-2.5 sm:px-6">
+        <header className="shrink-0 border-b border-line">
+          <div className="mx-auto flex h-14 max-w-3xl items-center justify-between gap-3 px-4 sm:px-6">
             <div className="flex min-w-0 items-center gap-2">
               <button
+                onClick={() => setMobileNavOpen(true)}
+                className="rounded-md p-2 text-muted transition-colors hover:bg-surface-2 hover:text-text md:hidden"
+                aria-label="Open conversations"
+              >
+                <PanelLeft className="h-4.5 w-4.5" />
+              </button>
+              <button
                 onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="hidden rounded-lg p-2 text-muted transition-colors hover:bg-accent-soft hover:text-accent-strong md:block"
+                className="hidden rounded-md p-2 text-muted transition-colors hover:bg-surface-2 hover:text-text md:block"
                 aria-label="Toggle sidebar"
               >
-                <PanelLeft className="h-5 w-5" />
+                <PanelLeft className="h-4.5 w-4.5" />
               </button>
-              <Logo className="h-7 w-7 md:hidden" />
-              <span className="hidden items-center gap-2 rounded-full border border-line bg-surface px-3 py-1 text-[12px] font-semibold text-muted shadow-sm sm:inline-flex">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                Bangladesh law &middot; with sources
+              <Logo className="h-6 w-6 md:hidden" />
+              <span className="hidden items-center gap-2 text-xs text-muted sm:inline-flex">
+                <span className="h-1.5 w-1.5 rounded-full bg-accent" />
+                Bangladesh law · cited sources
               </span>
             </div>
-            <div className="flex items-center gap-1.5">
+
+            <div className="flex items-center gap-1">
               {queryUsage ? (
-                <span className={cn(
-                  "hidden items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold sm:inline-flex",
-                  queryUsage.remaining <= 1 ? "border-danger/30 bg-danger/5 text-danger" : "border-line bg-surface text-muted"
-                )}>
-                  <Sparkles className="h-3 w-3" />
-                  {queryUsage.remaining}/{queryUsage.limit} left today
+                <span
+                  className={cn(
+                    "mr-1 hidden text-xs tabular-nums sm:inline",
+                    queryUsage.remaining <= 1 ? "text-danger" : "text-muted",
+                  )}
+                >
+                  {queryUsage.remaining} of {queryUsage.limit} answers left
                 </span>
               ) : (
-                <a href="/pricing" className="hidden items-center gap-1 rounded-full bg-gold-soft px-3 py-1.5 text-xs font-bold text-[#8a6d2b] transition-colors hover:bg-gold/20 sm:inline-flex">
-                  <Sparkles className="h-3 w-3" /> Free · Upgrade
-                </a>
+                <Link
+                  href="/pricing"
+                  className="mr-1 hidden text-xs font-medium text-muted transition-colors hover:text-text sm:inline"
+                >
+                  Free plan · Upgrade
+                </Link>
               )}
               <button
                 onClick={() => setDrawerOpen(true)}
                 aria-label="Settings"
                 aria-expanded={drawerOpen}
-                className="flex items-center gap-1.5 rounded-xl px-3 py-2 text-[13px] font-semibold text-muted transition-colors hover:bg-accent-soft hover:text-accent-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="flex items-center gap-1.5 rounded-md px-2.5 py-2 text-[13px] font-medium text-muted transition-colors hover:bg-surface-2 hover:text-text"
               >
                 <Settings2 className="h-4 w-4" />
-                <span className="hidden sm:inline">Tune</span>
+                <span className="hidden sm:inline">Settings</span>
               </button>
               <Link
                 href="/documents"
-                className="hidden items-center gap-1.5 rounded-xl px-3 py-2 text-[13px] font-semibold text-muted transition-colors hover:bg-accent-soft hover:text-accent-strong sm:flex"
+                className="hidden items-center gap-1.5 rounded-md px-2.5 py-2 text-[13px] font-medium text-muted transition-colors hover:bg-surface-2 hover:text-text sm:flex"
               >
                 <FileText className="h-4 w-4" />
                 Documents
@@ -313,7 +376,7 @@ export function ChatApp({ sessionId: initialSessionId }: { sessionId?: string })
             {isEmpty ? (
               <EmptyState onPick={(q) => send(q)} />
             ) : (
-              <div className="space-y-6 py-6">
+              <div className="space-y-8 py-8">
                 {turns.map((turn) => (
                   <Message key={turn.id} turn={turn} />
                 ))}
@@ -326,34 +389,72 @@ export function ChatApp({ sessionId: initialSessionId }: { sessionId?: string })
         </main>
 
         {/* Composer */}
-        <div className="shrink-0 border-t border-line/60 bg-bg/80 backdrop-blur-xl">
-          <div className="mx-auto max-w-3xl px-4 py-3.5 sm:px-6">
-            <Composer value={input} onChange={setInput} onSend={() => send()} loading={loading} />
-            <p className="mt-2 text-center text-xs text-faint">
-              General information, not legal advice —{" "}
-              <a href="/pricing" className="font-semibold text-accent hover:underline">verify every citation</a>{" "}
-              & consult a lawyer.
+        <div className="shrink-0 border-t border-line bg-bg">
+          <div className="mx-auto max-w-3xl px-4 py-3 sm:px-6">
+            <Composer
+              value={input}
+              onChange={setInput}
+              onSend={() => send()}
+              loading={loading}
+              attachments={attachments}
+              uploading={uploading}
+              uploadError={uploadError}
+              onUpload={uploadDocuments}
+              onRemoveAttachment={(id) =>
+                setAttachments((current) => current.filter((item) => item.id !== id))
+              }
+            />
+            <p className="mt-2 text-center text-[11px] text-faint">
+              General information, not legal advice. Verify every citation.
             </p>
           </div>
         </div>
       </div>
 
+      {/* Session sidebar — mobile */}
+      {mobileNavOpen && (
+        <div className="fixed inset-0 z-50 md:hidden">
+          <div
+            className="fade-in absolute inset-0 bg-black/40"
+            onClick={() => setMobileNavOpen(false)}
+            aria-hidden
+          />
+          <aside className="panel-in absolute left-0 top-0 h-full w-[18rem] max-w-[86vw] border-r border-line bg-bg">
+            <button
+              onClick={() => setMobileNavOpen(false)}
+              aria-label="Close conversations"
+              className="absolute right-2 top-3 z-10 rounded-md p-2 text-muted hover:bg-surface-2 hover:text-text"
+            >
+              <X className="h-4 w-4" />
+            </button>
+            <SessionSidebar
+              currentSessionId={currentSessionId}
+              onSelectSession={(id) => {
+                setCurrentSessionId(id);
+                setMobileNavOpen(false);
+              }}
+              onNewSession={startNewSession}
+            />
+          </aside>
+        </div>
+      )}
+
       {/* Settings — right slide-over */}
       {drawerOpen && (
         <div className="fixed inset-0 z-50">
           <div
-            className="fade-in absolute inset-0 bg-[#060d0b]/50 backdrop-blur-[2px]"
+            className="fade-in absolute inset-0 bg-black/40"
             onClick={() => setDrawerOpen(false)}
             aria-hidden
           />
           <aside
             aria-label="Settings"
-            className="panel-in absolute right-0 top-0 h-full w-[26rem] max-w-[92vw] overflow-hidden rounded-l-3xl border-l border-line bg-surface shadow-2xl"
+            className="panel-in absolute right-0 top-0 h-full w-[24rem] max-w-[92vw] overflow-hidden border-l border-line bg-surface"
           >
             <button
               onClick={() => setDrawerOpen(false)}
               aria-label="Close settings"
-              className="absolute right-3 top-4 z-10 flex h-8 w-8 items-center justify-center rounded-xl text-muted transition-colors hover:bg-accent-soft hover:text-accent-strong"
+              className="absolute right-3 top-3 z-10 flex h-8 w-8 items-center justify-center rounded-md text-muted transition-colors hover:bg-surface-2 hover:text-text"
             >
               <X className="h-4 w-4" />
             </button>
@@ -375,44 +476,34 @@ export function ChatApp({ sessionId: initialSessionId }: { sessionId?: string })
 
 function EmptyState({ onPick }: { onPick: (q: string) => void }) {
   return (
-    <div className="mx-auto flex min-h-full max-w-xl flex-col justify-center py-14">
-      <div className="rise text-center">
-        <div className="relative mx-auto h-16 w-16">
-          <div className="absolute -inset-3 rounded-[28px] bg-gradient-to-br from-emerald-400/30 to-amber-300/30 blur-xl" />
-          <Logo className="relative h-16 w-16 drop-shadow-xl" />
-        </div>
-        <h1 className="font-display mt-6 text-balance text-4xl font-semibold leading-[1.06] tracking-tight text-text sm:text-[2.75rem]">
+    <div className="mx-auto flex min-h-full max-w-xl flex-col justify-center py-16">
+      <div className="rise">
+        <Logo className="h-9 w-9" />
+        <h1 className="font-display mt-4 text-balance text-3xl font-semibold leading-tight tracking-tight text-text sm:text-4xl">
           What does the law <em className="italic text-accent">say?</em>
         </h1>
-        <p className="mx-auto mt-3 max-w-md text-pretty text-[15.5px] leading-relaxed text-muted">
+        <p className="mt-2.5 max-w-md text-[15px] leading-relaxed text-muted">
           Describe the situation in Bangla or English. You&rsquo;ll get a plain
           explanation and the act and section behind it.
         </p>
 
-        <div className="mt-8 text-left">
-          <p className="mb-2.5 px-1 text-[11px] font-bold uppercase tracking-[0.2em] text-faint">
+        <div className="mt-8">
+          <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-faint">
             Try asking
           </p>
-          <div className="overflow-hidden rounded-3xl border border-line bg-surface shadow-[0_18px_50px_-24px_rgba(6,13,11,0.35)]">
-            {EXAMPLES.map((ex, i) => (
+          <div className="divide-y divide-line overflow-hidden rounded-xl border border-line bg-surface">
+            {EXAMPLES.map((ex) => (
               <button
                 key={ex.q}
                 onClick={() => onPick(ex.q)}
-                className={cn(
-                  "group flex w-full items-center gap-3.5 px-5 py-4 text-left transition-colors hover:bg-accent-soft/60",
-                  i > 0 && "border-t border-line",
-                )}
+                className="group flex w-full items-center gap-3 px-4 py-3.5 text-left transition-colors hover:bg-surface-2"
               >
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-accent-soft to-gold-soft text-accent-strong ring-1 ring-accent/15 transition-transform group-hover:scale-105">
-                  <ex.icon className="h-4.5 w-4.5" />
+                <ex.icon className="h-4 w-4 shrink-0 text-faint transition-colors group-hover:text-muted" />
+                <span className="min-w-0 flex-1">
+                  <span className="block text-[11px] font-medium text-faint">{ex.tag}</span>
+                  <span className="block text-[14px] text-text">{ex.q}</span>
                 </span>
-                <span className="min-w-0">
-                  <span className="block text-[11px] font-bold uppercase tracking-[0.14em] text-accent">
-                    {ex.tag}
-                  </span>
-                  <span className="block truncate text-[14.5px] font-medium text-text sm:whitespace-normal">{ex.q}</span>
-                </span>
-                <ArrowRight className="ml-auto h-4 w-4 shrink-0 -translate-x-1 text-faint opacity-0 transition-all group-hover:translate-x-0 group-hover:text-accent group-hover:opacity-100" />
+                <ArrowRight className="h-4 w-4 shrink-0 text-faint opacity-0 transition-opacity group-hover:opacity-100" />
               </button>
             ))}
           </div>
@@ -424,16 +515,13 @@ function EmptyState({ onPick }: { onPick: (q: string) => void }) {
 
 function Thinking() {
   return (
-    <div className="rise flex items-center gap-3 py-1" role="status" aria-label="Thinking">
-      <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-accent-soft">
-        <Logo className="h-5 w-5" />
-      </span>
-      <span className="text-sm font-medium text-muted">Looking through the statutes…</span>
+    <div className="flex items-center gap-2.5 py-1" role="status" aria-label="Thinking">
+      <span className="text-sm text-muted">Looking through the statutes</span>
       <span className="flex items-center gap-1">
         {[0, 1, 2].map((i) => (
           <span
             key={i}
-            className="h-1.5 w-1.5 rounded-full bg-accent"
+            className="h-1 w-1 rounded-full bg-faint"
             style={{ animation: "pulse-dot 1.2s ease-in-out infinite", animationDelay: `${i * 0.15}s` }}
           />
         ))}

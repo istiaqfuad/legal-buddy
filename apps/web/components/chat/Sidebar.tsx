@@ -1,6 +1,6 @@
 "use client";
 
-import { Trash2, SlidersHorizontal, FlaskConical } from "lucide-react";
+import { Trash2, FlaskConical } from "lucide-react";
 import {
   type ChatSettings,
   type Provider,
@@ -28,15 +28,14 @@ export function SidebarContent({
 
   return (
     <div className="flex h-full flex-col bg-surface">
-      <div className="border-b border-line bg-gradient-to-br from-accent-soft via-surface to-gold-soft px-6 pb-5 pt-6">
-        <p className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.2em] text-accent-strong">
-          <SlidersHorizontal className="h-3.5 w-3.5" /> Control room
+      <div className="border-b border-line px-5 py-4 pr-12">
+        <h2 className="text-[15px] font-semibold tracking-tight text-text">Settings</h2>
+        <p className="mt-0.5 text-[12px] text-muted">
+          Retrieval and model options for your next question.
         </p>
-        <h2 className="font-display mt-1.5 text-2xl font-semibold tracking-tight text-text">Settings</h2>
-        <p className="mt-1 text-[13px] text-muted">Tune retrieval and the model. Changes apply to your next question.</p>
       </div>
 
-      <div className="slim-scroll flex-1 overflow-y-auto px-6">
+      <div className="slim-scroll flex-1 overflow-y-auto px-5">
         {/* Retrieval */}
         <Section title="Retrieval">
           <Row label="Sources to retrieve" value={settings.topK} />
@@ -115,7 +114,7 @@ export function SidebarContent({
                   className={cn(
                     "flex-1 rounded-lg px-3 py-2 text-sm font-semibold capitalize transition-all",
                     settings.provider === p
-                      ? "bg-gradient-to-b from-[#1d8a66] to-[#0e5a42] text-white shadow"
+                      ? "bg-surface text-text shadow-sm"
                       : "text-muted hover:text-text",
                   )}
                 >
